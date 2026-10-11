@@ -231,10 +231,11 @@ class MixerTest(unittest.TestCase):
 
 
 class FakeStream:
-    """Plays a fixed signal at real-time-ish speed."""
+    """Plays a fixed signal, then silence; `consumed` is set once the signal has been read."""
 
     def __init__(self, audio):
         self.audio, self.pos = audio, 0
+        self.consumed = threading.Event()
 
     def __enter__(self):
         return self
@@ -246,6 +247,8 @@ class FakeStream:
         time.sleep(0.001)
         block = self.audio[self.pos:self.pos + n]
         self.pos += n
+        if self.pos >= len(self.audio):
+            self.consumed.set()
         if len(block) < n:
             block = np.concatenate([block, np.zeros(n - len(block), np.float32)])
         return block.reshape(-1, 1), False
@@ -256,16 +259,19 @@ class NotetakerTest(unittest.TestCase):
     def run_notetaker(self, audio, max_secs=3600, stop_after=None, system_audio=None):
         segments, stopped, warnings = [], threading.Event(), []
         result = {}
+        stream = FakeStream(audio)
         n = notetaker.Notetaker(
             transcribe=lambda a: f"{len(a) / 16000:.1f}s",
             on_segment=lambda nid, start, text: segments.append((nid, start, text)),
             on_stopped=lambda nid, dur, reason: (result.update(nid=nid, reason=reason), stopped.set()),
             on_warning=lambda nid, left: warnings.append(left),
-            input_stream=lambda: FakeStream(audio),
+            input_stream=lambda: stream,
             system_audio=system_audio)
         self.assertTrue(n.start("note1", max_secs))
         self.assertFalse(n.start("note2", max_secs))         # one at a time
         if stop_after is not None:
+            # Stop once the whole signal has been read (machine speed varies), plus a little silence.
+            self.assertTrue(stream.consumed.wait(10))
             time.sleep(stop_after)
             n.stop()
         self.assertTrue(stopped.wait(10))
@@ -274,7 +280,7 @@ class NotetakerTest(unittest.TestCase):
 
     def test_records_chunks_and_flushes_on_stop(self):
         audio = np.concatenate([tone(7), np.zeros(16000, np.float32), tone(2)])
-        segs, result, _ = self.run_notetaker(audio, stop_after=0.4)
+        segs, result, _ = self.run_notetaker(audio, stop_after=0.05)
         self.assertEqual(result, {"nid": "note1", "reason": "user"})
         self.assertGreaterEqual(len(segs), 2)
         self.assertEqual(segs[0][1], 0)
@@ -292,7 +298,7 @@ class NotetakerTest(unittest.TestCase):
             def start(self):
                 raise RuntimeError("no permission")
 
-        segs, result, _ = self.run_notetaker(tone(3), stop_after=0.2, system_audio=Broken)
+        segs, result, _ = self.run_notetaker(tone(3), stop_after=0.05, system_audio=Broken)
         self.assertEqual(result["reason"], "user")
         self.assertTrue(segs)
 
