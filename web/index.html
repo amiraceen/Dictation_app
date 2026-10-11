@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dictation</title>
+<style>
+  :root {
+    --bg: #F4F2EE; --panel: #FBFAF8; --ink: #161514; --muted: #8A857E; --line: #E7E3DC;
+    --hover: #EDEAE4; --accent: #161514; --chip: #ECE8E1;
+    --serif: "New York", ui-serif, Georgia, serif;
+    --sans: -apple-system, "SF Pro Text", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #161615; --panel: #1E1E1D; --ink: #F2F0EC; --muted: #8E8A84; --line: #2C2B29;
+            --hover: #262624; --accent: #F2F0EC; --chip: #2A2927; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { background: var(--bg); color: var(--ink); font: 14px/1.5 var(--sans);
+         -webkit-font-smoothing: antialiased; display: flex; user-select: none; overflow: hidden; }
+
+  /* Sidebar */
+  aside { width: 220px; padding: 52px 14px 18px; display: flex; flex-direction: column;
+          -webkit-app-region: drag; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 0 10px 26px; font-weight: 650;
+           font-size: 19px; letter-spacing: -0.01em; }
+  .logo { width: 24px; height: 24px; border-radius: 7px; background: #0A0A0A;
+          box-shadow: inset 0 0 0 1.5px #464646; display: grid; place-items: center; }
+  .logo::after { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #F5F5F5; }
+  nav button { -webkit-app-region: no-drag; all: unset; display: flex; align-items: center; gap: 12px;
+               width: 100%; padding: 9px 12px; border-radius: 9px; font-size: 14.5px; cursor: default;
+               color: var(--ink); box-sizing: border-box; }
+  nav button:hover { background: var(--hover); }
+  nav button.on { background: var(--chip); font-weight: 560; }
+  nav svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6;
+            stroke-linecap: round; stroke-linejoin: round; }
+  .hint { margin-top: auto; padding: 14px; border-radius: 12px; background: var(--panel);
+          border: 1px solid var(--line); font-size: 12.5px; color: var(--muted); }
+  .hint b { color: var(--ink); font-weight: 600; }
+  kbd { font: 600 11.5px var(--sans); padding: 1px 6px; border-radius: 5px; background: var(--chip);
+        color: var(--ink); }
+
+  /* Main */
+  main { flex: 1; margin: 12px 12px 12px 0; background: var(--panel); border-radius: 16px;
+         border: 1px solid var(--line); overflow-y: auto; user-select: text; }
+  .page { display: none; padding: 44px 48px 48px; max-width: 980px; }
+  .page.on { display: block; }
+  h1 { font: 500 30px/1.2 var(--sans); letter-spacing: -0.02em; margin-bottom: 28px; }
+  h1 .sub { display: block; font-size: 14px; color: var(--muted); font-weight: 400; margin-top: 8px;
+            letter-spacing: 0; }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 36px; }
+  .stat { padding: 20px 22px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); }
+  .stat .n { font: 400 34px/1 var(--serif); letter-spacing: -0.02em; }
+  .stat .l { color: var(--muted); margin-top: 8px; font-size: 13px; }
+
+  .section { display: flex; justify-content: space-between; align-items: center; margin: 0 0 10px;
+             font-size: 12px; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+  .list { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .row { display: grid; grid-template-columns: 90px 1fr auto; gap: 16px; padding: 16px 20px;
+         border-top: 1px solid var(--line); align-items: start; }
+  .row:first-child { border-top: 0; }
+  .row:hover { background: var(--bg); }
+  .row .t { color: var(--muted); font-size: 13px; padding-top: 1px; }
+  .row .x { font-size: 15px; line-height: 1.55; }
+  .row .c { opacity: 0; }
+  .row:hover .c { opacity: 1; }
+  .empty { padding: 40px; text-align: center; color: var(--muted); }
+
+  .btn { all: unset; cursor: default; padding: 7px 14px; border-radius: 9px; font-size: 13px;
+         font-weight: 560; background: var(--accent); color: var(--panel); }
+  .btn.ghost { background: transparent; color: var(--muted); padding: 4px 8px; font-weight: 500; }
+  .btn.ghost:hover { color: var(--ink); background: var(--hover); }
+
+  .add { display: flex; gap: 8px; margin-bottom: 18px; }
+  input { font: 14px var(--sans); color: var(--ink); background: var(--bg); border: 1px solid var(--line);
+          border-radius: 10px; padding: 9px 12px; outline: none; flex: 1; }
+  input:focus { border-color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 8px 6px 12px;
+          border-radius: 999px; background: var(--chip); font-size: 14px; }
+  .chip button { all: unset; width: 18px; height: 18px; border-radius: 50%; display: grid;
+                 place-items: center; color: var(--muted); cursor: default; font-size: 14px; }
+  .chip button:hover { background: var(--hover); color: var(--ink); }
+  .clip { grid-template-columns: 1fr auto; cursor: default; }
+  .clip:active { background: var(--hover); }
+  .clip .meta { color: var(--muted); font-size: 12.5px; margin-top: 4px; }
+  .clip .btn { opacity: 1; }
+  .clip.done .btn { background: #2F8F5B; color: #fff; }
+  .snip .x b { font-weight: 600; }
+  .arrow { color: var(--muted); margin: 0 8px; }
+  .snip .x span.exp { white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand"><div class="logo"></div>Dictation</div>
+  <nav>
+    <button data-p="home" class="on"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Dictation</button>
+    <button data-p="clip"><svg viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M9.5 10h5M9.5 14h5"/></svg>Clipboard</button>
+    <button data-p="dict"><svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M9 10h6M9 14h6"/></svg>Dictionary</button>
+    <button data-p="snip"><svg viewBox="0 0 24 24"><circle cx="6" cy="7" r="2.5"/><circle cx="6" cy="17" r="2.5"/><path d="M8 8.5 20 18M8 15.5 20 6"/></svg>Snippets</button>
+  </nav>
+  <div class="hint">Hold <kbd>Right ⌥</kbd> to talk.<br>Say <b>“no wait”</b> or <b>“scratch that”</b> to correct yourself.</div>
+</aside>
+
+<main>
+  <section class="page on" id="home">
+    <h1>Welcome back<span class="sub">Everything you've dictated, on this Mac only.</span></h1>
+    <div class="stats">
+      <div class="stat"><div class="n" id="sWords">0</div><div class="l">total words</div></div>
+      <div class="stat"><div class="n" id="sWpm">0</div><div class="l">words per minute</div></div>
+      <div class="stat"><div class="n" id="sStreak">0</div><div class="l">day streak</div></div>
+    </div>
+    <div class="section"><span id="dayLabel">TODAY</span><button class="btn ghost" id="clear">Clear history</button></div>
+    <div class="list" id="history"></div>
+  </section>
+
+  <section class="page" id="clip">
+    <h1>Clipboard<span class="sub">Every dictation is saved here first. If it didn't land in a text box, click it to copy.</span></h1>
+    <div class="list" id="clips"></div>
+  </section>
+
+  <section class="page" id="dict">
+    <h1>Dictionary<span class="sub">Names, brands and terms the model should spell your way.</span></h1>
+    <form class="add" id="dForm"><input id="dIn" placeholder="Add a word, e.g. be'ah, Maal, 144 Arc"><button class="btn">Add</button></form>
+    <div class="chips" id="words"></div>
+  </section>
+
+  <section class="page" id="snip">
+    <h1>Snippets<span class="sub">Say the trigger on its own and the full text is typed instead.</span></h1>
+    <form class="add" id="sForm"><input id="sKey" placeholder="Trigger, e.g. my email" style="flex:.6"><input id="sVal" placeholder="Expands to…"><button class="btn">Add</button></form>
+    <div class="list" id="snips"></div>
+  </section>
+</main>
+
+<script>
+  const post = m => window.webkit.messageHandlers.app.postMessage(m);
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  let S = { history: [], dictionary: [], snippets: {}, stats: {} };
+
+  document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('nav button, .page').forEach(e => e.classList.remove('on'));
+    b.classList.add('on'); $(b.dataset.p).classList.add('on');
+  });
+
+  const fmt = n => n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1) + 'K' : String(n);
+  const time = ts => new Date(ts * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase().replace(' ', '');
+  const day = ts => { const d = new Date(ts * 1000), t = new Date(); const y = new Date(); y.setDate(t.getDate() - 1);
+    if (d.toDateString() === t.toDateString()) return 'TODAY';
+    if (d.toDateString() === y.toDateString()) return 'YESTERDAY';
+    return d.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase(); };
+
+  window.render = state => {
+    S = state;
+    $('sWords').textContent = fmt(S.stats.words || 0);
+    $('sWpm').textContent = S.stats.wpm || 0;
+    $('sStreak').textContent = S.stats.streak || 0;
+
+    const h = S.history.slice().reverse();
+    let html = '', last = null;
+    h.forEach((e, i) => {
+      const d = day(e.ts);
+      if (d !== last && i > 0) html += `</div><div class="section" style="margin-top:28px"><span>${d}</span></div><div class="list">`;
+      last = d;
+      html += `<div class="row"><div class="t">${time(e.ts)}</div><div class="x">${esc(e.text)}</div>
+               <button class="btn ghost c" data-copy="${i}">Copy</button></div>`;
+    });
+    $('dayLabel').textContent = h.length ? day(h[0].ts) : 'TODAY';
+    $('history').outerHTML = `<div class="list" id="history">${html || '<div class="empty">Nothing yet. Hold Right ⌥ and start talking.</div>'}</div>`;
+    document.querySelectorAll('[data-copy]').forEach(b => b.onclick = () => {
+      post({ type: 'copy', text: h[+b.dataset.copy].text }); b.textContent = 'Copied'; });
+
+    $('clips').innerHTML = h.slice(0, 100).map((e, i) => `<div class="row clip" data-clip="${i}">
+        <div><div class="x">${esc(e.text)}</div><div class="meta">${day(e.ts).toLowerCase()} · ${time(e.ts)} · ${e.words} words</div></div>
+        <button class="btn">Copy</button></div>`).join('') ||
+      '<div class="empty">Nothing yet. Your dictations will appear here.</div>';
+    document.querySelectorAll('[data-clip]').forEach(r => r.onclick = () => {
+      post({ type: 'copy', text: h[+r.dataset.clip].text });
+      document.querySelectorAll('.clip.done').forEach(x => { x.classList.remove('done'); x.querySelector('.btn').textContent = 'Copy'; });
+      r.classList.add('done'); r.querySelector('.btn').textContent = 'Copied ✓'; });
+
+    $('words').innerHTML = S.dictionary.map((w, i) =>
+      `<span class="chip">${esc(w)}<button data-del="${i}">×</button></span>`).join('') ||
+      '<div class="empty" style="width:100%">No words yet.</div>';
+    document.querySelectorAll('[data-del]').forEach(b => b.onclick = () =>
+      post({ type: 'saveDictionary', words: S.dictionary.filter((_, i) => i !== +b.dataset.del) }));
+
+    const keys = Object.keys(S.snippets);
+    $('snips').innerHTML = keys.map(k => `<div class="row snip" style="grid-template-columns:1fr auto">
+        <div class="x"><b>${esc(k)}</b><span class="arrow">→</span><span class="exp">${esc(S.snippets[k])}</span></div>
+        <button class="btn ghost" data-sdel="${esc(k)}">Remove</button></div>`).join('') ||
+      '<div class="empty">No snippets yet.</div>';
+    document.querySelectorAll('[data-sdel]').forEach(b => b.onclick = () => {
+      const s = { ...S.snippets }; delete s[b.dataset.sdel]; post({ type: 'saveSnippets', snippets: s }); });
+  };
+
+  $('dForm').onsubmit = e => { e.preventDefault(); const v = $('dIn').value.trim(); if (!v) return;
+    post({ type: 'saveDictionary', words: [...S.dictionary, v] }); $('dIn').value = ''; };
+  $('sForm').onsubmit = e => { e.preventDefault(); const k = $('sKey').value.trim(), v = $('sVal').value;
+    if (!k || !v) return; post({ type: 'saveSnippets', snippets: { ...S.snippets, [k]: v } });
+    $('sKey').value = $('sVal').value = ''; };
+  post({ type: 'ready' });   // ask the app for state once the page has loaded
+  $('clear').onclick = () => { if (confirm('Clear all dictation history?')) post({ type: 'clearHistory' }); };
+</script>
+</body>
+</html>

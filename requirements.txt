@@ -1,0 +1,9 @@
+faster-whisper
+numpy
+pillow
+pyinstaller
+pynput
+pyobjc-framework-Quartz
+pyobjc-framework-WebKit
+rumps
+sounddevice

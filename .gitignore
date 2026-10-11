@@ -1,0 +1,14 @@
+venv/
+build/
+dist/
+__pycache__/
+*.pyc
+*.log
+dictation.swift
+dictation_daemon.py
+dictionary.txt
+snippets.json
+*.bak-*
+personal_dict.json
+history.json
+.DS_Store
