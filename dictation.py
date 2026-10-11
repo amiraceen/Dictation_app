@@ -935,6 +935,11 @@ if __name__ == "__main__":
         import traceback, wave
         w = wave.open(sys.argv[2])
         audio = np.frombuffer(w.readframes(w.getnframes()), np.int16).astype(np.float32) / 32768
+        try:     # Notetaker frameworks are imported lazily; make sure the bundle has them
+            import EventKit, ScreenCaptureKit, CoreMedia  # noqa: F401
+            print("FRAMEWORKS OK", flush=True)
+        except Exception:
+            traceback.print_exc()
         core = DictationCore(on_status_change=lambda i, m: print(i, m, flush=True))
         core.load_model()
         try:

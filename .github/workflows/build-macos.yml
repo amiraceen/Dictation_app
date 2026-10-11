@@ -1,0 +1,84 @@
+name: Build macOS app
+
+# Builds Dictation.dmg on a GitHub-hosted Mac (Apple silicon).
+# Every push: download it from the run's "Artifacts" section.
+# Pushing a tag like v1.1: also published on the Releases page.
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-14
+    timeout-minutes: 60
+    env:
+      HAS_CERT: ${{ secrets.MACOS_CERT_P12 != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache Whisper model
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface/hub/models--Systran--faster-whisper-small
+          key: whisper-small-v1
+
+      - name: Unit tests
+        run: python -m pip install --quiet numpy && python -m unittest discover -s tests -v
+
+      - name: Import optional signing certificate
+        if: env.HAS_CERT == 'true'
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          echo "$MACOS_CERT_P12" | base64 --decode > cert.p12
+          security create-keychain -p ci build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p ci build.keychain
+          security import cert.p12 -k build.keychain -P "$MACOS_CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k ci build.keychain
+          rm cert.p12
+
+      - name: Build Dictation.dmg
+        env:
+          PYTHON: python
+          VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '1.0' }}
+          SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+        run: |
+          export VERSION="${VERSION#v}"
+          bash build_dmg.sh
+
+      - name: Smoke test the bundled app
+        run: |
+          APP=dist/Dictation.app/Contents/MacOS/Dictation
+          # Transcribe a generated clip with the bundled model: proves the app bundle starts and the model loads.
+          say -o /tmp/hello.wav --file-format=WAVE --data-format=LEI16@16000 "Hello from the build machine"
+          "$APP" --selftest /tmp/hello.wav
+          LOG=~/Library/Application\ Support/Dictation/dictation.log
+          cat "$LOG"
+          grep -q "FRAMEWORKS OK" "$LOG"
+          grep "OUT:" "$LOG" | tail -1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Dictation-dmg
+          path: dist/Dictation.dmg
+          compression-level: 0
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/Dictation.dmg

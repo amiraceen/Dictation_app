@@ -58,6 +58,12 @@ Grant your terminal app **Microphone** and **Accessibility** permission.
 
 ## Build the app
 
+**Disk image (DMG):** every push to GitHub builds `Dictation.dmg` on a GitHub-hosted Mac (see `.github/workflows/build-macos.yml`). Open the repo's **Actions** tab, pick the latest **Build macOS app** run and download **Dictation-dmg** under Artifacts. Pushing a tag such as `v1.1` also publishes the DMG on the **Releases** page. To build it on your own Mac instead, run `bash build_dmg.sh` (output: `dist/Dictation.dmg`).
+
+The DMG is ad-hoc signed unless you add a certificate. To ship a build that opens without the **Open Anyway** step, add these repository secrets: `MACOS_CERT_P12` (base64 Developer ID certificate), `MACOS_CERT_PASSWORD` and `MACOS_SIGN_IDENTITY`. For notarization, also add `NOTARY_APPLE_ID`, `NOTARY_TEAM_ID` and `NOTARY_PASSWORD` (an app-specific password).
+
+**Manual build:**
+
 ```bash
 venv/bin/pyinstaller --noconfirm Dictation.spec
 ```
