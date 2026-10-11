@@ -8,6 +8,8 @@ import json
 import os
 import threading
 
+from speed import LANGUAGE_OPTIONS
+
 # Option lists shown as drop-downs in the Settings page: (value, label).
 NOTIFY_OPTIONS = [(-1, "Off"), (0, "At start"), (15, "15 sec"), (60, "1 min"),
                   (120, "2 min"), (300, "5 min")]
@@ -18,6 +20,8 @@ MAX_LENGTH_OPTIONS = [(30, "30 min"), (60, "1 hour"), (120, "2 hours"),
 DEFAULT_SHORTCUT = {"keycode": 46, "mods": ["alt"], "label": "⌥ M"}
 
 DEFAULTS = {
+    # System → Dictation: a fixed language skips detection and roughly halves the wait
+    "dictation_language": "auto",
     # System → App settings
     "launch_at_login": False,
     "show_bar_always": False,
@@ -27,7 +31,6 @@ DEFAULTS = {
     "mute_while_dictating": False,
     # Experimental
     "pause_media_while_dictating": False,
-    "fast_transcription": False,
     # Notetaker → Meeting detection
     "notify_before_meeting": 15,          # seconds; -1 = off
     "show_next_meeting": True,
@@ -48,6 +51,7 @@ DEFAULTS = {
 _CHOICES = {
     "notify_before_meeting": {v for v, _ in NOTIFY_OPTIONS},
     "max_recording_minutes": {v for v, _ in MAX_LENGTH_OPTIONS},
+    "dictation_language": {v for v, _ in LANGUAGE_OPTIONS},
 }
 _MODS = {"alt", "cmd", "ctrl", "shift"}
 
@@ -74,7 +78,7 @@ def _valid(key, value):
     """True if value is acceptable for key."""
     default = DEFAULTS[key]
     if key in _CHOICES:
-        return isinstance(value, int) and not isinstance(value, bool) and value in _CHOICES[key]
+        return type(value) is type(default) and value in _CHOICES[key]
     if key == "meeting_shortcut":
         return (isinstance(value, dict)
                 and isinstance(value.get("keycode"), int) and 0 <= value["keycode"] < 128
@@ -129,4 +133,5 @@ class Settings:
 
 def options():
     """Drop-down choices for the Settings page."""
-    return {"notify_before_meeting": NOTIFY_OPTIONS, "max_recording_minutes": MAX_LENGTH_OPTIONS}
+    return {"notify_before_meeting": NOTIFY_OPTIONS, "max_recording_minutes": MAX_LENGTH_OPTIONS,
+            "dictation_language": LANGUAGE_OPTIONS}

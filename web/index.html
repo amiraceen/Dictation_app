@@ -260,6 +260,10 @@
     </div>
 
     <div class="tab on" id="tSystem">
+      <h2>Dictation</h2>
+      <div class="card">
+        <div class="set"><div class="lbl"><b>Language</b><span>Pick the language you dictate in and text appears about twice as fast. Auto-detect works out the language each time, which takes longer.</span></div><select data-set="dictation_language"></select></div>
+      </div>
       <h2>App settings</h2>
       <div class="card">
         <div class="set"><div class="lbl"><b>Launch app at login</b></div><label class="tog"><input type="checkbox" data-set="launch_at_login"><span></span></label></div>
@@ -303,7 +307,6 @@
     <div class="tab" id="tExperimental">
       <h2>Dictation</h2>
       <div class="card">
-        <div class="set"><div class="lbl"><b>Faster transcription</b><span>Text appears sooner after you let go of the key. Uses quicker decoding, so names, unusual words and mixed English/Arabic may have a few more mistakes. Meeting notes always use the accurate mode.</span></div><label class="tog"><input type="checkbox" data-set="fast_transcription"><span></span></label></div>
         <div class="set"><div class="lbl"><b>Pause music while dictating</b><span>Pauses Music and Spotify instead of muting them, then resumes. This feature is experimental.</span></div><label class="tog"><input type="checkbox" data-set="pause_media_while_dictating"><span></span></label></div>
       </div>
     </div>
@@ -472,7 +475,8 @@
     $('calWarn').classList.toggle('on', S.calendar === 'denied');
   }
   document.querySelectorAll('[data-set]').forEach(el => el.onchange = () => {
-    const k = el.dataset.set, v = el.tagName === 'SELECT' ? parseInt(el.value, 10) : el.checked;
+    const k = el.dataset.set;
+    const v = el.tagName !== 'SELECT' ? el.checked : typeof S.settings[k] === 'number' ? parseInt(el.value, 10) : el.value;
     S.settings[k] = v;
     post({ type: 'saveSettings', changes: { [k]: v } });
   });

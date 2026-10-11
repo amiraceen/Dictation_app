@@ -315,14 +315,12 @@ class AppWiringTest(unittest.TestCase):
         self.assertIn(("sound", "Pop"), self.calls)
 
 
-    def test_fast_transcription_setting(self):
-        self.assertFalse(self.app.core.fast())                      # accurate by default
-        self.app.handle_message({"type": "saveSettings", "changes": {"fast_transcription": True}}, self.bridge())
-        self.assertTrue(self.app.core.fast())
-        import speed
-        self.assertEqual(speed.decode_options(False)["beam_size"], 5)
-        self.assertEqual(speed.decode_options(True)["beam_size"], 1)
-
+    def test_language_setting(self):
+        self.assertIsNone(self.app.core.language())                 # auto-detect by default
+        self.app.handle_message({"type": "saveSettings", "changes": {"dictation_language": "en"}}, self.bridge())
+        self.assertEqual(self.app.core.language(), "en")
+        self.app.handle_message({"type": "saveSettings", "changes": {"dictation_language": "fr"}}, self.bridge())
+        self.assertEqual(self.app.core.language(), "en")             # unknown values are ignored
 
 if __name__ == "__main__":
     unittest.main()

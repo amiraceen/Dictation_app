@@ -16,7 +16,7 @@ import sounddevice as sd
 from faster_whisper import WhisperModel
 from pynput import keyboard
 
-from speed import ACCURATE_DECODE, FAST_DECODE, cpu_threads, decode_options
+from speed import DECODE, whisper_language
 
 try:
     import rumps
@@ -279,7 +279,7 @@ class DictationCore:
         self.on_level   = lambda rms: None          # live mic level for the pill
         self.on_result  = lambda text, secs: None   # finished dictation
         self.on_record_state = lambda recording: None   # sounds, mute, pause media
-        self.fast = lambda: False                        # Settings → Experimental → Faster transcription
+        self.language = lambda: LANGUAGE                 # Settings → System → Language
 
     def reload_config(self):
         self.snippets   = _load_snippets()
@@ -291,12 +291,11 @@ class DictationCore:
         self.on_status_change(ICON_LOADING, "Loading model… (first run may take a minute)")
         try:
             self._initial_prompt = ", ".join(self.dictionary) if self.dictionary else None
-            self.model = WhisperModel(MODEL_PATH or MODEL_SIZE, device="cpu", compute_type=COMPUTE_TYPE,
-                                      cpu_threads=cpu_threads())
+            self.model = WhisperModel(MODEL_PATH or MODEL_SIZE, device="cpu", compute_type=COMPUTE_TYPE)
             # Warm-up: the first transcription is much slower (memory allocation, caches),
             # so pay that cost now instead of on the first dictation.
             warm = (0.01 * np.random.default_rng(0).standard_normal(16000)).astype(np.float32)
-            list(self.model.transcribe(warm, language="en", **FAST_DECODE)[0])
+            list(self.model.transcribe(warm, language="en", **DECODE)[0])
             self.on_status_change(ICON_IDLE, "Ready — hold ⌥ Right to dictate")
         except Exception as e:
             self.on_status_change(ICON_ERROR, f"Model load failed: {e}")
@@ -353,11 +352,11 @@ class DictationCore:
         try:
             with self.model_lock:      # segments is lazy: consume it while holding the lock
                 segments, _ = self.model.transcribe(
-                    audio, language=LANGUAGE,
+                    audio, language=self.language(),
                     initial_prompt=self._initial_prompt,
                     vad_filter=True,
                     vad_parameters=dict(min_silence_duration_ms=300),
-                    **decode_options(self.fast()),
+                    **DECODE,
                 )
                 raw = " ".join(s.text for s in segments).strip()
             text = _clean_text(raw)
@@ -376,8 +375,8 @@ class DictationCore:
         no backtrack, snippets or filler removal."""
         with self.model_lock:
             segments, _ = self.model.transcribe(
-                audio, language=LANGUAGE, initial_prompt=self._initial_prompt,
-                vad_filter=True, vad_parameters=dict(min_silence_duration_ms=500), **ACCURATE_DECODE)
+                audio, language=self.language(), initial_prompt=self._initial_prompt,
+                vad_filter=True, vad_parameters=dict(min_silence_duration_ms=500), **DECODE)
             return " ".join(s.text.strip() for s in segments).strip()
 
 
@@ -488,7 +487,7 @@ if HAS_RUMPS:
             self.core.on_level  = self._on_level
             self.core.on_result = self._on_result
             self.core.on_record_state = self._on_record_state
-            self.core.fast = lambda: self.settings["fast_transcription"]
+            self.core.language = lambda: whisper_language(self.settings["dictation_language"])
             self.ducker = macos.AudioDucker()
 
             # Notetaker and meeting detection
@@ -973,7 +972,7 @@ if __name__ == "__main__":
         try:
             t = time.perf_counter()
             segs, _ = core.model.transcribe(audio, language=LANGUAGE, vad_filter=True,
-                                            vad_parameters=dict(min_silence_duration_ms=300), **ACCURATE_DECODE)
+                                            vad_parameters=dict(min_silence_duration_ms=300), **DECODE)
             text = _clean_text(" ".join(s.text for s in segs))
             print(f"TIME: {time.perf_counter() - t:.2f}s", flush=True)
             print("OUT:", text)
