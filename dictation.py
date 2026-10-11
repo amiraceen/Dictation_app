@@ -16,7 +16,7 @@ import sounddevice as sd
 from faster_whisper import WhisperModel
 from pynput import keyboard
 
-from speed import FAST_DECODE, cpu_threads
+from speed import ACCURATE_DECODE, FAST_DECODE, cpu_threads, decode_options
 
 try:
     import rumps
@@ -279,6 +279,7 @@ class DictationCore:
         self.on_level   = lambda rms: None          # live mic level for the pill
         self.on_result  = lambda text, secs: None   # finished dictation
         self.on_record_state = lambda recording: None   # sounds, mute, pause media
+        self.fast = lambda: False                        # Settings → Experimental → Faster transcription
 
     def reload_config(self):
         self.snippets   = _load_snippets()
@@ -356,7 +357,7 @@ class DictationCore:
                     initial_prompt=self._initial_prompt,
                     vad_filter=True,
                     vad_parameters=dict(min_silence_duration_ms=300),
-                    **FAST_DECODE,
+                    **decode_options(self.fast()),
                 )
                 raw = " ".join(s.text for s in segments).strip()
             text = _clean_text(raw)
@@ -376,7 +377,7 @@ class DictationCore:
         with self.model_lock:
             segments, _ = self.model.transcribe(
                 audio, language=LANGUAGE, initial_prompt=self._initial_prompt,
-                vad_filter=True, vad_parameters=dict(min_silence_duration_ms=500), **FAST_DECODE)
+                vad_filter=True, vad_parameters=dict(min_silence_duration_ms=500), **ACCURATE_DECODE)
             return " ".join(s.text.strip() for s in segments).strip()
 
 
@@ -487,6 +488,7 @@ if HAS_RUMPS:
             self.core.on_level  = self._on_level
             self.core.on_result = self._on_result
             self.core.on_record_state = self._on_record_state
+            self.core.fast = lambda: self.settings["fast_transcription"]
             self.ducker = macos.AudioDucker()
 
             # Notetaker and meeting detection
@@ -971,7 +973,7 @@ if __name__ == "__main__":
         try:
             t = time.perf_counter()
             segs, _ = core.model.transcribe(audio, language=LANGUAGE, vad_filter=True,
-                                            vad_parameters=dict(min_silence_duration_ms=300), **FAST_DECODE)
+                                            vad_parameters=dict(min_silence_duration_ms=300), **ACCURATE_DECODE)
             text = _clean_text(" ".join(s.text for s in segs))
             print(f"TIME: {time.perf_counter() - t:.2f}s", flush=True)
             print("OUT:", text)

@@ -3,9 +3,16 @@
 import os
 import subprocess
 
-# Short dictations don't need beam search or timestamps; greedy decoding is
-# several times faster with near-identical text on a few seconds of speech.
+# Timestamps aren't used and previous-text conditioning only matters past 30 s,
+# so both are off in every mode; that doesn't change the words.
+# ACCURATE keeps beam search (5 candidates). FAST is greedy (the single most likely
+# word at each step): quicker, but more slips on names and mixed languages.
+ACCURATE_DECODE = dict(beam_size=5, without_timestamps=True, condition_on_previous_text=False)
 FAST_DECODE = dict(beam_size=1, without_timestamps=True, condition_on_previous_text=False)
+
+
+def decode_options(fast):
+    return FAST_DECODE if fast else ACCURATE_DECODE
 
 
 def cpu_threads():

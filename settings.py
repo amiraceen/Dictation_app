@@ -27,6 +27,7 @@ DEFAULTS = {
     "mute_while_dictating": False,
     # Experimental
     "pause_media_while_dictating": False,
+    "fast_transcription": False,
     # Notetaker → Meeting detection
     "notify_before_meeting": 15,          # seconds; -1 = off
     "show_next_meeting": True,
