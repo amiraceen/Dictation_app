@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build Dictation.app and wrap it in a drag-to-Applications disk image: dist/Dictation.dmg
+# Build "Dictation 2.app" and wrap it in a drag-to-Applications disk image: dist/Dictation-2.dmg
 #
 #   bash build_dmg.sh
 #
@@ -9,7 +9,8 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-APP_NAME="Dictation"
+APP_NAME="Dictation 2"
+DMG_NAME="Dictation-2"
 VERSION="${VERSION:-1.0}"
 PY="${PYTHON:-python3}"
 
@@ -43,23 +44,23 @@ fi
 codesign --verify --deep --strict "$APP"
 
 # 5. Disk image: the app plus an Applications shortcut to drag it onto
-echo "→ Creating ${APP_NAME}.dmg…"
+echo "→ Creating ${DMG_NAME}.dmg…"
 STAGE="$(mktemp -d)"
 ditto "$APP" "$STAGE/${APP_NAME}.app"
 ln -s /Applications "$STAGE/Applications"
-hdiutil create -volname "$APP_NAME" -srcfolder "$STAGE" -ov -format UDZO "dist/${APP_NAME}.dmg"
+hdiutil create -volname "$APP_NAME" -srcfolder "$STAGE" -ov -format UDZO "dist/${DMG_NAME}.dmg"
 rm -rf "$STAGE"
 if [ -n "${SIGN_IDENTITY:-}" ]; then
-    codesign --force --timestamp -s "$SIGN_IDENTITY" "dist/${APP_NAME}.dmg"
+    codesign --force --timestamp -s "$SIGN_IDENTITY" "dist/${DMG_NAME}.dmg"
 fi
 
 # 6. Optional notarization (needs a Developer ID identity above and an App Store Connect login)
 if [ -n "${NOTARY_APPLE_ID:-}" ] && [ -n "${SIGN_IDENTITY:-}" ]; then
     echo "→ Notarizing…"
-    xcrun notarytool submit "dist/${APP_NAME}.dmg" --apple-id "$NOTARY_APPLE_ID" \
+    xcrun notarytool submit "dist/${DMG_NAME}.dmg" --apple-id "$NOTARY_APPLE_ID" \
         --team-id "$NOTARY_TEAM_ID" --password "$NOTARY_PASSWORD" --wait
-    xcrun stapler staple "dist/${APP_NAME}.dmg"
+    xcrun stapler staple "dist/${DMG_NAME}.dmg"
 fi
 
 echo ""
-echo "✓ dist/${APP_NAME}.dmg ($(du -h "dist/${APP_NAME}.dmg" | cut -f1))"
+echo "✓ dist/${DMG_NAME}.dmg ($(du -h "dist/${DMG_NAME}.dmg" | cut -f1))"

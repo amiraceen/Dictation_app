@@ -1,6 +1,6 @@
 name: Build macOS app
 
-# Builds Dictation.dmg on a GitHub-hosted Mac (Apple silicon).
+# Builds Dictation-2.dmg on a GitHub-hosted Mac (Apple silicon).
 # Every push: download it from the run's "Artifacts" section.
 # Pushing a tag like v1.1: also published on the Releases page.
 on:
@@ -48,7 +48,7 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -s -k ci build.keychain
           rm cert.p12
 
-      - name: Build Dictation.dmg
+      - name: Build Dictation-2.dmg
         env:
           PYTHON: python
           VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '1.0' }}
@@ -62,23 +62,23 @@ jobs:
 
       - name: Smoke test the bundled app
         run: |
-          APP=dist/Dictation.app/Contents/MacOS/Dictation
+          APP="dist/Dictation 2.app/Contents/MacOS/Dictation"
           # Transcribe a generated clip with the bundled model: proves the app bundle starts and the model loads.
           say -o /tmp/hello.wav --file-format=WAVE --data-format=LEI16@16000 "Hello from the build machine"
           "$APP" --selftest /tmp/hello.wav
-          LOG=~/Library/Application\ Support/Dictation/dictation.log
+          LOG=~/Library/Application\ Support/Dictation\ 2/dictation.log
           cat "$LOG"
           grep -q "FRAMEWORKS OK" "$LOG"
           grep "OUT:" "$LOG" | tail -1
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Dictation-dmg
-          path: dist/Dictation.dmg
+          name: Dictation-2-dmg
+          path: dist/Dictation-2.dmg
           compression-level: 0
 
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/Dictation.dmg
+          files: dist/Dictation-2.dmg

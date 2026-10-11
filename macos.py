@@ -118,7 +118,7 @@ def mic_used_by_other_app(self_using_mic):
                 if not pid or pid == me:
                     continue
                 name = _app_name(_process_name(pid))
-                if name and name.lower() in _NOT_CALLS:
+                if name and (name.lower() in _NOT_CALLS or name.lower().startswith("dictation")):
                     continue
                 return True, name
             return False, None
@@ -253,7 +253,7 @@ class SystemAudioCapture:
             if self._stopped:
                 return
             if error is not None or content is None or not content.displays():
-                self.on_error("Other participants aren't being recorded: allow Dictation in System Settings → "
+                self.on_error("Other participants aren't being recorded: allow Dictation 2 in System Settings → "
                               "Privacy & Security → Screen & System Audio Recording.")
                 return
             try:

@@ -32,7 +32,9 @@ Requires a Mac with Apple silicon (M1 or newer).
 4. Go to **System Settings → Privacy & Security → Accessibility** and switch **Dictation** on. If it isn't listed, add it with **+**.
 5. Wait for the filled circle in the menu bar, then hold **Right Option** and talk.
 
-Your history, dictionary, snippets, notes and settings are stored in `~/Library/Application Support/Dictation`.
+This build installs as **Dictation 2**, a separate app from the original **Dictation**: it has its own app ID, permissions and data folder (`~/Library/Application Support/Dictation 2`). On first launch it copies your history, dictionary and snippets from the original app; it never changes the original's files. Quit one app before using the other, since both listen for Right Option.
+
+Your history, dictionary, snippets, notes and settings are stored in `~/Library/Application Support/Dictation 2`.
 
 ### Permissions for the Notetaker
 
@@ -58,7 +60,7 @@ Grant your terminal app **Microphone** and **Accessibility** permission.
 
 ## Build the app
 
-**Disk image (DMG):** every push to GitHub builds `Dictation.dmg` on a GitHub-hosted Mac (see `.github/workflows/build-macos.yml`). Open the repo's **Actions** tab, pick the latest **Build macOS app** run and download **Dictation-dmg** under Artifacts. Pushing a tag such as `v1.1` also publishes the DMG on the **Releases** page. To build it on your own Mac instead, run `bash build_dmg.sh` (output: `dist/Dictation.dmg`).
+**Disk image (DMG):** every push to GitHub builds `Dictation-2.dmg` on a GitHub-hosted Mac (see `.github/workflows/build-macos.yml`). Open the repo's **Actions** tab, pick the latest **Build macOS app** run and download **Dictation-2-dmg** under Artifacts. Pushing a tag such as `v1.1` also publishes the DMG on the **Releases** page. To build it on your own Mac instead, run `bash build_dmg.sh` (output: `dist/Dictation-2.dmg`).
 
 The DMG is ad-hoc signed unless you add a certificate. To ship a build that opens without the **Open Anyway** step, add these repository secrets: `MACOS_CERT_P12` (base64 Developer ID certificate), `MACOS_CERT_PASSWORD` and `MACOS_SIGN_IDENTITY`. For notarization, also add `NOTARY_APPLE_ID`, `NOTARY_TEAM_ID` and `NOTARY_PASSWORD` (an app-specific password).
 

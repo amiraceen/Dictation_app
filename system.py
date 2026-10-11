@@ -58,7 +58,7 @@ def shortcut_matches(shortcut, keycode, flags):
 
 # ─── Launch at login ─────────────────────────────────────────────────────────
 
-LOGIN_AGENT_LABEL = "com.amira.dictation.login"
+LOGIN_AGENT_LABEL = "com.amira.dictation2.login"
 
 
 def login_agent_path(home=None):

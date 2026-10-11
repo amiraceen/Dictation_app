@@ -359,7 +359,7 @@ class Bridge(NSObject):
 
 class WebWindow(NSObject):
 
-    SIZES = {"main": ((1000, 660), (760, 520), "Dictation"),
+    SIZES = {"main": ((1000, 660), (760, 520), "Dictation 2"),
              "notepad": ((440, 680), (340, 420), "Notepad")}
 
     def initWithApp_html_mode_(self, app, html_path, mode):

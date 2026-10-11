@@ -27,9 +27,27 @@ except ImportError:
 import sys
 
 FROZEN = getattr(sys, "frozen", False)   # True inside the packaged .app
+APP_NAME = "Dictation 2"     # separate app and data folder, so it can sit beside the original Dictation
+
+
+def _copy_from_original(app_dir):
+    """First launch: copy (never move) history, dictionary and snippets from the original app."""
+    import shutil
+    old = os.path.expanduser("~/Library/Application Support/Dictation")
+    if os.path.isdir(app_dir) or not os.path.isdir(old):
+        return
+    os.makedirs(app_dir)
+    for name in ("history.json", "dictionary.txt", "snippets.json"):
+        try:
+            shutil.copy2(os.path.join(old, name), os.path.join(app_dir, name))
+        except OSError:
+            pass
+
+
 if FROZEN:
     # Bundle is read-only; user-editable files live in Application Support.
-    APP_DIR = os.path.expanduser("~/Library/Application Support/Dictation")
+    APP_DIR = os.path.expanduser(f"~/Library/Application Support/{APP_NAME}")
+    _copy_from_original(APP_DIR)
     os.makedirs(APP_DIR, exist_ok=True)
     MODEL_PATH = os.path.join(sys._MEIPASS, "model")
     RES_DIR = sys._MEIPASS
