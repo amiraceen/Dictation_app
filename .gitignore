@@ -12,3 +12,5 @@ snippets.json
 personal_dict.json
 history.json
 .DS_Store
+settings.json
+notes/

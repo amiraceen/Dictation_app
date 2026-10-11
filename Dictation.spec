@@ -17,7 +17,9 @@ datas += [(MODEL_DIR + f, 'model') for f in ('config.json', 'model.bin', 'tokeni
 datas += [('menubar/' + f, 'menubar') for f in ('idle.png', 'busy.png', 'recording.png')]
 
 datas += [('web/index.html', 'web')]
-hiddenimports += ['ui', 'WebKit', 'PyObjCTools.AppHelper', 'ApplicationServices']
+hiddenimports += ['ui', 'WebKit', 'PyObjCTools.AppHelper', 'ApplicationServices',
+                  'macos', 'meetings', 'notes', 'notetaker', 'settings', 'system',
+                  'EventKit', 'ScreenCaptureKit', 'CoreMedia']
 
 a = Analysis(['dictation.py'], datas=datas, binaries=binaries, hiddenimports=hiddenimports, noarchive=False)
 pyz = PYZ(a.pure)
@@ -31,8 +33,11 @@ app = BUNDLE(
     codesign_identity=None,
     info_plist={
         'CFBundleShortVersionString': '1.0',
-        'LSUIElement': True,   # menu-bar only, no Dock icon
-        'NSMicrophoneUsageDescription': 'Dictation records your voice while you hold Right Option.',
+        'LSUIElement': True,   # menu-bar only; Settings → Show app in Dock adds the icon at runtime
+        'NSMicrophoneUsageDescription': 'Dictation records your voice while you hold Right Option, and meetings when you start the Notetaker.',
+        'NSCalendarsUsageDescription': 'Dictation shows your next meeting and reminds you to take notes before it starts.',
+        'NSCalendarsFullAccessUsageDescription': 'Dictation shows your next meeting and reminds you to take notes before it starts.',
+        'NSAppleEventsUsageDescription': 'Dictation pauses Music or Spotify while you dictate, and can mute your sound.',
         'NSHighResolutionCapable': True,
     },
 )
