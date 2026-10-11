@@ -16,6 +16,8 @@ import sounddevice as sd
 from faster_whisper import WhisperModel
 from pynput import keyboard
 
+from speed import FAST_DECODE, cpu_threads
+
 try:
     import rumps
     HAS_RUMPS = True
@@ -72,7 +74,7 @@ MODEL_SIZE   = "small"              # small = much better accuracy than base
 LANGUAGE     = None                 # None = auto-detect (supports 100+ languages)
 MIN_DURATION = 0.3
 COMPUTE_TYPE = "int8"
-TYPING_DELAY = 0.2
+TYPING_DELAY = 0.03               # transcription already takes longer than the key release
 
 ICON_IDLE         = "🎤"
 ICON_LOADING      = "⏳"
@@ -288,7 +290,12 @@ class DictationCore:
         self.on_status_change(ICON_LOADING, "Loading model… (first run may take a minute)")
         try:
             self._initial_prompt = ", ".join(self.dictionary) if self.dictionary else None
-            self.model = WhisperModel(MODEL_PATH or MODEL_SIZE, device="cpu", compute_type=COMPUTE_TYPE)
+            self.model = WhisperModel(MODEL_PATH or MODEL_SIZE, device="cpu", compute_type=COMPUTE_TYPE,
+                                      cpu_threads=cpu_threads())
+            # Warm-up: the first transcription is much slower (memory allocation, caches),
+            # so pay that cost now instead of on the first dictation.
+            warm = (0.01 * np.random.default_rng(0).standard_normal(16000)).astype(np.float32)
+            list(self.model.transcribe(warm, language="en", **FAST_DECODE)[0])
             self.on_status_change(ICON_IDLE, "Ready — hold ⌥ Right to dictate")
         except Exception as e:
             self.on_status_change(ICON_ERROR, f"Model load failed: {e}")
@@ -349,6 +356,7 @@ class DictationCore:
                     initial_prompt=self._initial_prompt,
                     vad_filter=True,
                     vad_parameters=dict(min_silence_duration_ms=300),
+                    **FAST_DECODE,
                 )
                 raw = " ".join(s.text for s in segments).strip()
             text = _clean_text(raw)
@@ -368,7 +376,7 @@ class DictationCore:
         with self.model_lock:
             segments, _ = self.model.transcribe(
                 audio, language=LANGUAGE, initial_prompt=self._initial_prompt,
-                vad_filter=True, vad_parameters=dict(min_silence_duration_ms=500))
+                vad_filter=True, vad_parameters=dict(min_silence_duration_ms=500), **FAST_DECODE)
             return " ".join(s.text.strip() for s in segments).strip()
 
 
@@ -961,9 +969,12 @@ if __name__ == "__main__":
         core = DictationCore(on_status_change=lambda i, m: print(i, m, flush=True))
         core.load_model()
         try:
+            t = time.perf_counter()
             segs, _ = core.model.transcribe(audio, language=LANGUAGE, vad_filter=True,
-                                            vad_parameters=dict(min_silence_duration_ms=300))
-            print("OUT:", _clean_text(" ".join(s.text for s in segs)))
+                                            vad_parameters=dict(min_silence_duration_ms=300), **FAST_DECODE)
+            text = _clean_text(" ".join(s.text for s in segs))
+            print(f"TIME: {time.perf_counter() - t:.2f}s", flush=True)
+            print("OUT:", text)
         except Exception:
             traceback.print_exc()
         sys.exit(0)

@@ -77,6 +77,14 @@ jobs:
           path: dist/Dictation-2.dmg
           compression-level: 0
 
+      - name: Benchmark dictation speed
+        continue-on-error: true
+        run: |
+          say -o /tmp/bench.wav --file-format=WAVE --data-format=LEI16@16000 \
+            "Hi team, can we move tomorrow's design review to three thirty and invite Sarah from marketing?"
+          MODEL=$(venv/bin/python -c "from faster_whisper import download_model; print(download_model('small'))")
+          venv/bin/python tools/bench_latency.py /tmp/bench.wav "$MODEL"
+
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
