@@ -3,13 +3,13 @@
 Measured on a GitHub-hosted Apple-silicon Mac (5 s clip, tools/bench_latency.py):
 automatic language detection roughly doubles the time, because the audio is
 processed once to detect the language and again to transcribe it. Greedy
-decoding and pinned thread counts made no measurable difference, so beam
-search (the more accurate decoder) stays.
+decoding, pinned thread counts and turning timestamps off made no measurable
+difference (and the last two changed the text), so the defaults stay.
 """
 
-# Timestamps aren't used and previous-text conditioning only matters past 30 s;
-# turning them off doesn't change the words.
-DECODE = dict(beam_size=5, without_timestamps=True, condition_on_previous_text=False)
+# Whisper's defaults. Turning timestamps off was tried: no measurable speed-up,
+# and it changed the text ("3.30" became "330"), so the defaults stay.
+DECODE = dict(beam_size=5)
 
 LANGUAGE_OPTIONS = [("auto", "Auto-detect"), ("en", "English"), ("ar", "Arabic")]
 
