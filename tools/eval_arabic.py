@@ -17,12 +17,10 @@ import argparse
 import csv
 import io
 import os
-import re
 import statistics
 import sys
 import tarfile
 import time
-import wave
 
 import numpy as np
 
@@ -36,6 +34,18 @@ ARABIC_PROMPT = "مرحبا، كيف حالك؟ هذا نص عربي مكتوب 
 def normalize_for_scoring(text):
     """Standard Arabic ASR scoring normalisation (applied to both sides); same as the app's voice test."""
     return " ".join(voicetest.scoring_words(text))
+
+
+def read_audio(data):
+    """16 kHz mono float32 from WAV bytes. FLEURS stores 32-bit float WAVs, which the
+    standard-library wave module can't read, so soundfile (libsndfile) is used."""
+    import soundfile as sf
+    audio, sr = sf.read(io.BytesIO(data), dtype="float32", always_2d=True)
+    audio = audio.mean(axis=1)
+    if sr != 16000:                                   # simple linear resample (FLEURS is already 16 kHz)
+        n = int(len(audio) * 16000 / sr)
+        audio = np.interp(np.linspace(0, len(audio) - 1, n), np.arange(len(audio)), audio).astype(np.float32)
+    return audio
 
 
 def load_fleurs(n_clips, min_s=3.0, max_s=15.0):
@@ -54,9 +64,7 @@ def load_fleurs(n_clips, min_s=3.0, max_s=15.0):
             if not member.isfile() or name not in refs:
                 continue
             data = t.extractfile(member).read()
-            with wave.open(io.BytesIO(data)) as w:
-                assert w.getframerate() == 16000 and w.getnchannels() == 1
-                audio = np.frombuffer(w.readframes(w.getnframes()), np.int16).astype(np.float32) / 32768
+            audio = read_audio(data)
             if min_s <= len(audio) / 16000 <= max_s:
                 clips.append((name, audio, refs[name]))
             if len(clips) >= n_clips:

@@ -33,7 +33,7 @@ jobs:
           path: ~/.cache/huggingface/hub
           key: arabic-eval-v1
       - name: Install
-        run: python -m pip install --quiet faster-whisper jiwer huggingface_hub numpy
+        run: python -m pip install --quiet faster-whisper jiwer huggingface_hub numpy soundfile
       - name: Score models
         run: |
           python tools/eval_arabic.py \
