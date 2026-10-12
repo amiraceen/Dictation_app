@@ -322,5 +322,28 @@ class AppWiringTest(unittest.TestCase):
         self.app.handle_message({"type": "saveSettings", "changes": {"dictation_language": "fr"}}, self.bridge())
         self.assertEqual(self.app.core.language(), "en")             # unknown values are ignored
 
+
+class CleanTextTest(unittest.TestCase):
+    """The full dictation clean-up (backtrack, fillers, punctuation) in both languages."""
+
+    def test_english_unchanged_behaviour(self):
+        c = dictation._clean_text
+        self.assertEqual(c("um so meet at 3 p.m., no wait, 4 p.m."), "So meet at 4 p.m.")
+        self.assertEqual(c("Send it today. Scratch that. Send it tomorrow."), "Send it tomorrow.")
+
+    def test_arabic(self):
+        c = dictation._clean_text
+        self.assertEqual(c("اممم نلتقي الساعة ٣ ، لا لحظة ، الساعة ٤"), "نلتقي الساعة 4")
+        self.assertEqual(c("أرسل التقرير اليوم. امسح هذا. أرسله بكرة ?"), "أرسله بكرة؟")
+        self.assertEqual(c("مَرْحَباً يا فريق"), "مرحبا يا فريق")
+        self.assertEqual(c("أبي ٣ نسخ قصدي ٥ نسخ"), "أبي 5 نسخ")
+        self.assertEqual(c("نرسله لأحمد، لا أقصد، لسارة"), "نرسله لسارة")
+
+    def test_english_more_corrections(self):
+        c = dictation._clean_text
+        self.assertEqual(c("let's meet at 3, no wait, at 4"), "Let's meet at 4")
+        self.assertEqual(c("send it to John, no wait, to Sarah"), "Send it to Sarah")
+
+
 if __name__ == "__main__":
     unittest.main()

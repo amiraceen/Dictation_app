@@ -16,6 +16,7 @@ import sounddevice as sd
 from faster_whisper import WhisperModel
 from pynput import keyboard
 
+import arabic
 from notetaker import clean_transcript
 from speed import DECODE, whisper_language
 
@@ -128,31 +129,36 @@ def _load_dictionary() -> list:
 # Soft phrases ("no wait") swap the last few words for what follows.
 # "actually" / "i mean" are left out: too common in normal speech without an LLM.
 BACKTRACK_HARD = ["scratch that", "never mind", "nevermind", "forget that",
-                  "cancel that", "strike that", "delete that"]
-BACKTRACK_SOFT = ["no wait", "wait no", "sorry i meant", "i meant"]
+                  "cancel that", "strike that", "delete that"] + arabic.BACKTRACK_HARD
+BACKTRACK_SOFT = ["no wait", "wait no", "sorry i meant", "i meant"] + arabic.BACKTRACK_SOFT
 
 
 def _apply_backtrack(text: str) -> str:
     hard = "|".join(re.escape(p) for p in BACKTRACK_HARD)
     soft = "|".join(re.escape(p) for p in BACKTRACK_SOFT)
-    pattern = re.compile(rf"[,.;!?]?\s*\b(?:(?P<hard>{hard})|(?P<soft>{soft}))\b[,.;!?]?\s*",
+    # Arabic text often has a space before punctuation ("٣ ، لا لحظة ،"), so allow it on both sides.
+    pattern = re.compile(rf"\s*[,.;!?،؛؟]?\s*\b(?:(?P<hard>{hard})|(?P<soft>{soft}))\b\s*[,.;!?،؛؟]?\s*",
                          re.IGNORECASE)
     while (m := pattern.search(text)):
-        before, after = text[:m.start()].rstrip(), text[m.end():].lstrip()
+        before = text[:m.start()].rstrip(" ,;،؛")
+        after = text[m.end():].lstrip(" ,;،؛")
         if m.group("hard"):
             # Drop back to the previous sentence boundary.
-            cut = max(before.rfind(c) for c in ".!?")
+            cut = max(before.rfind(c) for c in arabic.SENTENCE_END)
             before = before[:cut + 1] if cut >= 0 else ""
         else:
             # Replace as many trailing words as the correction's first clause has (max 3).
-            fix = after.split()[:3]
+            clause = re.split(r"[,;!?،؛؟]|\.\s", after, maxsplit=1)[0].split()
             words = before.split()
             nums = [i for i, w in enumerate(words) if re.match(r"[\d$£€]", w)]
-            if fix and re.match(r"[\d$£€]", fix[0]) and nums:
-                # Number correction ("3 p.m., no wait, 4 p.m.") replaces from the last number on.
-                before = " ".join(words[:nums[-1]])
+            k = next((i for i, w in enumerate(clause[:3]) if re.match(r"[\d$£€]", w)), None)
+            if k is not None and nums and nums[-1] >= k and \
+                    [w.casefold() for w in words[nums[-1] - k:nums[-1]]] == [w.casefold() for w in clause[:k]]:
+                # Number correction: "3 p.m., no wait, 4 p.m." or "الساعة ٣، لا لحظة، الساعة ٤"
+                # replaces from the last number (and the words repeated before it) on.
+                before = " ".join(words[:nums[-1] - k])
             else:
-                n = min(max(len(re.split(r"[,;!?]|\.\s", after, 1)[0].split()), 1), 3)
+                n = min(max(len(re.split(r"[,;!?،؛؟]|\.\s", after, maxsplit=1)[0].split()), 1), 3)
                 before = " ".join(words[:-n]) if len(words) > n else ""
         text = f"{before} {after}".strip()
     return text
@@ -164,10 +170,10 @@ def _clean_text(text: str) -> str:
         text = re.sub(rf"\b{re.escape(phrase)}\b[,]?\s*", "", text, flags=re.IGNORECASE)
     for word in [fw for fw in FILLER_WORDS if " " not in fw]:
         text = re.sub(rf"^{re.escape(word)}[,]?\s+", "", text, flags=re.IGNORECASE)
+    text = arabic.remove_fillers(text)
     if text:
         text = text[0].upper() + text[1:]
-    text = re.sub(r"\s+([.,!?;:])", r"\1", text)
-    return re.sub(r"\s{2,}", " ", text).strip()
+    return arabic.normalize(text)            # Arabic punctuation, digits, diacritics; spacing
 
 
 def _apply_snippets(text: str, snippets: dict) -> str:
