@@ -66,6 +66,7 @@ DICT_FILE     = os.path.join(APP_DIR, "dictionary.txt")
 HISTORY_FILE  = os.path.join(APP_DIR, "history.json")
 SETTINGS_FILE = os.path.join(APP_DIR, "settings.json")
 NOTES_DIR     = os.path.join(APP_DIR, "notes")
+VOICE_TEST_DIR = os.path.join(APP_DIR, "voice_test")
 WEB_HTML      = os.path.join(RES_DIR, "web", "index.html")
 
 # ─── Config ──────────────────────────────────────────────────────────────────
@@ -353,20 +354,23 @@ class DictationCore:
 
         self._transcribe(audio)
 
+    def transcribe_raw(self, audio):
+        """Speech → text exactly as dictation hears it, before clean-up (also used by the voice test)."""
+        with self.model_lock:      # segments is lazy: consume it while holding the lock
+            segments, _ = self.model.transcribe(
+                audio, language=self.language(),
+                initial_prompt=self._initial_prompt,
+                vad_filter=True,
+                vad_parameters=dict(min_silence_duration_ms=300),
+                **DECODE,
+            )
+            return " ".join(s.text for s in segments).strip()
+
     def _transcribe(self, audio):
         self._secs = len(audio) / SAMPLE_RATE
         self.on_status_change(ICON_TRANSCRIBING, "Transcribing…")
         try:
-            with self.model_lock:      # segments is lazy: consume it while holding the lock
-                segments, _ = self.model.transcribe(
-                    audio, language=self.language(),
-                    initial_prompt=self._initial_prompt,
-                    vad_filter=True,
-                    vad_parameters=dict(min_silence_duration_ms=300),
-                    **DECODE,
-                )
-                raw = " ".join(s.text for s in segments).strip()
-            text = _clean_text(raw)
+            text = _clean_text(self.transcribe_raw(audio))
             text = _apply_snippets(text, self.snippets)
             if text:
                 self.on_result(text, self._secs)   # save first: history is the backup if pasting fails
@@ -457,6 +461,7 @@ if HAS_RUMPS:
     import meetings
     import system
     from notes import NotesStore
+    import voicetest
     from notetaker import Notetaker
     from settings import Settings, options as setting_options
 
@@ -470,6 +475,9 @@ if HAS_RUMPS:
             super().__init__("Dictation", title=None, quit_button=None)
             self.settings = Settings(SETTINGS_FILE)
             self.notes = NotesStore(NOTES_DIR)
+            self.voicetest = voicetest.VoiceTestStore(VOICE_TEST_DIR)
+            self.phrase_rec = voicetest.PhraseRecorder(device=_best_input_device)
+            self._vt_progress = None              # {"done", "total"} while the voice test runs
             self.notes.recover_interrupted()
             self._status = rumps.MenuItem("Loading model…")
             self._notes_item = rumps.MenuItem("Start Notetaker", callback=lambda _: self.toggle_notetaker())
@@ -778,6 +786,9 @@ if HAS_RUMPS:
         def _tick(self, _=None):
             self._ticks += 1
             now = time.time()
+            if self.phrase_rec.active and now - self.phrase_rec.started > 30:
+                self._voice_test_stop()                    # forgot to press Stop
+                self._refresh_windows()
             s = self.settings
             wants_calendar = s["notify_before_meeting"] >= 0 or s["show_next_meeting"]
             if wants_calendar:
@@ -866,6 +877,10 @@ if HAS_RUMPS:
                                "started_at": time.time() - self.notetaker.elapsed()}
             st["calendar"] = self.calendar.status
             st["glass"] = True                    # the window has native frosted glass behind the page
+            st["voicetest"] = dict(self.voicetest.state(), recording=self.phrase_rec.phrase_id,
+                                   rec_started=self.phrase_rec.started, running=self._vt_progress,
+                                   model=f"Whisper {MODEL_SIZE}",
+                                   language=self.settings["dictation_language"])
             st["goto"], bridge.goto = getattr(bridge, "goto", None), None
             return st
 
@@ -939,12 +954,106 @@ if HAS_RUMPS:
             elif kind == "stopNotetaker":
                 self.stop_notetaker()
                 return False
+            elif kind == "voiceTestRecord":
+                pid = str(msg.get("id"))
+                if self.phrase_rec.phrase_id == pid:
+                    self._voice_test_stop()
+                else:
+                    if self.phrase_rec.active:
+                        self._voice_test_stop()
+                    if self.voicetest.phrase(pid):
+                        self.phrase_rec.start(pid)
+                self._refresh_windows()
+                return False
+            elif kind == "voiceTestPlay":
+                path = self.voicetest.audio_path(str(msg.get("id")))
+                if path:
+                    macos.play_file(path)
+                return False
+            elif kind == "voiceTestAdd":
+                self.voicetest.add(str(msg.get("text", "")))
+            elif kind == "voiceTestRemove":
+                self.voicetest.remove(str(msg.get("id")))
+            elif kind == "voiceTestRun":
+                self._voice_test_run()
+                return False
+            elif kind == "voiceTestExport":
+                self._voice_test_export()
+                return False
             elif kind == "openPrivacy":
                 pane = {"calendar": "Privacy_Calendars", "screen": "Privacy_ScreenCapture",
                         "mic": "Privacy_Microphone"}.get(msg.get("pane"), "Privacy")
                 os.system(f'open "x-apple.systempreferences:com.apple.preference.security?{pane}"')
                 return False
             return True
+
+        # ── Voice test ──
+
+        def _voice_test_stop(self):
+            pid, samples = self.phrase_rec.stop()
+            if pid and samples is not None and len(samples) > SAMPLE_RATE * 0.3:
+                self.voicetest.save_recording(pid, samples)
+            elif pid:
+                self._show_toast("Nothing recorded", "Check the microphone and try that phrase again.",
+                                 [("OK", None)], timeout=8)
+
+        def _voice_test_run(self):
+            if self._vt_progress is not None:
+                return
+            if self.core.model is None:
+                self._show_toast("Not ready yet", "The speech model is still loading.", [("OK", None)], timeout=8)
+                return
+            phrases = self.voicetest.recorded()
+            if not phrases:
+                self._show_toast("Record some phrases first", "Click Record next to a phrase, read it, then click Stop.",
+                                 [("OK", None)], timeout=8)
+                return
+            self._vt_progress = {"done": 0, "total": len(phrases)}
+            self._refresh_windows()
+            threading.Thread(target=self._voice_test_worker, args=(phrases,), daemon=True).start()
+
+        def _voice_test_worker(self, phrases):
+            per = {}
+            try:
+                for p in phrases:
+                    audio = voicetest.read_wav(self.voicetest.audio_path(p["id"]))
+                    t = time.perf_counter()
+                    heard = self.core.transcribe_raw(audio)
+                    errors, words = voicetest.word_errors(p["text"], heard)
+                    per[p["id"]] = {"heard": heard, "errors": errors, "words": words,
+                                    "secs": round(time.perf_counter() - t, 2)}
+                    self._vt_progress = {"done": len(per), "total": len(phrases)}
+                    ui.on_main(self._refresh_windows)
+                self.voicetest.set_results(f"Whisper {MODEL_SIZE}", self.settings["dictation_language"], per)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                ui.on_main(self._show_toast, "Voice test failed", str(e), [("OK", None)], 15)
+            finally:
+                self._vt_progress = None
+                ui.on_main(self._voice_test_done)
+
+        def _voice_test_done(self):
+            self._refresh_windows()
+            r = self.voicetest.state()["results"]
+            if r:
+                self._show_toast("Voice test finished",
+                                 f"{r['accuracy']:.0%} of words right across {len(r['per'])} phrases.",
+                                 [("OK", None)], timeout=10, sound=False)
+
+        def _voice_test_export(self):
+            if not self.voicetest.recorded():
+                self._show_toast("Nothing to export", "Record some phrases first.", [("OK", None)], timeout=8)
+                return
+            from AppKit import NSSavePanel, NSApp as _NSApp
+            panel = NSSavePanel.savePanel()
+            panel.setNameFieldStringValue_("voice-test.zip")
+            _NSApp.activateIgnoringOtherApps_(True)
+            if panel.runModal() == 1:
+                path = str(panel.URL().path())
+                n = self.voicetest.export_zip(path)
+                self._show_toast("Voice test exported", f"{n} recordings saved to {path}", [("OK", None)],
+                                 timeout=8, sound=False)
 
         def _export_note(self, note_id):
             note = self.notes.get(note_id)

@@ -14,6 +14,9 @@ on:
       clips:
         description: "Number of clips"
         default: "40"
+      set:
+        description: "Optional: path in the repo to an exported voice-test.zip (scored instead of FLEURS)"
+        default: ""
 
 jobs:
   eval:
@@ -35,7 +38,8 @@ jobs:
         run: |
           python tools/eval_arabic.py \
             --models "${{ github.event.inputs.models || 'small,medium,large-v3-turbo,large-v3' }}" \
-            --clips "${{ github.event.inputs.clips || '40' }}" --out arabic_results.md
+            --clips "${{ github.event.inputs.clips || '40' }}" \
+            --set "${{ github.event.inputs.set || '' }}" --out arabic_results.md
           cat arabic_results.md >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:

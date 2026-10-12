@@ -149,7 +149,8 @@ import dictation  # noqa: E402
 import macos  # noqa: E402
 
 DATA_FILES = [("SETTINGS_FILE", "settings.json"), ("NOTES_DIR", "notes"), ("HISTORY_FILE", "history.json"),
-              ("SNIPPETS_FILE", "snippets.json"), ("DICT_FILE", "dictionary.txt")]
+              ("SNIPPETS_FILE", "snippets.json"), ("DICT_FILE", "dictionary.txt"),
+              ("VOICE_TEST_DIR", "voice_test")]
 
 
 class FakeCalendar:
@@ -314,6 +315,27 @@ class AppWiringTest(unittest.TestCase):
         self.assertIn(("sound", "Tink"), self.calls)
         self.assertIn(("sound", "Pop"), self.calls)
 
+
+    def test_voice_test_record_run_score(self):
+        app = self.app
+        app.phrase_rec._input_stream = FakeStream
+        b = self.bridge()
+        app.handle_message({"type": "voiceTestRecord", "id": "gulf-4"}, b)
+        self.assertEqual(app.state_for(b)["voicetest"]["recording"], "gulf-4")
+        time.sleep(0.4)
+        app.handle_message({"type": "voiceTestRecord", "id": "gulf-4"}, b)      # same button = stop
+        st = app.state_for(b)["voicetest"]
+        self.assertIsNone(st["recording"])
+        self.assertTrue(next(p for p in st["phrases"] if p["id"] == "gulf-4")["recorded"])
+        self.patch(dictation.DictationCore, "transcribe_raw", lambda core, audio: "الحين مشغول بكلمك بعدين")
+        app.handle_message({"type": "voiceTestRun"}, b)
+        self.assertTrue(self.wait_until(lambda: app._vt_progress is None))
+        r = app.state_for(b)["voicetest"]["results"]
+        self.assertEqual(r["accuracy"], 1.0)                                       # punctuation ignored
+        self.assertEqual(r["per"]["gulf-4"]["heard"], "الحين مشغول بكلمك بعدين")
+        self.assertEqual(Fake.made[-1].title, "Voice test finished")
+        app.handle_message({"type": "voiceTestAdd", "text": "أبي قهوة"}, b)
+        self.assertEqual(app.state_for(b)["voicetest"]["phrases"][-1]["text"], "أبي قهوة")
 
     def test_language_setting(self):
         self.assertIsNone(self.app.core.language())                 # auto-detect by default

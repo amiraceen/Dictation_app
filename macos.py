@@ -417,6 +417,21 @@ def play_sound(name):
         pass
 
 
+_playing = []
+
+
+def play_file(path):
+    """Play an audio file (voice test playback). Keeps a reference so it isn't freed mid-play."""
+    try:
+        from AppKit import NSSound
+        sound = NSSound.alloc().initWithContentsOfFile_byReference_(path, True)
+        if sound is not None:
+            _playing[:] = [s for s in _playing if s.isPlaying()] + [sound]
+            sound.play()
+    except Exception as e:
+        print(f"Playback failed: {e}", flush=True)
+
+
 def _osascript(script):
     try:
         r = subprocess.run(["osascript", "-e", script], capture_output=True, text=True, timeout=5)

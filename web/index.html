@@ -264,6 +264,30 @@
   .tools { border-color: var(--line); }
   .chip { background: var(--chip); font-size: 13px; box-shadow: inset 0 0 0 1px var(--line); }
   body.notepad main { background: var(--glass); }
+
+  /* Voice test */
+  .vt-sum { display: flex; align-items: center; gap: 22px; padding: 18px 20px; margin-bottom: 14px; }
+  .vt-score .n { font: 600 28px/1 var(--sans); letter-spacing: -0.025em; font-variant-numeric: tabular-nums; }
+  .vt-score .l { color: var(--muted); font-size: 12px; margin-top: 5px; }
+  .vt-meta { flex: 1; color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+  .vt-acts { display: flex; gap: 8px; }
+  .vt-help { color: var(--muted); font-size: 12.5px; margin: 4px 0 12px; }
+  .vt-help b { color: var(--ink); font-weight: 600; }
+  .vt-row { display: grid; grid-template-columns: 78px 1fr auto; gap: 14px; padding: 12px 16px;
+            border-top: 1px solid var(--line); align-items: center; }
+  .vt-row:first-child { border-top: 0; }
+  .vt-text { direction: rtl; text-align: right; font-size: 15.5px; line-height: 1.6; }
+  .vt-text.ltr { direction: ltr; text-align: left; }
+  .vt-heard { direction: rtl; text-align: right; font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .vt-heard .pct { direction: ltr; display: inline-block; font-weight: 600; margin-left: 6px; }
+  .good { color: #23874F; } .ok { color: #B7791F; } .bad { color: var(--red); }
+  .vt-btns { display: flex; gap: 6px; align-items: center; }
+  .vt-btns .rec { min-width: 74px; justify-content: center; }
+  .vt-btns .rec.on { background: var(--red); color: #fff; }
+  .vt-btns .icon { all: unset; width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center;
+                   color: var(--muted); cursor: default; font-size: 13px; }
+  .vt-btns .icon:hover { background: var(--hover); color: var(--ink); }
+  .vt-btns .icon.danger { width: auto; padding: 0 8px; color: #fff; font-size: 12px; font-weight: 600; }
   .nitem.on .tag { background: var(--hover); }
 </style>
 </head>
@@ -331,6 +355,7 @@
       <button data-t="tSystem" class="on">System</button>
       <button data-t="tNotetaker">Notetaker</button>
       <button data-t="tExperimental">Experimental</button>
+      <button data-t="tVoice">Voice test</button>
     </div>
 
     <div class="tab on" id="tSystem">
@@ -383,6 +408,21 @@
       <div class="card">
         <div class="set"><div class="lbl"><b>Pause music while dictating</b><span>Pauses Music and Spotify instead of muting them, then resumes. This feature is experimental.</span></div><label class="tog"><input type="checkbox" data-set="pause_media_while_dictating"><span></span></label></div>
       </div>
+    </div>
+
+    <div class="tab" id="tVoice">
+      <div class="card vt-sum">
+        <div class="vt-score"><div class="n" id="vtScore">—</div><div class="l" id="vtScoreLbl">Not tested yet</div></div>
+        <div class="vt-meta" id="vtMeta"></div>
+        <div class="vt-acts">
+          <button class="btn soft" id="vtExport">Export…</button>
+          <button class="btn" id="vtRun">Run test</button>
+        </div>
+      </div>
+      <div class="warn" id="vtWarn">Language is set to English. For an Arabic test, choose Arabic or Auto-detect in System → Language.</div>
+      <p class="vt-help">Click <b>Record</b>, read the phrase the way you'd normally say it, then click <b>Stop</b>. Delete phrases you'd never say and add your own. <b>Run test</b> transcribes your recordings and shows how many words the app got right.</p>
+      <form class="add" id="vtAdd"><input id="vtIn" dir="auto" placeholder="Add your own phrase, e.g. أبي أحجز طاولة لشخصين"><button class="btn">Add</button></form>
+      <div class="list" id="vtList"></div>
     </div>
   </section>
 
@@ -542,6 +582,47 @@
     document.querySelectorAll('.recbar .clock').forEach(e => e.textContent = c);
   }, 1000);
 
+  // ── Voice test ──
+  const pctClass = a => a >= 0.9 ? 'good' : a >= 0.7 ? 'ok' : 'bad';
+  function renderVoice() {
+    const v = S.voicetest; if (!v) return;
+    const r = v.results, recorded = v.phrases.filter(p => p.recorded).length;
+    $('vtScore').textContent = r ? Math.round(r.accuracy * 100) + '%' : '—';
+    $('vtScore').className = 'n ' + (r ? pctClass(r.accuracy) : '');
+    $('vtScoreLbl').textContent = v.running ? `Testing ${v.running.done} of ${v.running.total}…`
+      : r ? 'of words right' : 'Not tested yet';
+    const langs = { auto: 'Auto-detect', en: 'English', ar: 'Arabic' };
+    $('vtMeta').innerHTML = `${recorded} of ${v.phrases.length} phrases recorded<br>${esc(v.model)} · Language: ${esc(langs[v.language] || v.language)}` +
+      (r ? `<br>Last run: ${esc(r.model)}, ${esc(langs[r.language] || r.language)}, ${when(r.when)}` : '');
+    $('vtRun').textContent = v.running ? 'Testing…' : 'Run test';
+    $('vtWarn').classList.toggle('on', v.language === 'en');
+    $('vtList').innerHTML = v.phrases.map(p => {
+      const res = r && r.per[p.id], rec = v.recording === p.id;
+      const isLatin = !/[\u0600-\u06FF]/.test(p.text);
+      return `<div class="vt-row">
+        <span class="tag">${esc(p.dialect.toUpperCase())}</span>
+        <div><div class="vt-text ${isLatin ? 'ltr' : ''}">${esc(p.text)}</div>
+          ${res ? `<div class="vt-heard">سمع: ${esc(res.heard || '—')}<span class="pct ${pctClass(1 - res.errors / Math.max(res.words, 1))}">${Math.max(0, Math.round((1 - res.errors / Math.max(res.words, 1)) * 100))}%</span></div>` : ''}</div>
+        <div class="vt-btns">
+          ${p.recorded && !rec ? `<button class="icon" data-vplay="${p.id}" title="Play">▶</button>` : ''}
+          <button class="btn ${rec ? 'rec on' : 'soft rec'}" data-vrec="${p.id}">${rec ? '■ <span class="vt-timer">0:00</span>' : p.recorded ? 'Re-record' : 'Record'}</button>
+          <button class="icon" data-vdel="${p.id}" title="Remove">✕</button>
+        </div></div>`;
+    }).join('') || '<div class="empty">No phrases. Add your own above.</div>';
+    document.querySelectorAll('[data-vrec]').forEach(b => b.onclick = () => post({ type: 'voiceTestRecord', id: b.dataset.vrec }));
+    document.querySelectorAll('[data-vplay]').forEach(b => b.onclick = () => post({ type: 'voiceTestPlay', id: b.dataset.vplay }));
+    document.querySelectorAll('[data-vdel]').forEach(b => b.onclick = () => armed(b, 'Remove?', () => post({ type: 'voiceTestRemove', id: b.dataset.vdel })));
+  }
+  $('vtRun').onclick = () => { if (!S.voicetest.running) post({ type: 'voiceTestRun' }); };
+  $('vtExport').onclick = () => post({ type: 'voiceTestExport' });
+  $('vtAdd').onsubmit = e => { e.preventDefault(); const t = $('vtIn').value.trim(); if (!t) return;
+    post({ type: 'voiceTestAdd', text: t }); $('vtIn').value = ''; };
+  setInterval(() => {
+    const v = S.voicetest; if (!v || !v.recording) return;
+    const t = clock(Date.now() / 1000 - v.rec_started);
+    document.querySelectorAll('.vt-timer').forEach(e => e.textContent = t);
+  }, 250);
+
   // ── Settings ──
   function renderSettings() {
     const st = S.settings;
@@ -643,6 +724,7 @@
 
     renderNotes();
     renderSettings();
+    renderVoice();
   };
 
   $('dForm').onsubmit = e => { e.preventDefault(); const v = $('dIn').value.trim(); if (!v) return;

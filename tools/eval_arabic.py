@@ -27,18 +27,15 @@ import wave
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import arabic  # noqa: E402
+import arabic  # noqa: E402,F401
+import voicetest  # noqa: E402
 
 ARABIC_PROMPT = "مرحبا، كيف حالك؟ هذا نص عربي مكتوب بعلامات الترقيم."
 
 
 def normalize_for_scoring(text):
-    """Standard Arabic ASR scoring normalisation (applied to both sides)."""
-    text = arabic.normalize(text)
-    text = re.sub(r"[أإآٱ]", "ا", text)
-    text = text.replace("ى", "ي").replace("ة", "ه").replace("ؤ", "و").replace("ئ", "ي")
-    text = re.sub(r"[^\w\s]", " ", text)           # punctuation (Arabic and Latin)
-    return re.sub(r"\s+", " ", text).strip().lower()
+    """Standard Arabic ASR scoring normalisation (applied to both sides); same as the app's voice test."""
+    return " ".join(voicetest.scoring_words(text))
 
 
 def load_fleurs(n_clips, min_s=3.0, max_s=15.0):
@@ -97,13 +94,20 @@ def main():
     ap.add_argument("--models", default="small,medium,large-v3-turbo,large-v3")
     ap.add_argument("--clips", type=int, default=40)
     ap.add_argument("--out", default="arabic_results.md")
+    ap.add_argument("--set", default="",
+                    help="score an exported voice test (voice-test.zip) instead of FLEURS")
     ap.add_argument("--prompt-test", default="large-v3-turbo",
                     help="also run this model with an Arabic initial prompt ('' to skip)")
     args = ap.parse_args()
 
-    clips = load_fleurs(args.clips)
+    if args.set:
+        clips = [(pid, audio, text) for pid, _, audio, text in voicetest.load_zip(args.set)]
+        source = f"voice test {os.path.basename(args.set)}"
+    else:
+        clips = load_fleurs(args.clips)
+        source = "FLEURS ar_eg"
     secs = sum(len(a) for _, a, _ in clips) / 16000
-    print(f"{len(clips)} FLEURS ar_eg clips, {secs:.0f} s of audio", flush=True)
+    print(f"{len(clips)} {source} clips, {secs:.0f} s of audio", flush=True)
 
     runs = [(m, None, m) for m in args.models.split(",") if m]
     if args.prompt_test:
@@ -118,7 +122,7 @@ def main():
         results.append(r)
         print(f"{label:<34} WER {r['wer']:.1%}  CER {r['cer']:.1%}  {r['time']:.2f}s/clip", flush=True)
 
-    lines = [f"## Arabic dictation accuracy ({len(clips)} FLEURS ar_eg clips, {secs:.0f} s, language=ar)", "",
+    lines = [f"## Arabic dictation accuracy ({len(clips)} {source} clips, {secs:.0f} s, language=ar)", "",
              "| Model | Word errors (WER) | Character errors (CER) | Seconds per clip (CPU) |",
              "|---|---|---|---|"]
     lines += [f"| {r['label']} | {r['wer']:.1%} | {r['cer']:.1%} | {r['time']:.2f} |" for r in results]
