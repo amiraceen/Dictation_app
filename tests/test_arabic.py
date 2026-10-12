@@ -46,6 +46,7 @@ class LanguagePickTest(unittest.TestCase):
         self.assertTrue(arabic.initial_prompt("ar", ["مسقط"]).endswith("مسقط"))
         self.assertEqual(arabic.initial_prompt("en", ["Maal", "Kalam"]), "Maal, Kalam")
         self.assertIsNone(arabic.initial_prompt("en"))
+        self.assertIsNone(arabic.initial_prompt("ar", dialect=False))
 
 
 class ModelStoreTest(unittest.TestCase):
@@ -73,10 +74,19 @@ class ModelStoreTest(unittest.TestCase):
         store.download("turbo", done.append)            # second click while running: ignored
         gate.set()
         store._thread.join(2)
-        self.assertEqual((calls, done), (["large-v3-turbo"], [True]))
+        self.assertEqual((calls, done), (["turbo"], [True]))
         self.assertTrue(store.ready("turbo"))
         self.assertIsNone(store.progress())
-        self.assertTrue(store.path("turbo").endswith("large-v3-turbo"))
+        self.assertTrue(store.path("turbo").endswith("whisper-large-v3-turbo-mlx"))
+        self.assertEqual(store.engine("turbo"), "mlx")
+
+    def test_removes_old_cpu_turbo_download(self):
+        import tempfile
+        import models
+        folder = tempfile.mkdtemp()
+        os.makedirs(os.path.join(folder, "large-v3-turbo"))
+        models.ModelStore(folder)
+        self.assertFalse(os.path.exists(os.path.join(folder, "large-v3-turbo")))
 
     def test_failed_download_reports_error(self):
         import tempfile

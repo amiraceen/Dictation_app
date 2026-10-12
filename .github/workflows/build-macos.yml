@@ -70,6 +70,7 @@ jobs:
           cat "$LOG"
           grep -q "FRAMEWORKS OK" "$LOG"
           grep -q "DOWNLOAD OK" "$LOG"
+          grep -q "MLX BUNDLE OK" "$LOG"
           grep "OUT:" "$LOG" | tail -1
 
       - uses: actions/upload-artifact@v4
@@ -85,8 +86,8 @@ jobs:
             "Hi team, can we move tomorrow's design review to three thirty and invite Sarah from marketing?"
           MODEL=$(venv/bin/python -c "from faster_whisper import download_model; print(download_model('small'))")
           venv/bin/python tools/bench_latency.py /tmp/bench.wav "$MODEL"
-          echo "--- Accurate model (large-v3-turbo) ---"
-          venv/bin/python tools/bench_latency.py /tmp/bench.wav large-v3-turbo
+          echo "--- Accurate model (large-v3-turbo) on the graphics chip ---"
+          venv/bin/python tools/bench_latency.py /tmp/bench.wav mlx
 
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')

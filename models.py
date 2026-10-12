@@ -1,6 +1,7 @@
 """
-Speech models: the built-in Whisper "small" and an optional, more accurate one that is
-downloaded once into the app's data folder and then works offline. No AppKit here.
+Speech models: the built-in Whisper "small" (CPU) and an optional, more accurate
+large-v3-turbo that runs on the Mac's graphics chip (MLX). The accurate one is downloaded
+once into the app's data folder and then works offline. No AppKit here.
 """
 
 import os
@@ -8,10 +9,11 @@ import shutil
 import threading
 
 MODELS = {
-    # choice: (faster-whisper name, label, download size in bytes or 0 if built in)
-    "small": ("small", "Whisper small", 0),
-    "turbo": ("large-v3-turbo", "Whisper large-v3-turbo", 1_620_000_000),
+    # choice: (folder / faster-whisper name, label, download size in bytes or 0 if built in, engine)
+    "small": ("small", "Whisper small", 0, "cpu"),
+    "turbo": ("whisper-large-v3-turbo-mlx", "Whisper large-v3-turbo", 1_620_000_000, "mlx"),
 }
+LEGACY_FOLDERS = ("large-v3-turbo",)      # CPU turbo from an earlier build: too slow, removed
 MODEL_OPTIONS = [("small", "Fast · built in"), ("turbo", "Accurate · 1.6 GB download")]
 _DONE = ".complete"
 
@@ -27,9 +29,9 @@ def _folder_size(path):
     return total
 
 
-def _hf_download(name, folder):
-    from faster_whisper import download_model
-    download_model(name, output_dir=folder)
+def _hf_download(choice, folder):
+    import mlx_engine
+    mlx_engine.download(folder)
 
 
 class ModelStore:
@@ -42,12 +44,17 @@ class ModelStore:
         self.downloading = None               # choice being downloaded
         self.error = None
         self._thread = None
+        for name in LEGACY_FOLDERS:
+            shutil.rmtree(os.path.join(folder, name), ignore_errors=True)
 
     def _dir(self, choice):
         return os.path.join(self.folder, MODELS[choice][0])
 
     def label(self, choice):
         return MODELS[choice][1]
+
+    def engine(self, choice):
+        return MODELS[choice][3]
 
     def ready(self, choice):
         if MODELS[choice][2] == 0:
@@ -80,7 +87,7 @@ class ModelStore:
             ok = False
             try:
                 os.makedirs(self._dir(choice), exist_ok=True)
-                self._download(MODELS[choice][0], self._dir(choice))
+                self._download(choice, self._dir(choice))
                 open(os.path.join(self._dir(choice), _DONE), "w").close()
                 ok = True
             except Exception as e:

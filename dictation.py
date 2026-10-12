@@ -291,6 +291,7 @@ class DictationCore:
         self.snippets   = _load_snippets()
         self.dictionary = _load_dictionary()
         self.model_label = models.MODELS["small"][1]
+        self.dialect_prompt = False                 # only the large model benefits from it
         self.on_level   = lambda rms: None          # live mic level for the pill
         self.on_result  = lambda text, secs: None   # finished dictation
         self.on_record_state = lambda recording: None   # sounds, mute, pause media
@@ -301,18 +302,24 @@ class DictationCore:
         self.dictionary = _load_dictionary()
         self.on_status_change(ICON_IDLE, "Config reloaded ✓")
 
-    def load_model(self, path=None, label=None):
-        """Load (or swap to) a speech model. Dictation keeps using the old one until the
-        new one is warmed up. Returns True on success."""
+    def load_model(self, path=None, label=None, engine="cpu"):
+        """Load (or swap to) a speech model: faster-whisper on the CPU, or MLX on the Mac's
+        graphics chip. Dictation keeps using the old one until the new one is warmed up.
+        Returns True on success."""
         self.on_status_change(ICON_LOADING, "Loading model… (first run may take a minute)")
         try:
-            model = WhisperModel(path or MODEL_PATH or MODEL_SIZE, device="cpu", compute_type=COMPUTE_TYPE)
+            if engine == "mlx":
+                import mlx_engine
+                model = mlx_engine.MlxWhisper(path)
+            else:
+                model = WhisperModel(path or MODEL_PATH or MODEL_SIZE, device="cpu", compute_type=COMPUTE_TYPE)
             # Warm-up: the first transcription is much slower (memory allocation, caches),
             # so pay that cost now instead of on the first dictation.
             warm = (0.01 * np.random.default_rng(0).standard_normal(16000)).astype(np.float32)
-            list(model.transcribe(warm, language="en", **DECODE)[0])
+            list(model.transcribe(warm, language="en", vad_filter=False, **DECODE)[0])
             with self.model_lock:
                 self.model, self.model_label = model, label or models.MODELS["small"][1]
+                self.dialect_prompt = engine == "mlx"
             self.on_status_change(ICON_IDLE, "Ready — hold ⌥ Right to dictate")
             return True
         except Exception as e:
@@ -382,7 +389,7 @@ class DictationCore:
             lang = self._language_for(audio)
             segments, _ = self.model.transcribe(
                 audio, language=lang,
-                initial_prompt=arabic.initial_prompt(lang, self.dictionary),
+                initial_prompt=arabic.initial_prompt(lang, self.dictionary, self.dialect_prompt),
                 vad_filter=True,
                 vad_parameters=dict(min_silence_duration_ms=300),
                 **DECODE,
@@ -410,7 +417,7 @@ class DictationCore:
         with self.model_lock:
             lang = self._language_for(audio)
             segments, _ = self.model.transcribe(
-                audio, language=lang, initial_prompt=arabic.initial_prompt(lang, self.dictionary),
+                audio, language=lang, initial_prompt=arabic.initial_prompt(lang, self.dictionary, self.dialect_prompt),
                 vad_filter=True, vad_parameters=dict(min_silence_duration_ms=500), **DECODE)
             return clean_transcript((s.text, s.no_speech_prob, s.avg_logprob, s.compression_ratio)
                                     for s in segments)
@@ -913,7 +920,14 @@ if HAS_RUMPS:
 
         def _load_model_worker(self, choice):
             try:
-                self.core.load_model(self.models.path(choice), self.models.label(choice))
+                ok = self.core.load_model(self.models.path(choice), self.models.label(choice),
+                                          self.models.engine(choice))
+                if not ok and choice != "small":
+                    ui.on_main(self._show_toast, "The accurate model didn't start",
+                               "Kalam is using the fast model instead. Details are in the log.",
+                               [("OK", None)], 15)
+                    if self.core.model is None:
+                        self.core.load_model(self.models.path("small"), self.models.label("small"))
             finally:
                 self._model_loading = None
                 ui.on_main(self._refresh_windows)
@@ -1179,6 +1193,16 @@ if __name__ == "__main__":
             hf_hub_download("mobiuslabsgmbh/faster-whisper-large-v3-turbo", "config.json",
                             cache_dir=tempfile.mkdtemp())
             print("DOWNLOAD OK", flush=True)
+        except Exception:
+            traceback.print_exc()
+        try:     # the accurate model runs on the graphics chip: check MLX and its tokenizer are bundled
+            import mlx_engine
+            mlx_engine._skip_word_timings()
+            from mlx_whisper.tokenizer import get_tokenizer
+            get_tokenizer(True, num_languages=100, language="ar")
+            import mlx_whisper  # noqa: F401
+            print("MLX BUNDLE OK", flush=True)
+            print("MLX GPU:", "OK" if mlx_engine.available() else "not available on this machine", flush=True)
         except Exception:
             traceback.print_exc()
         core = DictationCore(on_status_change=lambda i, m: print(i, m, flush=True))

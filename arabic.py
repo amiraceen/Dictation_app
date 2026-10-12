@@ -68,10 +68,13 @@ DIALECT_PROMPT = ("هلا والله، شحالش؟ وين صرتي؟ بغيتش
                   "ازيك، عامل ايه؟ كيفك، شو أخبارك؟")
 
 
-def initial_prompt(language, words=()):
-    """Prompt for Whisper: the dialect primer when dictating Arabic, plus the user's words."""
+def initial_prompt(language, words=(), dialect=True):
+    """Prompt for Whisper: the dialect primer when dictating Arabic, plus the user's words.
+
+    The primer helps the large model but cost the small one accuracy on formal Arabic
+    (FLEURS: 23.8% → 25.6% words wrong), so the app only uses it with the large model."""
     parts = []
-    if language == "ar":
+    if language == "ar" and dialect:
         parts.append(DIALECT_PROMPT)
     if words:
         parts.append(", ".join(words))

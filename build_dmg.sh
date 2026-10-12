@@ -21,6 +21,7 @@ if [ ! -d venv ]; then
 fi
 venv/bin/pip install --upgrade pip --quiet
 venv/bin/pip install -r requirements.txt --quiet
+venv/bin/pip install --no-deps "mlx-whisper==0.4.3" --quiet
 
 # 2. Whisper model (bundled so the app works offline; ~460 MB, cached after the first run)
 echo "→ Fetching the Whisper small model…"

@@ -1,4 +1,10 @@
 faster-whisper>=1.1
+# Accurate model on the graphics chip. mlx-whisper itself is installed with --no-deps
+# (build_dmg.sh) so PyTorch, numba and SciPy, which Kalam never uses, stay out of the app.
+mlx
+tiktoken
+tqdm
+more-itertools
 numpy
 pillow
 pyinstaller

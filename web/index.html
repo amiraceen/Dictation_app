@@ -693,7 +693,7 @@
       note.textContent = `Downloading the accurate model… ${pct}%. Kalam keeps using ${m.active} until it's ready.`;
     } else if (m.loading) note.textContent = 'Loading the model…';
     else if (m.error && !m.ready) note.innerHTML = `Download failed: ${esc(m.error)}. <a href="#" id="modelRetry">Try again</a>`;
-    else if (m.choice === 'turbo') note.textContent = 'Much better with Arabic and dialects. Downloaded once (1.6 GB), then works offline. Text takes a little longer to appear.';
+    else if (m.choice === 'turbo') note.textContent = 'Much better with Arabic and dialects. Runs on your Mac\'s graphics chip. Downloaded once (1.6 GB), then works offline.';
     else note.textContent = 'Built in and fastest. Great for English; weaker with Arabic dialects.';
     const r = $('modelRetry'); if (r) r.onclick = e => { e.preventDefault(); post({ type: 'retryModel' }); };
   }

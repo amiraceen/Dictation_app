@@ -354,6 +354,9 @@ class AppWiringTest(unittest.TestCase):
         self.app.core.model = FakeModel()
         self.assertEqual(self.app.core.transcribe_raw(np.zeros(16000, np.float32)), "كيفش")
         self.assertEqual(seen["language"], "ar")
+        self.assertIsNone(seen["initial_prompt"])                 # small model: no dialect primer
+        self.app.core.dialect_prompt = True                       # large model
+        self.app.core.transcribe_raw(np.zeros(16000, np.float32))
         self.assertIn("شحالش", seen["initial_prompt"])
         self.app.handle_message({"type": "saveSettings", "changes": {"dictation_language": "en"}}, self.bridge())
         self.app.core.transcribe_raw(np.zeros(16000, np.float32))
@@ -368,14 +371,14 @@ class AppWiringTest(unittest.TestCase):
 
         self.app.models._download = fake_download
         self.patch(dictation.DictationCore, "load_model",
-                   lambda core, path=None, label=None: loaded.append((path, label)) or True)
+                   lambda core, path=None, label=None, engine="cpu": loaded.append((path, label, engine)) or True)
         self.app.handle_message({"type": "saveSettings", "changes": {"speech_model": "turbo"}}, self.bridge())
         st = self.app.state_for(self.bridge())["model"]
         self.assertEqual((st["choice"], st["downloading"], st["ready"]), ("turbo", "turbo", False))
         gate.set()
         self.app.models._thread.join(2)
-        self.assertTrue(loaded[-1][0].endswith("large-v3-turbo"))
-        self.assertEqual(loaded[-1][1], "Whisper large-v3-turbo")
+        self.assertTrue(loaded[-1][0].endswith("whisper-large-v3-turbo-mlx"))
+        self.assertEqual(loaded[-1][1:], ("Whisper large-v3-turbo", "mlx"))
         self.app.handle_message({"type": "saveSettings", "changes": {"speech_model": "small"}}, self.bridge())
         for t in threading.enumerate():
             if t.name == "load_model":

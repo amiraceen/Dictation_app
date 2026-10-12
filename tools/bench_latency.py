@@ -42,9 +42,35 @@ def bench(name, model, audio, **kw):
     return statistics.median(times)
 
 
+def bench_mlx(audio):
+    """The Accurate model as the app runs it: large-v3-turbo on the graphics chip."""
+    import tempfile
+    import mlx_engine
+    folder = tempfile.mkdtemp()
+    mlx_engine.download(folder)
+    model = mlx_engine.MlxWhisper(folder)
+    print(f"clip {len(audio) / 16000:.1f}s, large-v3-turbo on the GPU (MLX), {RUNS} runs each", flush=True)
+    bench("GPU: Language = English", model, audio, language="en")
+    bench("GPU: Language = Arabic or English", _DetectThen(model), audio)
+
+
+class _DetectThen:
+    """Detection pass then transcription, like the app's auto setting."""
+    def __init__(self, model):
+        self.model = model
+
+    def transcribe(self, audio, **kw):
+        from speed import pick_language
+        _, _, probs = self.model.detect_language(audio, vad_filter=True)
+        return self.model.transcribe(audio, language=pick_language(probs), **kw)
+
+
 if __name__ == "__main__":
     audio = load(sys.argv[1])
     model_id = sys.argv[2] if len(sys.argv) > 2 else "small"
+    if model_id == "mlx":
+        bench_mlx(audio)
+        sys.exit(0)
     print(f"clip {len(audio) / 16000:.1f}s, model {model_id}, {RUNS} runs each", flush=True)
     model = WhisperModel(model_id, device="cpu", compute_type="int8")
     before = bench("before: auto language, timestamps", model, audio)
