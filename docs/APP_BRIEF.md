@@ -1,4 +1,6 @@
-# App Brief: "Dictation 2" (working name)
+# App Brief: Kalam (formerly "Dictation 2")
+
+> **Update:** the app is now branded **Kalam**. Sections are Transcribe, Notes, Clipboard, Your words and Shortcuts, shown as circle icons in a top bar with hover previews; the look is a warm gradient mesh with frosted glass and the Readex Pro font. See "Brand" in the README. The sections below describe the earlier Dictation 2 layout.
 
 A complete description of the app as it exists today, written so that someone who has never seen it can help **rebrand it**: choose a name, a visual identity, colors, typography, icons and a style for the interface.
 

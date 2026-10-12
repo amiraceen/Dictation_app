@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build "Dictation 2.app" and wrap it in a drag-to-Applications disk image: dist/Dictation-2.dmg
+# Build "Kalam.app" and wrap it in a drag-to-Applications disk image: dist/Kalam.dmg
 #
 #   bash build_dmg.sh
 #
@@ -9,8 +9,8 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-APP_NAME="Dictation 2"
-DMG_NAME="Dictation-2"
+APP_NAME="Kalam"
+DMG_NAME="Kalam"
 VERSION="${VERSION:-1.0}"
 PY="${PYTHON:-python3}"
 

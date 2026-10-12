@@ -16,30 +16,30 @@ datas += [(MODEL_DIR + f, 'model') for f in ('config.json', 'model.bin', 'tokeni
 
 datas += [('menubar/' + f, 'menubar') for f in ('idle.png', 'busy.png', 'recording.png')]
 
-datas += [('web/index.html', 'web')]
+datas += [('web/index.html', 'web'), ('web/fonts', 'web/fonts')]
 hiddenimports += ['ui', 'WebKit', 'PyObjCTools.AppHelper', 'ApplicationServices',
                   'macos', 'meetings', 'notes', 'notetaker', 'settings', 'system', 'speed', 'arabic', 'voicetest',
                   'EventKit', 'ScreenCaptureKit', 'CoreMedia', 'dispatch']
 
 a = Analysis(['dictation.py'], datas=datas, binaries=binaries, hiddenimports=hiddenimports, noarchive=False)
 pyz = PYZ(a.pure)
-exe = EXE(pyz, a.scripts, [], exclude_binaries=True, name='Dictation', console=False, upx=False)
-coll = COLLECT(exe, a.binaries, a.datas, upx=False, name='Dictation')
+exe = EXE(pyz, a.scripts, [], exclude_binaries=True, name='Kalam', console=False, upx=False)
+coll = COLLECT(exe, a.binaries, a.datas, upx=False, name='Kalam')
 app = BUNDLE(
     coll,
-    name='Dictation 2.app',
+    name='Kalam.app',
     icon='AppIcon.icns',
-    bundle_identifier='com.amira.dictation2',
+    bundle_identifier='com.amira.kalam',
     codesign_identity=None,
     info_plist={
         'CFBundleShortVersionString': '1.0',
-        'CFBundleName': 'Dictation 2',
-        'CFBundleDisplayName': 'Dictation 2',
+        'CFBundleName': 'Kalam',
+        'CFBundleDisplayName': 'Kalam',
         'LSUIElement': True,   # menu-bar only; Settings → Show app in Dock adds the icon at runtime
-        'NSMicrophoneUsageDescription': 'Dictation records your voice while you hold Right Option, and meetings when you start the Notetaker.',
-        'NSCalendarsUsageDescription': 'Dictation shows your next meeting and reminds you to take notes before it starts.',
-        'NSCalendarsFullAccessUsageDescription': 'Dictation shows your next meeting and reminds you to take notes before it starts.',
-        'NSAppleEventsUsageDescription': 'Dictation pauses Music or Spotify while you dictate, and can mute your sound.',
+        'NSMicrophoneUsageDescription': 'Kalam records your voice while you hold Right Option, and meetings when you start the Notetaker.',
+        'NSCalendarsUsageDescription': 'Kalam shows your next meeting and reminds you to take notes before it starts.',
+        'NSCalendarsFullAccessUsageDescription': 'Kalam shows your next meeting and reminds you to take notes before it starts.',
+        'NSAppleEventsUsageDescription': 'Kalam pauses Music or Spotify while you dictate, and can mute your sound.',
         'NSHighResolutionCapable': True,
     },
 )

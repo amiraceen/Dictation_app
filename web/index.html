@@ -2,319 +2,324 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Dictation 2</title>
+<title>Kalam</title>
 <style>
+  /* ── Kalam brand ──
+     Warm aura mesh behind frosted glass, colourful circle navigation, Readex Pro (Latin + Arabic).
+     The window itself is native glass (ui.py); translucent fills let the blurred desktop show through. */
+  @font-face { font-family: "Readex Pro"; font-weight: 160 700; font-display: block;
+    src: url(fonts/readex-pro-latin-wght-normal.woff2) format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212, U+FEFF, U+FFFD; }
+  @font-face { font-family: "Readex Pro"; font-weight: 160 700; font-display: block;
+    src: url(fonts/readex-pro-latin-ext-wght-normal.woff2) format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+20A0-20C0, U+2C60-2C7F, U+A720-A7FF; }
+  @font-face { font-family: "Readex Pro"; font-weight: 160 700; font-display: block;
+    src: url(fonts/readex-pro-arabic-wght-normal.woff2) format("woff2");
+    unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+200C-200E, U+FB50-FDFF, U+FE70-FEFC; }
+
   :root {
-    /* Light-blue sidebar, frosted-glass content. The window itself is native glass (ui.py);
-       translucent fills here let the blurred desktop show through. */
-    --side: rgba(214, 232, 250, 0.86); --side-ink: #102640; --side-muted: #52698A;
-    --glass: rgba(255, 255, 255, 0.58);
-    --bg: rgba(255, 255, 255, 0.5); --panel: #FFFFFF; --card: rgba(255, 255, 255, 0.62);
-    --chip: rgba(255, 255, 255, 0.75); --hover: rgba(16, 38, 64, 0.06); --rim: rgba(255, 255, 255, 0.7);
-    --ink: #0F1720; --muted: #67717F; --line: rgba(16, 38, 64, 0.09); --off: rgba(16, 38, 64, 0.18);
-    --accent: #2E6FE0; --on-accent: #FFFFFF; --red: #D93B30;
-    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    --coral: #FF6B4A; --amber: #FFA928; --rose: #EC4A8B; --violet: #7A5CFF; --sky: #3E9BFF; --mint: #20B98C;
+    --grad: linear-gradient(120deg, #FF8A3D 0%, #EC4A8B 52%, #7A5CFF 100%);
+    --aura: radial-gradient(60% 70% at 4% 0%, rgba(255, 158, 84, 0.55), transparent 70%),
+            radial-gradient(55% 65% at 100% 0%, rgba(122, 92, 255, 0.40), transparent 70%),
+            radial-gradient(50% 60% at 100% 100%, rgba(62, 155, 255, 0.28), transparent 70%),
+            radial-gradient(55% 60% at 0% 100%, rgba(236, 74, 139, 0.30), transparent 70%);
+    --base: rgba(255, 247, 240, 0.74); --solid: #FFF7F0;
+    --glass: rgba(255, 255, 255, 0.56); --panel: #FFFFFF; --card: rgba(255, 255, 255, 0.66);
+    --chip: rgba(255, 255, 255, 0.82); --hover: rgba(34, 27, 46, 0.05); --rim: rgba(255, 255, 255, 0.85);
+    --pop: rgba(255, 252, 249, 0.86); --shadow: 0 10px 30px -8px rgba(60, 30, 50, 0.22);
+    --ink: #221B2E; --muted: #7A7088; --line: rgba(34, 27, 46, 0.08); --off: rgba(34, 27, 46, 0.18);
+    --accent: #EC4A8B; --on-accent: #FFFFFF; --red: #E5484D; --good: #1E9E6A; --ok: #C77A12;
+    --sans: "Readex Pro", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --side: rgba(28, 44, 66, 0.86); --side-ink: #E4EDF8; --side-muted: #9DB1C9;
-            --glass: rgba(22, 25, 30, 0.55);
-            --bg: rgba(255, 255, 255, 0.05); --panel: #1B1F25; --card: rgba(255, 255, 255, 0.06);
-            --chip: rgba(255, 255, 255, 0.1); --hover: rgba(255, 255, 255, 0.06); --rim: rgba(255, 255, 255, 0.08);
-            --ink: #EEF2F7; --muted: #95A0AE; --line: rgba(255, 255, 255, 0.08); --off: rgba(255, 255, 255, 0.22);
-            --accent: #5B9BF8; --on-accent: #FFFFFF; --red: #F0605A; }
+    :root {
+      --aura: radial-gradient(60% 70% at 4% 0%, rgba(255, 128, 60, 0.30), transparent 70%),
+              radial-gradient(55% 65% at 100% 0%, rgba(122, 92, 255, 0.32), transparent 70%),
+              radial-gradient(50% 60% at 100% 100%, rgba(62, 155, 255, 0.18), transparent 70%),
+              radial-gradient(55% 60% at 0% 100%, rgba(236, 74, 139, 0.22), transparent 70%);
+      --base: rgba(22, 17, 30, 0.80); --solid: #16111E;
+      --glass: rgba(30, 24, 40, 0.55); --panel: #1D1726; --card: rgba(255, 255, 255, 0.06);
+      --chip: rgba(255, 255, 255, 0.10); --hover: rgba(255, 255, 255, 0.06); --rim: rgba(255, 255, 255, 0.09);
+      --pop: rgba(36, 28, 48, 0.90); --shadow: 0 12px 34px -8px rgba(0, 0, 0, 0.55);
+      --ink: #F4EEF8; --muted: #A79CB6; --line: rgba(255, 255, 255, 0.08); --off: rgba(255, 255, 255, 0.22);
+      --accent: #FF6FA6; --red: #FF6369; --good: #3DD68C; --ok: #F5B041;
+    }
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   [hidden] { display: none !important; }
   html, body { height: 100%; }
-  body { background: var(--bg); color: var(--ink); font: 14px/1.5 var(--sans);
-         -webkit-font-smoothing: antialiased; display: flex; user-select: none; overflow: hidden; }
-
-  /* Sidebar */
-  aside { width: 220px; padding: 52px 14px 18px; display: flex; flex-direction: column;
-          -webkit-app-region: drag; flex-shrink: 0; }
-  .brand { display: flex; align-items: center; gap: 10px; padding: 0 10px 26px; font-weight: 650;
-           font-size: 19px; letter-spacing: -0.01em; }
-  .logo { width: 24px; height: 24px; border-radius: 7px; background: #0A0A0A;
-          box-shadow: inset 0 0 0 1.5px #464646; display: grid; place-items: center; }
-  .logo::after { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #F5F5F5; }
-  nav button { -webkit-app-region: no-drag; all: unset; display: flex; align-items: center; gap: 12px;
-               width: 100%; padding: 9px 12px; border-radius: 9px; font-size: 14.5px; cursor: default;
-               color: var(--ink); box-sizing: border-box; }
-  nav button:hover { background: var(--hover); }
-  nav button.on { background: var(--chip); font-weight: 560; }
-  nav svg, .ico { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6;
-            stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
-  nav .sep { height: 1px; background: var(--line); margin: 10px 8px; }
-  nav .rec { margin-left: auto; width: 8px; height: 8px; border-radius: 50%; background: var(--red);
-             display: none; animation: pulse 1.6s infinite; }
-  body.recording nav .rec { display: block; }
+  body { background: var(--aura), var(--base); color: var(--ink); font: 13.5px/1.55 var(--sans); letter-spacing: -0.002em;
+         -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; user-select: none; overflow: hidden; }
+  body.noglass { background: var(--aura), var(--solid); }
+  svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7;
+        stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .stat .bub svg { width: 20px; height: 20px; stroke-width: 2; }
   @keyframes pulse { 50% { opacity: .35; } }
-  .hint { margin-top: auto; padding: 14px; border-radius: 12px; background: var(--panel);
-          border: 1px solid var(--line); font-size: 12.5px; color: var(--muted); }
-  .hint b { color: var(--ink); font-weight: 600; }
-  kbd { font: 600 11.5px var(--sans); padding: 1px 6px; border-radius: 5px; background: var(--chip);
-        color: var(--ink); }
+  kbd { font: 600 11px var(--sans); padding: 1px 7px; border-radius: 6px; background: var(--chip); color: var(--ink);
+        box-shadow: inset 0 0 0 1px var(--line); }
 
-  /* Main */
-  main { flex: 1; min-width: 0; margin: 12px 12px 12px 0; background: var(--panel); border-radius: 16px;
-         border: 1px solid var(--line); overflow-y: auto; user-select: text; }
-  .page { display: none; padding: 44px 48px 48px; max-width: 980px; }
+  /* ── Top bar: brand, circle navigation, settings ── */
+  header { height: 70px; flex-shrink: 0; display: flex; align-items: center; gap: 16px; padding: 4px 18px 0 88px;
+           -webkit-app-region: drag; position: relative; z-index: 5; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 18px; letter-spacing: -0.02em; min-width: 120px; }
+  .logo { width: 28px; height: 28px; border-radius: 50%; background: var(--grad); display: grid; place-items: center;
+          color: #fff; box-shadow: 0 4px 12px -3px rgba(236, 74, 139, 0.55); }
+  .logo svg { width: 16px; height: 16px; stroke-width: 2.6; }
+  nav { display: flex; align-items: center; gap: 10px; margin: 0 auto; }
+  nav .sp { flex: 0 0 4px; }
+  .nb { -webkit-app-region: no-drag; all: unset; position: relative; width: 42px; height: 42px; border-radius: 50%;
+        display: grid; place-items: center; cursor: default; color: var(--hue); background: var(--chip);
+        box-shadow: inset 0 0 0 1px var(--rim), 0 2px 8px -3px rgba(60, 30, 50, 0.18);
+        transition: transform .15s, box-shadow .15s, background .15s; }
+  .nb svg { width: 19px; height: 19px; }
+  .nb:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--rim), 0 8px 18px -6px var(--hue); }
+  .nb.on { color: #fff; background: linear-gradient(140deg, var(--hue2), var(--hue));
+           box-shadow: 0 8px 20px -6px var(--hue), inset 0 1px 0 rgba(255, 255, 255, 0.35); }
+  .nb[data-p="home"]     { --hue: var(--coral);  --hue2: #FFA04D; }
+  .nb[data-p="notes"]    { --hue: var(--amber);  --hue2: #FFC94D; }
+  .nb[data-p="clip"]     { --hue: var(--sky);    --hue2: #6FC3FF; }
+  .nb[data-p="dict"]     { --hue: var(--violet); --hue2: #A98BFF; }
+  .nb[data-p="snip"]     { --hue: var(--rose);   --hue2: #FF7FB0; }
+  .nb[data-p="settings"] { --hue: #6E6680;       --hue2: #9C93AE; }
+  .nb .rec { position: absolute; top: 1px; right: 1px; width: 10px; height: 10px; border-radius: 50%; background: var(--red);
+             box-shadow: 0 0 0 2px var(--panel); display: none; animation: pulse 1.6s infinite; }
+  body.recording .nb .rec { display: block; }
+  .hdr-r { min-width: 120px; display: flex; justify-content: flex-end; }
+
+  /* Hover preview */
+  .peek { position: fixed; top: 66px; width: 290px; padding: 14px 14px 12px; border-radius: 18px; background: var(--pop);
+          -webkit-backdrop-filter: saturate(1.8) blur(24px); backdrop-filter: saturate(1.8) blur(24px);
+          box-shadow: var(--shadow), inset 0 0 0 1px var(--rim); z-index: 20; pointer-events: none;
+          opacity: 0; transform: translateY(-4px); transition: opacity .14s, transform .14s; }
+  .peek.on { opacity: 1; transform: none; }
+  .peek .ph { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+  .peek .ph i { width: 9px; height: 9px; border-radius: 50%; background: var(--hue); }
+  .peek .ph span { margin-left: auto; color: var(--muted); font-weight: 400; font-size: 12px; }
+  .peek .pi { padding: 7px 10px; border-radius: 10px; background: var(--card); margin-top: 5px; font-size: 12.5px;
+              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; unicode-bidi: plaintext; }
+  .peek .pi small { color: var(--muted); margin-right: 6px; }
+  .peek .pc { display: flex; flex-wrap: wrap; gap: 5px; }
+  .peek .pc b { font-weight: 500; font-size: 12px; padding: 3px 9px; border-radius: 999px; background: var(--card); }
+  .peek .pe { color: var(--muted); font-size: 12.5px; padding: 6px 2px 2px; }
+
+  /* ── Content ── */
+  main { flex: 1; min-height: 0; margin: 0 14px 14px; background: var(--glass); border-radius: 22px;
+         box-shadow: inset 0 0 0 1px var(--rim), 0 1px 3px rgba(60, 30, 50, 0.05);
+         -webkit-backdrop-filter: saturate(1.6) blur(28px); backdrop-filter: saturate(1.6) blur(28px);
+         overflow-y: auto; user-select: text; }
+  .page { display: none; padding: 34px 40px 40px; max-width: 940px; margin: 0 auto; }
   .page.on { display: block; }
-  h1 { font: 500 30px/1.2 var(--sans); letter-spacing: -0.02em; margin-bottom: 28px; }
-  h1 .sub { display: block; font-size: 14px; color: var(--muted); font-weight: 400; margin-top: 8px;
-            letter-spacing: 0; }
+  h1 { font: 600 26px/1.2 var(--sans); letter-spacing: -0.025em; margin-bottom: 22px; }
+  h1 .sub { display: block; font-size: 13px; color: var(--muted); font-weight: 400; margin-top: 6px; letter-spacing: 0; }
+  h2 { font: 600 13px var(--sans); margin: 26px 0 10px; }
+  h2:first-child { margin-top: 0; }
   .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin: -8px 0 24px; }
+  .pill { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px 6px 8px; border-radius: 999px;
+          background: var(--chip); box-shadow: inset 0 0 0 1px var(--rim); font-size: 12.5px; color: var(--muted); }
+  .pill i { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; color: #fff; }
+  .pill i svg { width: 12px; height: 12px; stroke-width: 2.2; }
 
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 36px; }
-  .stat { padding: 20px 22px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); }
-  .stat .n { font: 400 34px/1 var(--serif); letter-spacing: -0.02em; }
-  .stat .l { color: var(--muted); margin-top: 8px; font-size: 13px; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 30px; }
+  .stat { padding: 16px 18px; display: flex; align-items: center; gap: 14px; }
+  .stat .bub { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #fff; flex-shrink: 0; }
+  .stat .n { font: 600 24px/1 var(--sans); letter-spacing: -0.025em; font-variant-numeric: tabular-nums; }
+  .stat .l { color: var(--muted); margin-top: 5px; font-size: 12px; }
+  .g-coral  { background: linear-gradient(140deg, #FFA04D, var(--coral)); }
+  .g-amber  { background: linear-gradient(140deg, #FFC94D, var(--amber)); }
+  .g-violet { background: linear-gradient(140deg, #A98BFF, var(--violet)); }
+  .g-rose   { background: linear-gradient(140deg, #FF7FB0, var(--rose)); }
+  .g-sky    { background: linear-gradient(140deg, #6FC3FF, var(--sky)); }
 
   .section { display: flex; justify-content: space-between; align-items: center; margin: 0 0 10px;
-             font-size: 12px; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
-  .list { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
-  .row { display: grid; grid-template-columns: 90px 1fr auto; gap: 16px; padding: 16px 20px;
-         border-top: 1px solid var(--line); align-items: start; }
+             font-size: 11px; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; }
+  .stat, .list, .card { background: var(--card); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--rim); }
+  .list { overflow: hidden; }
+  .row { display: grid; grid-template-columns: 80px 1fr auto; gap: 14px; padding: 13px 16px 13px 18px;
+         border-top: 1px solid var(--line); align-items: center; }
   .row:first-child { border-top: 0; }
-  .row:hover { background: var(--bg); }
-  .row .t { color: var(--muted); font-size: 13px; padding-top: 1px; }
-  .row .x { font-size: 15px; line-height: 1.55; }
+  .row:hover, .nitem:hover { background: var(--hover); }
+  .row .t { color: var(--muted); font-size: 12px; }
+  .row .x { font-size: 14px; line-height: 1.55; unicode-bidi: plaintext; }
   .row .c { opacity: 0; }
   .row:hover .c { opacity: 1; }
   .empty { padding: 40px; text-align: center; color: var(--muted); }
 
-  .btn { all: unset; cursor: default; padding: 7px 14px; border-radius: 9px; font-size: 13px;
-         font-weight: 560; background: var(--accent); color: var(--panel); white-space: nowrap;
-         display: inline-flex; align-items: center; gap: 7px; }
-  .btn.ghost { background: transparent; color: var(--muted); padding: 4px 8px; font-weight: 500; }
-  .btn.ghost:hover { color: var(--ink); background: var(--hover); }
-  .btn.soft { background: var(--chip); color: var(--ink); }
-  .btn.soft:hover { background: var(--hover); }
-  .btn.outline { background: var(--panel); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
-  .btn.outline:hover { background: var(--bg); }
-  .btn.stop { background: var(--red); color: #fff; }
-  .btn .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
-  .btn.stop .dot { background: #fff; border-radius: 2px; }
+  /* Buttons */
+  .btn { all: unset; cursor: default; padding: 7px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+         background: var(--grad); color: var(--on-accent); white-space: nowrap; display: inline-flex;
+         align-items: center; gap: 7px; box-shadow: 0 4px 12px -5px rgba(236, 74, 139, 0.6); }
+  .btn:hover { filter: brightness(1.05); }
+  .btn svg { width: 15px; height: 15px; stroke-width: 2; }
+  .btn.ghost { background: transparent; color: var(--muted); padding: 5px 10px; font-weight: 500; box-shadow: none; }
+  .btn.ghost:hover { color: var(--ink); background: var(--hover); filter: none; }
+  .btn.soft { background: var(--chip); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+  .btn.soft:hover { background: var(--panel); filter: none; }
+  .btn.stop, .btn.danger, .btn.ghost.danger, .ib.danger { background: var(--red); color: #fff; box-shadow: none; }
+  .btn .dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; }
+  .btn.soft .dot { background: var(--red); }
+  .btn.stop .dot { border-radius: 2px; }
+  .btn.capturing { background: var(--ink); color: var(--panel); }
+  /* Round icon buttons */
+  .ib { all: unset; width: 30px; height: 30px; border-radius: 50%; display: inline-grid; place-items: center;
+        color: var(--muted); cursor: default; flex-shrink: 0; }
+  .ib svg { width: 16px; height: 16px; }
+  .ib:hover { background: var(--hover); color: var(--ink); }
+  .ib.go { background: var(--grad); color: #fff; width: 38px; height: 38px; box-shadow: 0 4px 12px -5px rgba(236, 74, 139, 0.6); }
+  .ib.done { background: var(--good); color: #fff; }
+  .ib.danger { width: auto; padding: 0 10px; font-size: 12px; font-weight: 600; border-radius: 999px; }
 
-  .add { display: flex; gap: 8px; margin-bottom: 18px; }
-  input, select, textarea { font: 14px var(--sans); color: var(--ink); background: var(--bg);
-          border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; outline: none; }
-  .add input { flex: 1; }
-  input:focus, textarea:focus { border-color: var(--muted); }
+  .add { display: flex; gap: 8px; margin-bottom: 18px; align-items: center; }
+  input, select, textarea { font: 13.5px var(--sans); color: var(--ink); background: var(--chip);
+          border: 1px solid var(--line); border-radius: 12px; padding: 9px 13px; outline: none; }
+  .add input { flex: 1; border-radius: 999px; padding: 10px 16px; }
+  input:focus, textarea:focus { border-color: var(--accent); }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 8px 6px 12px;
-          border-radius: 999px; background: var(--chip); font-size: 14px; }
-  .chip button { all: unset; width: 18px; height: 18px; border-radius: 50%; display: grid;
-                 place-items: center; color: var(--muted); cursor: default; font-size: 14px; }
-  .chip button:hover { background: var(--hover); color: var(--ink); }
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 5px 5px 5px 13px; border-radius: 999px;
+          background: var(--chip); font-size: 13px; box-shadow: inset 0 0 0 1px var(--rim); }
+  .chip:nth-child(5n+1) { box-shadow: inset 0 0 0 1.5px rgba(255, 107, 74, 0.35); }
+  .chip:nth-child(5n+2) { box-shadow: inset 0 0 0 1.5px rgba(122, 92, 255, 0.35); }
+  .chip:nth-child(5n+3) { box-shadow: inset 0 0 0 1.5px rgba(62, 155, 255, 0.35); }
+  .chip:nth-child(5n+4) { box-shadow: inset 0 0 0 1.5px rgba(236, 74, 139, 0.35); }
+  .chip:nth-child(5n)   { box-shadow: inset 0 0 0 1.5px rgba(255, 169, 40, 0.45); }
+  .chip .ib { width: 22px; height: 22px; }
+  .chip .ib svg { width: 12px; height: 12px; }
   .clip { grid-template-columns: 1fr auto; cursor: default; }
   .clip:active { background: var(--hover); }
-  .clip .meta { color: var(--muted); font-size: 12.5px; margin-top: 4px; }
-  .clip .btn { opacity: 1; }
-  .clip.done .btn { background: #2F8F5B; color: #fff; }
+  .clip .meta { color: var(--muted); font-size: 12px; margin-top: 3px; }
   .snip .x b { font-weight: 600; }
   .arrow { color: var(--muted); margin: 0 8px; }
   .snip .x span.exp { white-space: pre-wrap; }
 
   /* Notes */
   #notes.on { display: flex; padding: 0; max-width: none; height: 100%; }
-  .nlist { width: 270px; flex-shrink: 0; border-right: 1px solid var(--line); display: flex;
-           flex-direction: column; min-height: 0; }
-  .nlist .top { padding: 40px 18px 14px; display: flex; flex-direction: column; gap: 10px; }
-  .nlist h1 { margin: 0 0 4px; font-size: 26px; }
+  .nlist { width: 270px; flex-shrink: 0; border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+  .nlist .top { padding: 30px 16px 12px; display: flex; flex-direction: column; gap: 10px; }
+  .nlist h1 { margin: 0 0 4px; font-size: 22px; }
   .nlist .acts { display: flex; gap: 8px; }
   .nlist .acts .btn { flex: 1; justify-content: center; }
   .nitems { overflow-y: auto; padding: 4px 10px 16px; flex: 1; }
-  .nitem { padding: 10px 12px; border-radius: 10px; cursor: default; margin-bottom: 2px; }
-  .nitem:hover { background: var(--bg); }
-  .nitem.on { background: var(--chip); }
-  .nitem .nt { font-weight: 560; display: flex; align-items: center; gap: 7px; white-space: nowrap;
-               overflow: hidden; text-overflow: ellipsis; }
-  .nitem .nm { color: var(--muted); font-size: 12.5px; margin-top: 2px; white-space: nowrap;
-               overflow: hidden; text-overflow: ellipsis; }
-  .tag { font-size: 10.5px; font-weight: 650; letter-spacing: .04em; padding: 1px 6px; border-radius: 5px;
-         background: var(--chip); color: var(--muted); }
-  .nitem.on .tag { background: var(--panel); }
-  .live { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0;
-          animation: pulse 1.6s infinite; }
-  .editor { flex: 1; min-width: 0; overflow-y: auto; padding: 40px 44px 48px; }
+  .nitem { padding: 10px 12px; border-radius: 12px; cursor: default; margin-bottom: 2px; }
+  .nitem.on { background: var(--chip); box-shadow: inset 0 0 0 1px var(--rim); }
+  .nitem .nt { font-weight: 600; font-size: 13.5px; display: flex; align-items: center; gap: 7px; white-space: nowrap;
+               overflow: hidden; text-overflow: ellipsis; unicode-bidi: plaintext; }
+  .nitem .nm { color: var(--muted); font-size: 12px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tag { font-size: 10px; font-weight: 600; letter-spacing: .04em; padding: 2px 7px; border-radius: 999px;
+         background: rgba(255, 169, 40, 0.16); color: #B86A00; }
+  @media (prefers-color-scheme: dark) { .tag { color: #FFC266; } }
+  .live { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0; animation: pulse 1.6s infinite; }
+  .editor { flex: 1; min-width: 0; overflow-y: auto; padding: 30px 40px 44px; }
   .editor .empty { margin-top: 80px; }
-  .ttl { all: unset; display: block; width: 100%; font: 500 28px/1.25 var(--sans); letter-spacing: -0.02em;
-         user-select: text; }
+  .ttl { all: unset; display: block; width: 100%; font: 600 24px/1.25 var(--sans); letter-spacing: -0.022em;
+         user-select: text; unicode-bidi: plaintext; }
   .ttl::placeholder { color: var(--off); }
-  .meta-line { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; color: var(--muted);
-               font-size: 13px; margin: 8px 0 18px; }
-  .recbar { display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 16px; border-radius: 12px;
-            background: var(--card); margin-bottom: 18px; }
+  .meta-line { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; color: var(--muted); font-size: 12.5px; margin: 8px 0 18px; }
+  .recbar { display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 16px; border-radius: 999px;
+            background: var(--card); box-shadow: inset 0 0 0 1px var(--rim); margin-bottom: 18px; }
   .recbar .clock { font-variant-numeric: tabular-nums; font-weight: 600; }
   .recbar .grow { flex: 1; color: var(--muted); font-size: 13px; }
   .body { width: 100%; min-height: 160px; resize: none; background: transparent; border: 0; padding: 0;
-          font: 15px/1.6 var(--sans); border-radius: 0; }
+          font: 14.5px/1.65 var(--sans); border-radius: 0; unicode-bidi: plaintext; }
   .body:focus { border: 0; }
   .body::placeholder { color: var(--off); }
-  .tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .tools { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--line); }
   .tools .right { margin-left: auto; }
   .tx { margin-top: 26px; }
-  .tx .seg { display: grid; grid-template-columns: 52px 1fr; gap: 10px; padding: 6px 0; font-size: 14.5px; }
-  .tx .seg .ts { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; padding-top: 2px; }
-  .tx .wait { color: var(--muted); font-size: 13.5px; padding: 10px 0; }
+  .tx .seg { display: grid; grid-template-columns: 52px 1fr; gap: 10px; padding: 6px 0; font-size: 14px; }
+  .tx .seg span:last-child { unicode-bidi: plaintext; }
+  .tx .seg .ts { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; padding-top: 2px; }
+  .tx .wait { color: var(--muted); font-size: 13px; padding: 10px 0; }
 
   /* Settings */
-  .tabs { display: flex; gap: 4px; margin: -8px 0 26px; border-bottom: 1px solid var(--line); }
-  .tabs button { all: unset; padding: 8px 12px 10px; font-size: 14px; color: var(--muted); cursor: default;
-                 border-bottom: 2px solid transparent; margin-bottom: -1px; }
-  .tabs button.on { color: var(--ink); border-color: var(--ink); font-weight: 560; }
+  .tabs { display: inline-flex; gap: 4px; margin: -6px 0 24px; padding: 4px; border-radius: 999px;
+          background: var(--card); box-shadow: inset 0 0 0 1px var(--rim); }
+  .tabs button { all: unset; display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px 7px 11px;
+                 border-radius: 999px; font-size: 12.5px; color: var(--muted); cursor: default; }
+  .tabs button svg { width: 15px; height: 15px; }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button.on { color: #fff; background: var(--grad); font-weight: 600; }
   .tab { display: none; }
   .tab.on { display: block; }
-  h2 { font: 600 15px var(--sans); margin: 26px 0 12px; }
-  h2:first-child { margin-top: 0; }
-  .card { background: var(--card); border-radius: 16px; padding: 0 22px; }
-  .set { display: flex; align-items: center; gap: 24px; padding: 18px 0; border-top: 1px solid var(--line); }
+  .card { padding: 0 20px; }
+  .set { display: flex; align-items: center; gap: 24px; padding: 15px 0; border-top: 1px solid var(--line); }
   .set:first-child { border-top: 0; }
   .set .lbl { flex: 1; min-width: 0; }
-  .set .lbl b { display: block; font-weight: 560; font-size: 14.5px; }
-  .set .lbl span { display: block; color: var(--muted); font-size: 13.5px; margin-top: 3px; max-width: 520px; }
-  .set .lbl span a { color: var(--ink); }
-  .set select { min-width: 170px; background: var(--panel); appearance: none; -webkit-appearance: none;
-                padding-right: 34px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%238A857E' stroke-width='1.6'%3E%3Cpath d='M2 4.5l4 4 4-4'/%3E%3C/svg%3E");
+  .set .lbl b { display: block; font-weight: 600; font-size: 13.5px; }
+  .set .lbl span { display: block; color: var(--muted); font-size: 12.5px; margin-top: 3px; max-width: 520px; }
+  .set .lbl span a { color: var(--accent); }
+  .set select { min-width: 170px; appearance: none; -webkit-appearance: none; border-radius: 999px; font-size: 13px;
+                padding-right: 34px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%238A7F96' stroke-width='1.6'%3E%3Cpath d='M2 4.5l4 4 4-4'/%3E%3C/svg%3E");
                 background-repeat: no-repeat; background-position: right 12px center; }
   .tog { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
   .tog input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; z-index: 1; }
   .tog span { position: absolute; inset: 0; border-radius: 999px; background: var(--off); transition: background .15s; }
   .tog span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
-                     border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2); transition: transform .15s; }
-  .tog input:checked + span { background: var(--ink); }
+                     border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .15s; }
+  .tog input:checked + span { background: var(--grad); }
   .tog input:checked + span::after { transform: translateX(18px); }
-  @media (prefers-color-scheme: dark) { .tog input:checked + span::after { background: #161514; } }
-  .tog input:focus-visible + span { outline: 2px solid var(--muted); outline-offset: 2px; }
-  .warn { display: none; margin-bottom: 12px; padding: 10px 14px; border-radius: 10px; background: var(--chip);
-          font-size: 13px; color: var(--muted); }
+  .tog input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .warn { display: none; margin-bottom: 12px; padding: 10px 16px; border-radius: 14px; font-size: 12.5px;
+          background: rgba(255, 169, 40, 0.14); color: var(--ink); }
+  .warn a { color: var(--accent); }
   .warn.on { display: block; }
-  .btn.capturing { background: var(--ink); color: var(--panel); }
 
   /* Notepad window */
-  body.notepad aside { display: none; }
-  body.notepad main { margin: 0; border: 0; border-radius: 0; background: var(--panel); }
+  body.notepad header, body.notepad .peek { display: none; }
+  body.notepad main { margin: 0; border-radius: 0; box-shadow: none; }
   body.notepad .page { display: none; }
   body.notepad #pad { display: block; padding: 40px 22px 24px; }
   body.notepad .editor { padding: 0; overflow: visible; }
-
-  /* ── Theme: light-blue sidebar, glass content, minimal type ── */
-  body { background: transparent; font: 13.5px/1.5 var(--sans); letter-spacing: -0.003em; }
-  body.noglass { background: linear-gradient(135deg, #9EC2EA 0%, #DCD3F0 55%, #F3E3CF 100%); }
-  aside { background: var(--side); color: var(--side-ink); width: 212px; padding: 46px 12px 14px;
-          border-right: 1px solid var(--line); }
-  .brand { font-size: 15px; font-weight: 600; letter-spacing: -0.015em; padding: 0 10px 22px; gap: 9px; }
-  .logo { width: 22px; height: 22px; border-radius: 6px; background: var(--side-ink); box-shadow: none; }
-  .logo::after { width: 8px; height: 8px; background: var(--side); }
-  nav button { color: var(--side-ink); font-size: 13.5px; padding: 7px 10px; gap: 10px; border-radius: 8px; }
-  nav button:hover { background: rgba(255, 255, 255, 0.4); }
-  nav button.on { background: var(--chip); font-weight: 600; box-shadow: 0 1px 2px rgba(16, 38, 64, 0.08); }
-  nav svg { width: 16px; height: 16px; stroke-width: 1.7; opacity: 0.85; }
-  nav .sep { background: var(--line); margin: 8px 10px; }
-  .hint { background: rgba(255, 255, 255, 0.35); border: 0; color: var(--side-muted); font-size: 12px; line-height: 1.55; }
-  .hint b { color: var(--side-ink); }
-  kbd { font: 600 11px var(--sans); background: var(--chip); }
-
-  main { margin: 0; border: 0; border-radius: 0; background: var(--glass);
-         -webkit-backdrop-filter: saturate(1.6) blur(28px); backdrop-filter: saturate(1.6) blur(28px); }
-  .page { padding: 40px 44px 44px; }
-  h1 { font: 600 24px/1.2 var(--sans); letter-spacing: -0.022em; margin-bottom: 24px; }
-  h1 .sub { font-size: 13px; margin-top: 6px; font-weight: 400; }
-  h2 { font: 600 13px var(--sans); letter-spacing: -0.005em; margin: 26px 0 10px; }
-  .section { font-size: 11px; letter-spacing: 0.06em; }
-
-  .stat, .list, .card { background: var(--card); border: 1px solid var(--rim); border-radius: 12px; }
-  .stat { padding: 18px 20px; }
-  .stat .n { font: 600 26px/1 var(--sans); letter-spacing: -0.025em; font-variant-numeric: tabular-nums; }
-  .stat .l { font-size: 12px; margin-top: 6px; }
-  .row { padding: 14px 18px; }
-  .row:hover, .nitem:hover { background: var(--hover); }
-  .row .x { font-size: 14px; }
-  .row .t { font-size: 12px; }
-
-  .btn { font-size: 12.5px; font-weight: 600; padding: 7px 13px; border-radius: 8px;
-         background: var(--accent); color: var(--on-accent); }
-  .btn.soft { background: var(--chip); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
-  .btn.soft:hover { background: var(--panel); }
-  .btn.ghost { font-weight: 500; }
-  .btn.danger, .btn.ghost.danger { background: var(--red); color: #fff; }
-  input, select, textarea { font-size: 13.5px; background: var(--chip); border-color: var(--line); border-radius: 8px; }
-  .set select { background-color: var(--chip); font-size: 13px; }
-  .tog input:checked + span { background: var(--accent); }
-  .tog span::after { background: #fff !important; }
-  .tabs { border-color: var(--line); }
-  .tabs button { font-size: 13px; }
-  .card { padding: 0 20px; }
-  .set { padding: 15px 0; border-color: var(--line); }
-  .set .lbl b { font-size: 13.5px; font-weight: 600; }
-  .set .lbl span { font-size: 12.5px; }
-
-  .nlist { border-color: var(--line); }
-  .nlist h1 { font-size: 22px; }
-  .nitem.on { background: var(--chip); box-shadow: 0 1px 2px rgba(16, 38, 64, 0.06); }
-  .nitem .nt { font-size: 13.5px; font-weight: 600; }
-  .nitem .nm { font-size: 12px; }
-  .tag { font-size: 10px; background: var(--hover); }
-  .ttl { font: 600 24px/1.25 var(--sans); letter-spacing: -0.022em; }
-  .meta-line { font-size: 12.5px; }
-  .recbar { background: var(--card); border: 1px solid var(--rim); border-radius: 10px; }
-  .body { font-size: 14.5px; }
-  .tx .seg { font-size: 14px; }
-  .tools { border-color: var(--line); }
-  .chip { background: var(--chip); font-size: 13px; box-shadow: inset 0 0 0 1px var(--line); }
-  body.notepad main { background: var(--glass); }
 
   /* Voice test */
   .vt-sum { display: flex; align-items: center; gap: 22px; padding: 18px 20px; margin-bottom: 14px; }
   .vt-score .n { font: 600 28px/1 var(--sans); letter-spacing: -0.025em; font-variant-numeric: tabular-nums; }
   .vt-score .l { color: var(--muted); font-size: 12px; margin-top: 5px; }
   .vt-meta { flex: 1; color: var(--muted); font-size: 12.5px; line-height: 1.6; }
-  .vt-acts { display: flex; gap: 8px; }
+  .vt-acts { display: flex; gap: 8px; align-items: center; }
   .vt-help { color: var(--muted); font-size: 12.5px; margin: 4px 0 12px; }
   .vt-help b { color: var(--ink); font-weight: 600; }
   .vt-row { display: grid; grid-template-columns: 78px 1fr auto; gap: 14px; padding: 12px 16px;
             border-top: 1px solid var(--line); align-items: center; }
   .vt-row:first-child { border-top: 0; }
+  .vt-row .tag { justify-self: start; }
   .vt-text { direction: rtl; text-align: right; font-size: 15.5px; line-height: 1.6; }
   .vt-text.ltr { direction: ltr; text-align: left; }
   .vt-heard { direction: rtl; text-align: right; font-size: 12.5px; color: var(--muted); margin-top: 3px; }
   .vt-heard .pct { direction: ltr; display: inline-block; font-weight: 600; margin-left: 6px; }
-  .good { color: #23874F; } .ok { color: #B7791F; } .bad { color: var(--red); }
-  .vt-btns { display: flex; gap: 6px; align-items: center; }
+  .good { color: var(--good); } .ok { color: var(--ok); } .bad { color: var(--red); }
+  .vt-btns { display: flex; gap: 4px; align-items: center; }
   .vt-btns .rec { min-width: 74px; justify-content: center; }
   .vt-btns .rec.on { background: var(--red); color: #fff; }
-  .vt-btns .icon { all: unset; width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center;
-                   color: var(--muted); cursor: default; font-size: 13px; }
-  .vt-btns .icon:hover { background: var(--hover); color: var(--ink); }
-  .vt-btns .icon.danger { width: auto; padding: 0 8px; color: #fff; font-size: 12px; font-weight: 600; }
-  .nitem.on .tag { background: var(--hover); }
 </style>
 </head>
 <body>
-<aside>
-  <div class="brand"><div class="logo"></div>Dictation 2</div>
+<header>
+  <div class="brand"><div class="logo"><svg viewBox="0 0 24 24"><path d="M6 10v4M10 6v12M14 8v8M18 11v2"/></svg></div>Kalam</div>
   <nav>
-    <button data-p="home" class="on"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Dictation</button>
-    <button data-p="notes"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg>Notes<span class="rec"></span></button>
-    <button data-p="clip"><svg viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M9.5 10h5M9.5 14h5"/></svg>Clipboard</button>
-    <button data-p="dict"><svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M9 10h6M9 14h6"/></svg>Dictionary</button>
-    <button data-p="snip"><svg viewBox="0 0 24 24"><circle cx="6" cy="7" r="2.5"/><circle cx="6" cy="17" r="2.5"/><path d="M8 8.5 20 18M8 15.5 20 6"/></svg>Snippets</button>
-    <div class="sep"></div>
-    <button data-p="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Settings</button>
+    <button class="nb on" data-p="home" aria-label="Transcribe"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+    <button class="nb" data-p="notes" aria-label="Notes"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg><span class="rec"></span></button>
+    <button class="nb" data-p="clip" aria-label="Clipboard"><svg viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M9.5 10h5M9.5 14h5"/></svg></button>
+    <button class="nb" data-p="dict" aria-label="Your words"><svg viewBox="0 0 24 24"><path d="M3 19 8 5l5 14M4.8 14h6.4"/><circle cx="17.5" cy="15.5" r="3"/><path d="M20.5 12.5V19"/></svg></button>
+    <button class="nb" data-p="snip" aria-label="Shortcuts"><svg viewBox="0 0 24 24"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/></svg></button>
   </nav>
-  <div class="hint">Hold <kbd>Right ⌥</kbd> to talk.<br>Press <kbd id="hintKey">⌥ M</kbd> to take meeting notes.</div>
-</aside>
+  <div class="hdr-r"><button class="nb" data-p="settings" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button></div>
+</header>
+<div class="peek" id="peek"></div>
 
 <main>
   <section class="page on" id="home">
-    <h1>Welcome back<span class="sub">Everything you've dictated, on this Mac only.</span></h1>
-    <div class="stats">
-      <div class="stat"><div class="n" id="sWords">0</div><div class="l">total words</div></div>
-      <div class="stat"><div class="n" id="sWpm">0</div><div class="l">words per minute</div></div>
-      <div class="stat"><div class="n" id="sStreak">0</div><div class="l">day streak</div></div>
+    <h1>Transcribe<span class="sub">Everything you've said, kept on this Mac only.</span></h1>
+    <div class="pills">
+      <span class="pill"><i class="g-coral"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></i>Hold <kbd>Right ⌥</kbd> to talk</span>
+      <span class="pill"><i class="g-amber"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg></i><kbd id="hintKey">⌥ M</kbd> for meeting notes</span>
     </div>
-    <div class="section"><span id="dayLabel">TODAY</span><button class="btn ghost" id="clear">Clear history</button></div>
+    <div class="stats">
+      <div class="stat"><div class="bub g-coral"><svg viewBox="0 0 24 24"><path d="M5 7V5h14v2M12 5v14M9 19h6"/></svg></div><div><div class="n" id="sWords">0</div><div class="l">total words</div></div></div>
+      <div class="stat"><div class="bub g-violet"><svg viewBox="0 0 24 24"><path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-5"/></svg></div><div><div class="n" id="sWpm">0</div><div class="l">words per minute</div></div></div>
+      <div class="stat"><div class="bub g-amber"><svg viewBox="0 0 24 24"><path d="M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.3 2.4-5.4 3.8-7.6.5 1.7 1.5 2.8 2.7 3.2-.2-2.6.8-5.3 3-7.4.6 3.4 4.5 6 4.5 11.4 0 3.8-3 6.6-7.5 6.6z"/></svg></div><div><div class="n" id="sStreak">0</div><div class="l">day streak</div></div></div>
+    </div>
+    <div class="section"><span id="dayLabel">TODAY</span><button class="ib" id="clear" aria-label="Clear history" title="Clear history"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>
     <div class="list" id="history"></div>
   </section>
 
@@ -323,7 +328,7 @@
       <div class="top">
         <h1>Notes</h1>
         <div class="acts">
-          <button class="btn soft" id="newNote">New note</button>
+          <button class="btn soft" id="newNote"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New</button>
           <button class="btn" id="ntToggle"><span class="dot"></span>Notetaker</button>
         </div>
       </div>
@@ -333,45 +338,45 @@
   </section>
 
   <section class="page" id="clip">
-    <h1>Clipboard<span class="sub">Every dictation is saved here first. If it didn't land in a text box, click it to copy.</span></h1>
+    <h1>Clipboard<span class="sub">Everything you say is saved here first. If it didn't land in a text box, click it to copy.</span></h1>
     <div class="list" id="clips"></div>
   </section>
 
   <section class="page" id="dict">
-    <h1>Dictionary<span class="sub">Names, brands and terms the model should spell your way.</span></h1>
-    <form class="add" id="dForm"><input id="dIn" placeholder="Add a word, e.g. be'ah, Maal, 144 Arc"><button class="btn">Add</button></form>
+    <h1>Your words<span class="sub">Names, brands and terms Kalam should spell your way.</span></h1>
+    <form class="add" id="dForm"><input id="dIn" placeholder="Add a word, e.g. be'ah, Maal, 144 Arc"><button class="ib go" aria-label="Add" title="Add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></form>
     <div class="chips" id="words"></div>
   </section>
 
   <section class="page" id="snip">
-    <h1>Snippets<span class="sub">Say the trigger on its own and the full text is typed instead.</span></h1>
-    <form class="add" id="sForm"><input id="sKey" placeholder="Trigger, e.g. my email" style="flex:.6"><input id="sVal" placeholder="Expands to…"><button class="btn">Add</button></form>
+    <h1>Shortcuts<span class="sub">Say the trigger on its own and the full text is typed instead.</span></h1>
+    <form class="add" id="sForm"><input id="sKey" placeholder="Trigger, e.g. my email" style="flex:.6"><input id="sVal" placeholder="Expands to…"><button class="ib go" aria-label="Add" title="Add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></form>
     <div class="list" id="snips"></div>
   </section>
 
   <section class="page" id="settings">
     <h1>Settings</h1>
     <div class="tabs">
-      <button data-t="tSystem" class="on">System</button>
-      <button data-t="tNotetaker">Notetaker</button>
-      <button data-t="tExperimental">Experimental</button>
-      <button data-t="tVoice">Voice test</button>
+      <button data-t="tSystem" class="on"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 19h20"/></svg>System</button>
+      <button data-t="tNotetaker"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Notetaker</button>
+      <button data-t="tExperimental"><svg viewBox="0 0 24 24"><path d="M10 3v6L5 19a1.5 1.5 0 0 0 1.4 2h11.2A1.5 1.5 0 0 0 19 19l-5-10V3M9 3h6M7.5 14h9"/></svg>Experimental</button>
+      <button data-t="tVoice"><svg viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg>Voice test</button>
     </div>
 
     <div class="tab on" id="tSystem">
-      <h2>Dictation</h2>
+      <h2>Transcribe</h2>
       <div class="card">
         <div class="set"><div class="lbl"><b>Language</b><span>Pick the language you dictate in and text appears about twice as fast. Auto-detect works out the language each time, which takes longer.</span></div><select data-set="dictation_language"></select></div>
       </div>
       <h2>App settings</h2>
       <div class="card">
         <div class="set"><div class="lbl"><b>Launch app at login</b></div><label class="tog"><input type="checkbox" data-set="launch_at_login"><span></span></label></div>
-        <div class="set"><div class="lbl"><b>Show the Dictation bar at all times</b><span>Keeps the bar at the bottom of the screen, even when you're not dictating.</span></div><label class="tog"><input type="checkbox" data-set="show_bar_always"><span></span></label></div>
+        <div class="set"><div class="lbl"><b>Show the Kalam bar at all times</b><span>Keeps the bar at the bottom of the screen, even when you're not dictating.</span></div><label class="tog"><input type="checkbox" data-set="show_bar_always"><span></span></label></div>
         <div class="set"><div class="lbl"><b>Show app in Dock</b></div><label class="tog"><input type="checkbox" data-set="show_in_dock"><span></span></label></div>
       </div>
       <h2>Sound</h2>
       <div class="card">
-        <div class="set"><div class="lbl"><b>Dictation and notification sounds</b></div><label class="tog"><input type="checkbox" data-set="sounds"><span></span></label></div>
+        <div class="set"><div class="lbl"><b>Recording and notification sounds</b></div><label class="tog"><input type="checkbox" data-set="sounds"><span></span></label></div>
         <div class="set"><div class="lbl"><b>Mute all audio while dictating</b><span>Mutes your Mac's sound while you hold the key, then turns it back on.</span></div><label class="tog"><input type="checkbox" data-set="mute_while_dictating"><span></span></label></div>
       </div>
     </div>
@@ -381,7 +386,7 @@
       <h2>Meeting detection</h2>
       <div class="card">
         <div class="set"><div class="lbl"><b>Notify before scheduled meetings start</b><span>Choose when to get a heads-up before a meeting on your calendar starts</span></div><select data-set="notify_before_meeting"></select></div>
-        <div class="set"><div class="lbl"><b>Show your next meeting in the menu bar</b><span>Shows the meeting name and a countdown next to the Dictation icon. Turning it off keeps the icon and its meeting menu.</span></div><label class="tog"><input type="checkbox" data-set="show_next_meeting"><span></span></label></div>
+        <div class="set"><div class="lbl"><b>Show your next meeting in the menu bar</b><span>Shows the meeting name and a countdown next to the Kalam icon. Turning it off keeps the icon and its meeting menu.</span></div><label class="tog"><input type="checkbox" data-set="show_next_meeting"><span></span></label></div>
         <div class="set"><div class="lbl"><b>Automatically detect any call</b><span>Notetaker asks if you want to start a note when you join a call</span></div><label class="tog"><input type="checkbox" data-set="auto_detect_calls"><span></span></label></div>
         <div class="set"><div class="lbl"><b>Maximum recording length</b><span>Notetaker stops automatically at this length, with a warning shortly before</span></div><select data-set="max_recording_minutes"></select></div>
         <div class="set"><div class="lbl"><b>Stop Notetaker when a call ends</b><span>Notetaker stops automatically so you don't have to</span></div><label class="tog"><input type="checkbox" data-set="stop_when_call_ends"><span></span></label></div>
@@ -389,7 +394,7 @@
       </div>
       <h2>While Notetaker is active</h2>
       <div class="card">
-        <div class="set"><div class="lbl"><b>Don't show Notepad and the Dictation bar in screen capture</b><span>Notepad and the bar won't appear in screenshots or when you share your screen. Always ask for consent before transcribing.</span></div><label class="tog"><input type="checkbox" data-set="hide_from_screen_capture"><span></span></label></div>
+        <div class="set"><div class="lbl"><b>Don't show Notepad and the Kalam bar in screen capture</b><span>Notepad and the bar won't appear in screenshots or when you share your screen. Always ask for consent before transcribing.</span></div><label class="tog"><input type="checkbox" data-set="hide_from_screen_capture"><span></span></label></div>
       </div>
       <h2>Notepad</h2>
       <div class="card">
@@ -404,7 +409,7 @@
     </div>
 
     <div class="tab" id="tExperimental">
-      <h2>Dictation</h2>
+      <h2>Transcribe</h2>
       <div class="card">
         <div class="set"><div class="lbl"><b>Pause music while dictating</b><span>Pauses Music and Spotify instead of muting them, then resumes. This feature is experimental.</span></div><label class="tog"><input type="checkbox" data-set="pause_media_while_dictating"><span></span></label></div>
       </div>
@@ -415,13 +420,13 @@
         <div class="vt-score"><div class="n" id="vtScore">—</div><div class="l" id="vtScoreLbl">Not tested yet</div></div>
         <div class="vt-meta" id="vtMeta"></div>
         <div class="vt-acts">
-          <button class="btn soft" id="vtExport">Export…</button>
+          <button class="ib" id="vtExport" aria-label="Export" title="Export the recordings"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></button>
           <button class="btn" id="vtRun">Run test</button>
         </div>
       </div>
       <div class="warn" id="vtWarn">Language is set to English. For an Arabic test, choose Arabic or Auto-detect in System → Language.</div>
       <p class="vt-help">Click <b>Record</b>, read the phrase the way you'd normally say it, then click <b>Stop</b>. Delete phrases you'd never say and add your own. <b>Run test</b> transcribes your recordings and shows how many words the app got right.</p>
-      <form class="add" id="vtAdd"><input id="vtIn" dir="auto" placeholder="Add your own phrase, e.g. أبي أحجز طاولة لشخصين"><button class="btn">Add</button></form>
+      <form class="add" id="vtAdd"><input id="vtIn" dir="auto" placeholder="Add your own phrase, e.g. أبي أحجز طاولة لشخصين"><button class="ib go" aria-label="Add" title="Add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></form>
       <div class="list" id="vtList"></div>
     </div>
   </section>
@@ -430,6 +435,7 @@
 </main>
 
 <script>
+  const I = {"mic": "<svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5 11a7 7 0 0 0 14 0M12 18v3\"/></svg>", "notes": "<svg viewBox=\"0 0 24 24\"><path d=\"M6 3h9l4 4v14H6z\"/><path d=\"M15 3v4h4M9 12h7M9 16h5\"/></svg>", "clip": "<svg viewBox=\"0 0 24 24\"><rect x=\"6\" y=\"4\" width=\"12\" height=\"17\" rx=\"2\"/><path d=\"M9 4.5V3h6v1.5M9.5 10h5M9.5 14h5\"/></svg>", "words": "<svg viewBox=\"0 0 24 24\"><path d=\"M3 19 8 5l5 14M4.8 14h6.4\"/><circle cx=\"17.5\" cy=\"15.5\" r=\"3\"/><path d=\"M20.5 12.5V19\"/></svg>", "bolt": "<svg viewBox=\"0 0 24 24\"><path d=\"M13 3 5 13.5h6L10 21l8-10.5h-6z\"/></svg>", "settings": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 7h10M18 7h2M4 17h4M12 17h8\"/><circle cx=\"16\" cy=\"7\" r=\"2\"/><circle cx=\"10\" cy=\"17\" r=\"2\"/></svg>", "copy": "<svg viewBox=\"0 0 24 24\"><rect x=\"8\" y=\"8\" width=\"12\" height=\"12\" rx=\"3\"/><path d=\"M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2\"/></svg>", "check": "<svg viewBox=\"0 0 24 24\"><path d=\"M5 12.5 10 17 19 7\"/></svg>", "trash": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3\"/></svg>", "x": "<svg viewBox=\"0 0 24 24\"><path d=\"M6 6l12 12M18 6 6 18\"/></svg>", "plus": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 5v14M5 12h14\"/></svg>", "export": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 4v11M7 10l5 5 5-5M5 20h14\"/></svg>", "side": "<svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"3\"/><path d=\"M14 4v16\"/></svg>", "window": "<svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"3\"/><path d=\"M3 9h18\"/></svg>", "play": "<svg viewBox=\"0 0 24 24\"><path d=\"M8 5.5v13l10-6.5z\"/></svg>", "type": "<svg viewBox=\"0 0 24 24\"><path d=\"M5 7V5h14v2M12 5v14M9 19h6\"/></svg>", "gauge": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 16a8 8 0 1 1 16 0\"/><path d=\"M12 16l4-5\"/></svg>", "flame": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.3 2.4-5.4 3.8-7.6.5 1.7 1.5 2.8 2.7 3.2-.2-2.6.8-5.3 3-7.4.6 3.4 4.5 6 4.5 11.4 0 3.8-3 6.6-7.5 6.6z\"/></svg>", "laptop": "<svg viewBox=\"0 0 24 24\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"11\" rx=\"2\"/><path d=\"M2 19h20\"/></svg>", "cal": "<svg viewBox=\"0 0 24 24\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"15\" rx=\"3\"/><path d=\"M4 10h16M9 3v4M15 3v4\"/></svg>", "flask": "<svg viewBox=\"0 0 24 24\"><path d=\"M10 3v6L5 19a1.5 1.5 0 0 0 1.4 2h11.2A1.5 1.5 0 0 0 19 19l-5-10V3M9 3h6M7.5 14h9\"/></svg>", "wave": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2\"/></svg>"};
   const post = m => window.webkit.messageHandlers.app.postMessage(m);
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -438,12 +444,46 @@
   let MODE = 'main';
 
   const showPage = p => {
-    document.querySelectorAll('nav button, .page').forEach(e => e.classList.remove('on'));
-    const b = document.querySelector(`nav button[data-p="${p}"]`);
+    document.querySelectorAll('.nb, .page').forEach(e => e.classList.remove('on'));
+    const b = document.querySelector(`.nb[data-p="${p}"]`);
     if (b) b.classList.add('on');
     $(p).classList.add('on');
   };
-  document.querySelectorAll('nav button').forEach(b => b.onclick = () => showPage(b.dataset.p));
+  document.querySelectorAll('.nb').forEach(b => {
+    b.onclick = () => { hidePeek(); showPage(b.dataset.p); };
+    b.onmouseenter = () => showPeek(b);
+    b.onmouseleave = hidePeek;
+  });
+
+  // ── Hover preview: the section's name and a glance at what's inside ──
+  const pi = (text, small) => `<div class="pi">${small ? `<small>${esc(small)}</small>` : ''}${esc(text)}</div>`;
+  const pe = text => `<div class="pe">${esc(text)}</div>`;
+  const PEEK = {
+    home: () => { const h = S.history.slice(-3).reverse();
+      return [`${fmt(S.stats.words || 0)} words`, h.map(e => pi(e.text, time(e.ts))).join('') || pe('Hold Right ⌥ and start talking.')]; },
+    notes: () => [S.notetaker.active ? '● Recording' : `${S.notes.length} notes`,
+      S.notes.slice(0, 3).map(n => pi(n.title || 'Untitled note', when(n.created))).join('') || pe('No notes yet.')],
+    clip: () => { const h = S.history.slice(-3).reverse();
+      return [`${Math.min(S.history.length, 100)} items`, h.map(e => pi(e.text)).join('') || pe('Nothing copied yet.')]; },
+    dict: () => [`${S.dictionary.length} words`, S.dictionary.length
+      ? `<div class="pc">${S.dictionary.slice(0, 12).map(w => `<b>${esc(w)}</b>`).join('')}</div>` : pe('No words yet.')],
+    snip: () => { const k = Object.keys(S.snippets);
+      return [`${k.length}`, k.slice(0, 3).map(t => pi(`${t} → ${S.snippets[t]}`)).join('') || pe('No shortcuts yet.')]; },
+    settings: () => { const lang = (S.options.dictation_language || []).find(([v]) => v === S.settings.dictation_language);
+      return ['', pi(lang ? lang[1] : 'Auto-detect', 'Language') + pi(S.settings.meeting_shortcut.label, 'Notetaker')
+        + pi(S.settings.launch_at_login ? 'On' : 'Off', 'Launch at login')]; },
+  };
+  let peekTimer = null;
+  function showPeek(btn) {
+    clearTimeout(peekTimer);
+    const el = $('peek'), [count, body] = PEEK[btn.dataset.p]();
+    el.style.setProperty('--hue', getComputedStyle(btn).getPropertyValue('--hue'));
+    el.innerHTML = `<div class="ph"><i></i>${esc(btn.getAttribute('aria-label'))}<span>${esc(count)}</span></div>${body}`;
+    const r = btn.getBoundingClientRect();
+    el.style.left = Math.max(10, Math.min(window.innerWidth - 300, r.left + r.width / 2 - 145)) + 'px';
+    peekTimer = setTimeout(() => el.classList.add('on'), 120);
+  }
+  function hidePeek() { clearTimeout(peekTimer); $('peek').classList.remove('on'); }
   document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
     document.querySelectorAll('.tabs button, .tab').forEach(e => e.classList.remove('on'));
     b.classList.add('on'); $(b.dataset.t).classList.add('on');
@@ -496,11 +536,11 @@
         <textarea class="body" placeholder="Write notes here, or hold Right ⌥ to dictate into them."></textarea>
         <div class="tx"></div>
         <div class="tools">
-          <button class="btn ghost" data-act="copy">Copy as Markdown</button>
-          <button class="btn ghost" data-act="export">Export…</button>
-          ${MODE === 'notepad' ? '<button class="btn ghost" data-act="main">Open in Dictation</button>'
-                               : '<button class="btn ghost" data-act="pad">Open Notepad</button>'}
-          <button class="btn ghost right" data-act="delete">Delete</button>
+          <button class="ib" data-act="copy" title="Copy as Markdown">${I.copy}</button>
+          <button class="ib" data-act="export" title="Export…">${I.export}</button>
+          ${MODE === 'notepad' ? `<button class="ib" data-act="main" title="Open in Kalam">${I.window}</button>`
+                               : `<button class="ib" data-act="pad" title="Open Notepad">${I.side}</button>`}
+          <button class="ib right" data-act="delete" title="Delete">${I.trash}</button>
         </div>`;
       const ttl = root.querySelector('.ttl'), body = root.querySelector('.body');
       ttl.value = note.title; body.value = note.body;
@@ -537,9 +577,9 @@
   // In-page confirmation: the app's web view can't show confirm() dialogs (they return false).
   function armed(btn, label, action) {
     if (btn.dataset.armed) { delete btn.dataset.armed; action(); return; }
-    const original = btn.textContent;
+    const original = btn.innerHTML;
     btn.dataset.armed = '1'; btn.textContent = label; btn.classList.add('danger');
-    setTimeout(() => { if (btn.dataset.armed) { delete btn.dataset.armed; btn.textContent = original;
+    setTimeout(() => { if (btn.dataset.armed) { delete btn.dataset.armed; btn.innerHTML = original;
       btn.classList.remove('danger'); } }, 3000);
   }
 
@@ -550,7 +590,8 @@
     switch (b.dataset.act) {
       case 'start': post({ type: 'startNotetaker' }); break;
       case 'stop': post({ type: 'stopNotetaker' }); break;
-      case 'copy': post({ type: 'copyNote', id }); b.textContent = 'Copied ✓'; setTimeout(() => b.textContent = 'Copy as Markdown', 1500); break;
+      case 'copy': post({ type: 'copyNote', id }); b.innerHTML = I.check; b.classList.add('done');
+        setTimeout(() => { b.innerHTML = I.copy; b.classList.remove('done'); }, 1500); break;
       case 'export': post({ type: 'exportNote', id }); break;
       case 'pad': post({ type: 'openNotepad', id }); break;
       case 'main': post({ type: 'openMain', id }); break;
@@ -604,9 +645,9 @@
         <div><div class="vt-text ${isLatin ? 'ltr' : ''}">${esc(p.text)}</div>
           ${res ? `<div class="vt-heard">سمع: ${esc(res.heard || '—')}<span class="pct ${pctClass(1 - res.errors / Math.max(res.words, 1))}">${Math.max(0, Math.round((1 - res.errors / Math.max(res.words, 1)) * 100))}%</span></div>` : ''}</div>
         <div class="vt-btns">
-          ${p.recorded && !rec ? `<button class="icon" data-vplay="${p.id}" title="Play">▶</button>` : ''}
+          ${p.recorded && !rec ? `<button class="ib" data-vplay="${p.id}" title="Play">${I.play}</button>` : ''}
           <button class="btn ${rec ? 'rec on' : 'soft rec'}" data-vrec="${p.id}">${rec ? '■ <span class="vt-timer">0:00</span>' : p.recorded ? 'Re-record' : 'Record'}</button>
-          <button class="icon" data-vdel="${p.id}" title="Remove">✕</button>
+          <button class="ib" data-vdel="${p.id}" title="Remove">${I.x}</button>
         </div></div>`;
     }).join('') || '<div class="empty">No phrases. Add your own above.</div>';
     document.querySelectorAll('[data-vrec]').forEach(b => b.onclick = () => post({ type: 'voiceTestRecord', id: b.dataset.vrec }));
@@ -692,24 +733,25 @@
       if (d !== last && i > 0) html += `</div><div class="section" style="margin-top:28px"><span>${d}</span></div><div class="list">`;
       last = d;
       html += `<div class="row"><div class="t">${time(e.ts)}</div><div class="x">${esc(e.text)}</div>
-               <button class="btn ghost c" data-copy="${i}">Copy</button></div>`;
+               <button class="ib c" data-copy="${i}" title="Copy">${I.copy}</button></div>`;
     });
     $('dayLabel').textContent = h.length ? day(h[0].ts) : 'TODAY';
     $('history').outerHTML = `<div class="list" id="history">${html || '<div class="empty">Nothing yet. Hold Right ⌥ and start talking.</div>'}</div>`;
     document.querySelectorAll('[data-copy]').forEach(b => b.onclick = () => {
-      post({ type: 'copy', text: h[+b.dataset.copy].text }); b.textContent = 'Copied'; });
+      post({ type: 'copy', text: h[+b.dataset.copy].text }); b.innerHTML = I.check; b.classList.add('done'); });
 
     $('clips').innerHTML = h.slice(0, 100).map((e, i) => `<div class="row clip" data-clip="${i}">
         <div><div class="x">${esc(e.text)}</div><div class="meta">${day(e.ts).toLowerCase()} · ${time(e.ts)} · ${e.words} words</div></div>
-        <button class="btn">Copy</button></div>`).join('') ||
-      '<div class="empty">Nothing yet. Your dictations will appear here.</div>';
+        <button class="ib" title="Copy">${I.copy}</button></div>`).join('') ||
+      '<div class="empty">Nothing yet. What you say will appear here.</div>';
     document.querySelectorAll('[data-clip]').forEach(r => r.onclick = () => {
       post({ type: 'copy', text: h[+r.dataset.clip].text });
-      document.querySelectorAll('.clip.done').forEach(x => { x.classList.remove('done'); x.querySelector('.btn').textContent = 'Copy'; });
-      r.classList.add('done'); r.querySelector('.btn').textContent = 'Copied ✓'; });
+      document.querySelectorAll('.clip.done').forEach(x => { x.classList.remove('done');
+        const i = x.querySelector('.ib'); i.innerHTML = I.copy; i.classList.remove('done'); });
+      const i = r.querySelector('.ib'); r.classList.add('done'); i.innerHTML = I.check; i.classList.add('done'); });
 
     $('words').innerHTML = S.dictionary.map((w, i) =>
-      `<span class="chip">${esc(w)}<button data-del="${i}">×</button></span>`).join('') ||
+      `<span class="chip">${esc(w)}<button class="ib" data-del="${i}" title="Remove">${I.x}</button></span>`).join('') ||
       '<div class="empty" style="width:100%">No words yet.</div>';
     document.querySelectorAll('[data-del]').forEach(b => b.onclick = () =>
       post({ type: 'saveDictionary', words: S.dictionary.filter((_, i) => i !== +b.dataset.del) }));
@@ -717,8 +759,8 @@
     const keys = Object.keys(S.snippets);
     $('snips').innerHTML = keys.map(k => `<div class="row snip" style="grid-template-columns:1fr auto">
         <div class="x"><b>${esc(k)}</b><span class="arrow">→</span><span class="exp">${esc(S.snippets[k])}</span></div>
-        <button class="btn ghost" data-sdel="${esc(k)}">Remove</button></div>`).join('') ||
-      '<div class="empty">No snippets yet.</div>';
+        <button class="ib" data-sdel="${esc(k)}" title="Remove">${I.x}</button></div>`).join('') ||
+      '<div class="empty">No shortcuts yet.</div>';
     document.querySelectorAll('[data-sdel]').forEach(b => b.onclick = () => {
       const s = { ...S.snippets }; delete s[b.dataset.sdel]; post({ type: 'saveSnippets', snippets: s }); });
 
@@ -734,7 +776,7 @@
     $('sKey').value = $('sVal').value = ''; };
   window.addEventListener('beforeunload', flushSaves);
   post({ type: 'ready' });   // ask the app for state once the page has loaded
-  $('clear').onclick = () => armed($('clear'), 'Click again to clear', () => post({ type: 'clearHistory' }));
+  $('clear').onclick = () => armed($('clear'), 'Clear all?', () => post({ type: 'clearHistory' }));
 </script>
 </body>
 </html>

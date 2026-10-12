@@ -1,5 +1,5 @@
 """
-Native UI for Dictation: the floating recording pill and the main window.
+Native UI for Kalam: the floating recording pill and the main window.
 
 Pill mirrors Wispr Flow's overlay window (observed in its main bundle):
 transparent, frameless, "screen-saver" level, ignores mouse, visible on all
@@ -23,7 +23,7 @@ from AppKit import (
     NSWindowStyleMaskMiniaturizable, NSWindowStyleMaskResizable,
     NSWindowStyleMaskFullSizeContentView, NSWindowTitleHidden,
     NSButton, NSTextField, NSFont, NSAppearance, NSStatusWindowLevel, NSMenu, NSMenuItem,
-    NSVisualEffectView,
+    NSVisualEffectView, NSImage,
 )
 from Foundation import NSObject, NSTimer, NSURL
 from PyObjCTools import AppHelper
@@ -31,13 +31,37 @@ from WebKit import WKWebView, WKWebViewConfiguration, WKUserContentController
 
 # ─── Recording pill ──────────────────────────────────────────────────────────
 
-PILL_W, PILL_H = 112, 34
+PILL_W, PILL_H = 120, 36
 BARS = 11
 BOTTOM_GAP = 18          # px above the Dock / bottom of the visible frame
 
+# Kalam brand gradient for the bars, left to right: coral → rose → violet.
+BRAND_STOPS = [(1.00, 0.45, 0.30), (0.93, 0.29, 0.55), (0.48, 0.36, 1.00)]
+
+
+def brand_color(t, alpha=1.0):
+    """Colour at position t (0..1) along the brand gradient."""
+    t = min(1.0, max(0.0, t)) * (len(BRAND_STOPS) - 1)
+    i = min(int(t), len(BRAND_STOPS) - 2)
+    f = t - i
+    a, b = BRAND_STOPS[i], BRAND_STOPS[i + 1]
+    r, g, bl = (a[k] + (b[k] - a[k]) * f for k in range(3))
+    return NSColor.colorWithCalibratedRed_green_blue_alpha_(r, g, bl, alpha)
+
+
+def capsule_mask(w, h):
+    """Capsule-shaped mask so the frosted glass is clipped to the pill's outline."""
+    img = NSImage.alloc().initWithSize_((w, h))
+    img.lockFocus()
+    NSColor.blackColor().setFill()
+    NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(NSMakeRect(0, 0, w, h), h / 2, h / 2).fill()
+    img.unlockFocus()
+    return img
+
 
 class WaveView(NSView):
-    """Black capsule with white bars; bar heights follow the mic level."""
+    """Transparent overlay on the frosted-glass capsule: a soft rim and brand-gradient
+    bars whose heights follow the mic level."""
 
     def initWithFrame_(self, frame):
         self = objc.super(WaveView, self).initWithFrame_(frame)
@@ -55,19 +79,19 @@ class WaveView(NSView):
         b = self.bounds()
         w, h = b.size.width, b.size.height
         idle = self.mode == "idle"
-        NSColor.colorWithCalibratedWhite_alpha_(0.04, 0.6 if idle else 0.96).setFill()
+        # A whisper of white tint and a bright rim make the glass read as glass.
+        NSColor.colorWithCalibratedWhite_alpha_(1.0, 0.10).setFill()
         NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(b, h / 2, h / 2).fill()
-        NSColor.colorWithCalibratedWhite_alpha_(1.0, 0.16).setStroke()
+        NSColor.colorWithCalibratedWhite_alpha_(1.0, 0.45).setStroke()
         rim = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(
             NSMakeRect(0.5, 0.5, w - 1, h - 1), h / 2 - 0.5, h / 2 - 0.5)
         rim.setLineWidth_(1.0)
         rim.stroke()
 
-        bar_w, gap = 2.6, 3.4
+        bar_w, gap = 2.8, 3.6
         total = BARS * bar_w + (BARS - 1) * gap
         x0 = (w - total) / 2
         max_h, min_h = h - 14, 3.0
-        NSColor.colorWithCalibratedWhite_alpha_(1.0, 0.45 if idle else 1.0).setFill()
         for i in range(BARS):
             if idle:
                 v = 0.0
@@ -76,6 +100,7 @@ class WaveView(NSView):
                 v = 0.25 + 0.25 * (1 + math.sin(self.phase * 6 - i * 0.7)) / 2
             else:
                 v = self.levels[i]
+            brand_color(i / (BARS - 1), 0.5 if idle else 1.0).setFill()
             bh = min_h + (max_h - min_h) * v
             x = x0 + i * (bar_w + gap)
             y = (h - bh) / 2
@@ -106,8 +131,15 @@ class Pill(NSObject):
         p.setCollectionBehavior_(NSWindowCollectionBehaviorCanJoinAllSpaces
                                  | NSWindowCollectionBehaviorFullScreenAuxiliary
                                  | NSWindowCollectionBehaviorStationary)
+        # Frosted glass clipped to a capsule, with the bars drawn on top.
+        glass = NSVisualEffectView.alloc().initWithFrame_(NSMakeRect(0, 0, PILL_W, PILL_H))
+        glass.setMaterial_(13)                             # NSVisualEffectMaterialHUDWindow
+        glass.setBlendingMode_(0)                          # blur what's behind the window
+        glass.setState_(1)                                 # always active
+        glass.setMaskImage_(capsule_mask(PILL_W, PILL_H))
+        p.setContentView_(glass)
         self.view = WaveView.alloc().initWithFrame_(NSMakeRect(0, 0, PILL_W, PILL_H))
-        p.setContentView_(self.view)
+        glass.addSubview_(self.view)
         p.setAlphaValue_(0.0)
         self.timer = None
         self.always = False           # "Show the bar at all times"
@@ -135,7 +167,7 @@ class Pill(NSObject):
             self.panel.orderFrontRegardless()
         NSAnimationContext.beginGrouping()
         NSAnimationContext.currentContext().setDuration_(0.15)
-        self.panel.animator().setAlphaValue_(1.0)
+        self.panel.animator().setAlphaValue_(0.7 if mode == "idle" else 1.0)
         NSAnimationContext.endGrouping()
         if mode == "idle":
             self._stop_timer()
@@ -360,7 +392,7 @@ class Bridge(NSObject):
 
 class WebWindow(NSObject):
 
-    SIZES = {"main": ((1000, 660), (760, 520), "Dictation 2"),
+    SIZES = {"main": ((1000, 660), (760, 520), "Kalam"),
              "notepad": ((440, 680), (340, 420), "Notepad")}
 
     def initWithApp_html_mode_(self, app, html_path, mode):

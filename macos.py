@@ -71,7 +71,7 @@ def _get_ids(obj, selector):
 
 # Processes that use the mic but aren't calls.
 _NOT_CALLS = {"corespeechd", "siri", "assistantd", "speechrecognitioncore", "localspeechrecognition",
-              "heard", "wispr flow", "dictation", "superwhisper", "voiceover"}
+              "heard", "wispr flow", "dictation", "kalam", "superwhisper", "voiceover"}
 _RENAME = {"avconferenced": "FaceTime"}
 
 
@@ -118,7 +118,7 @@ def mic_used_by_other_app(self_using_mic):
                 if not pid or pid == me:
                     continue
                 name = _app_name(_process_name(pid))
-                if name and (name.lower() in _NOT_CALLS or name.lower().startswith("dictation")):
+                if name and (name.lower() in _NOT_CALLS or name.lower().startswith(("dictation", "kalam"))):
                     continue
                 return True, name
             return False, None
@@ -241,7 +241,7 @@ def _output_class():
 
 
 SYSTEM_AUDIO_FAILED = ("Only your microphone is being transcribed: macOS didn't start recording the call's sound. "
-                       "Try quitting and reopening Dictation 2, and check it's allowed in System Settings → "
+                       "Try quitting and reopening Kalam, and check it's allowed in System Settings → "
                        "Privacy & Security → Screen & System Audio Recording.")
 
 
@@ -249,7 +249,7 @@ def _capture_queue():
     """A serial queue for audio buffers (keeps them off the main thread)."""
     try:
         import dispatch
-        return dispatch.dispatch_queue_create(b"dictation.system-audio", None)
+        return dispatch.dispatch_queue_create(b"kalam.system-audio", None)
     except Exception:
         return None
 
@@ -274,7 +274,7 @@ class SystemAudioCapture:
             if self._stopped:
                 return
             if error is not None or content is None or not content.displays():
-                self.on_error("Other participants aren't being recorded: allow Dictation 2 in System Settings → "
+                self.on_error("Other participants aren't being recorded: allow Kalam in System Settings → "
                               "Privacy & Security → Screen & System Audio Recording.")
                 return
             try:

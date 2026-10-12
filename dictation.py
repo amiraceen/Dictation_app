@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Dictation App — macOS
+Kalam — macOS
 Hold RIGHT OPTION (⌥) to record, release to transcribe and type.
 """
 
@@ -31,21 +31,26 @@ except ImportError:
 import sys
 
 FROZEN = getattr(sys, "frozen", False)   # True inside the packaged .app
-APP_NAME = "Dictation 2"     # separate app and data folder, so it can sit beside the original Dictation
+APP_NAME = "Kalam"           # separate app and data folder, so it can sit beside the original Dictation
+PREVIOUS_DATA = ("Dictation 2", "Dictation")   # data folders of earlier builds, newest first
 
 
-def _copy_from_original(app_dir):
-    """First launch: copy (never move) history, dictionary and snippets from the original app."""
+def _copy_from_original(app_dir, support=None):
+    """First launch: copy (never move) everything from the newest earlier build's data
+    folder, so notes, settings, history and the voice test carry over."""
     import shutil
-    old = os.path.expanduser("~/Library/Application Support/Dictation")
-    if os.path.isdir(app_dir) or not os.path.isdir(old):
+    if os.path.isdir(app_dir):
         return
-    os.makedirs(app_dir)
-    for name in ("history.json", "dictionary.txt", "snippets.json"):
+    support = support or os.path.expanduser("~/Library/Application Support")
+    for name in PREVIOUS_DATA:
+        old = os.path.join(support, name)
+        if not os.path.isdir(old):
+            continue
         try:
-            shutil.copy2(os.path.join(old, name), os.path.join(app_dir, name))
+            shutil.copytree(old, app_dir, ignore=shutil.ignore_patterns("*.log", "*.tmp"))
         except OSError:
-            pass
+            os.makedirs(app_dir, exist_ok=True)
+        return
 
 
 if FROZEN:
@@ -472,7 +477,7 @@ if HAS_RUMPS:
 
     class MenuBarApp(rumps.App):
         def __init__(self):
-            super().__init__("Dictation", title=None, quit_button=None)
+            super().__init__("Kalam", title=None, quit_button=None)
             self.settings = Settings(SETTINGS_FILE)
             self.notes = NotesStore(NOTES_DIR)
             self.voicetest = voicetest.VoiceTestStore(VOICE_TEST_DIR)
@@ -483,10 +488,10 @@ if HAS_RUMPS:
             self._notes_item = rumps.MenuItem("Start Notetaker", callback=lambda _: self.toggle_notetaker())
             self._meeting_item = rumps.MenuItem("No upcoming meetings")
             self.menu = [
-                rumps.MenuItem("Open Dictation", callback=lambda _: self._open_window()),
+                rumps.MenuItem("Open Kalam", callback=lambda _: self._open_window()),
                 rumps.MenuItem("New Note", callback=lambda _: self._new_note()),
                 self._notes_item,
-                rumps.MenuItem("Copy Last Dictation", callback=lambda _: self._copy_last()),
+                rumps.MenuItem("Copy Last Transcription", callback=lambda _: self._copy_last()),
                 None,
                 self._meeting_item,
                 None,
@@ -573,7 +578,7 @@ if HAS_RUMPS:
                 # The key listener only receives events if started after trust is granted.
                 self.hotkey.restart()
             elif "⚠️ Allow Accessibility…" not in self.menu:
-                self.menu.insert_before("Open Dictation", self._ax_item)
+                self.menu.insert_before("Open Kalam", self._ax_item)
 
         def _open_ax(self):
             os.system('open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"')

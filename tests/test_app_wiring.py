@@ -367,5 +367,33 @@ class CleanTextTest(unittest.TestCase):
         self.assertEqual(c("send it to John, no wait, to Sarah"), "Send it to Sarah")
 
 
+class DataMigrationTest(unittest.TestCase):
+    """First launch of Kalam copies (never moves) the newest earlier build's data."""
+
+    def test_copies_from_dictation_2_first(self):
+        import tempfile
+        support = tempfile.mkdtemp()
+        for name, text in (("Dictation", "old"), ("Dictation 2", "newer")):
+            os.makedirs(os.path.join(support, name, "notes"))
+            with open(os.path.join(support, name, "history.json"), "w") as f:
+                f.write(text)
+        with open(os.path.join(support, "Dictation 2", "notes", "n1.json"), "w") as f:
+            f.write("{}")
+        with open(os.path.join(support, "Dictation 2", "dictation.log"), "w") as f:
+            f.write("log")
+        kalam = os.path.join(support, "Kalam")
+        dictation._copy_from_original(kalam, support)
+        with open(os.path.join(kalam, "history.json")) as f:
+            self.assertEqual(f.read(), "newer")
+        self.assertTrue(os.path.exists(os.path.join(kalam, "notes", "n1.json")))
+        self.assertFalse(os.path.exists(os.path.join(kalam, "dictation.log")))
+        self.assertTrue(os.path.exists(os.path.join(support, "Dictation 2", "history.json")))   # left in place
+        with open(os.path.join(kalam, "history.json"), "w") as f:
+            f.write("mine")
+        dictation._copy_from_original(kalam, support)                 # later launches never overwrite
+        with open(os.path.join(kalam, "history.json")) as f:
+            self.assertEqual(f.read(), "mine")
+
+
 if __name__ == "__main__":
     unittest.main()
