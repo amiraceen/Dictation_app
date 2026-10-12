@@ -7,6 +7,7 @@ No AppKit here; the system-audio source and transcriber are passed in.
 """
 
 import queue
+import re
 import threading
 import time
 
@@ -14,6 +15,58 @@ import numpy as np
 
 SAMPLE_RATE = 16000
 BLOCK = 1024
+
+
+SYSTEM_RATE = 48000       # ScreenCaptureKit's default; 16 kHz is requested from the mixer below
+
+
+class SystemAudioConverter:
+    """ScreenCaptureKit delivers planar float32 at 48 kHz (usually stereo). Turn each
+    buffer into 16 kHz mono, carrying leftover samples between buffers."""
+
+    def __init__(self, rate=SYSTEM_RATE, target=SAMPLE_RATE):
+        self.step = max(1, int(round(rate / target)))
+        self._carry = np.zeros(0, dtype=np.float32)
+
+    def convert(self, data, frames):
+        """data: raw float32 samples of one buffer; frames: samples per channel."""
+        data = np.asarray(data, dtype=np.float32).reshape(-1)
+        if frames <= 0 or len(data) < frames:
+            return np.zeros(0, dtype=np.float32)
+        channels = max(1, len(data) // frames)
+        mono = data[:frames * channels].reshape(channels, frames).mean(axis=0)   # planar: ch0 then ch1
+        mono = np.concatenate([self._carry, mono])
+        usable = len(mono) - len(mono) % self.step
+        self._carry = mono[usable:]
+        return mono[:usable].reshape(-1, self.step).mean(axis=1).astype(np.float32)
+
+
+_SENTENCE = re.compile(r"(?<=[.!?؟。])\s+")
+
+
+def clean_transcript(segments):
+    """Drop Whisper's invented text and collapse repeated sentences.
+
+    segments: iterable of (text, no_speech_prob, avg_logprob, compression_ratio).
+    Whisper hallucinates on near-silence ("Thank you." / "هل ترون؟" over and over);
+    those segments come with a high no-speech probability, a very low log
+    probability, or a high compression ratio (repetitive text)."""
+    kept = []
+    for text, no_speech, logprob, compression in segments:
+        text = text.strip()
+        if not text:
+            continue
+        if no_speech > 0.6 and logprob < -0.5:
+            continue
+        if compression > 2.4 or logprob < -1.2:
+            continue
+        kept.append(text)
+    out = []
+    for sentence in _SENTENCE.split(" ".join(kept)):
+        sentence = sentence.strip()
+        if sentence and (not out or sentence.casefold() != out[-1].casefold()):
+            out.append(sentence)
+    return " ".join(out)
 
 
 class Chunker:

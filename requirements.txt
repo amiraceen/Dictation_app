@@ -7,6 +7,7 @@ pyobjc-framework-Quartz
 pyobjc-framework-EventKit
 pyobjc-framework-ScreenCaptureKit
 pyobjc-framework-CoreMedia
+pyobjc-framework-libdispatch
 pyobjc-framework-WebKit
 rumps
 sounddevice

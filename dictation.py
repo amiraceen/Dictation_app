@@ -16,6 +16,7 @@ import sounddevice as sd
 from faster_whisper import WhisperModel
 from pynput import keyboard
 
+from notetaker import clean_transcript
 from speed import DECODE, whisper_language
 
 try:
@@ -377,7 +378,8 @@ class DictationCore:
             segments, _ = self.model.transcribe(
                 audio, language=self.language(), initial_prompt=self._initial_prompt,
                 vad_filter=True, vad_parameters=dict(min_silence_duration_ms=500), **DECODE)
-            return " ".join(s.text.strip() for s in segments).strip()
+            return clean_transcript((s.text, s.no_speech_prob, s.avg_logprob, s.compression_ratio)
+                                    for s in segments)
 
 
 # ─── Hotkey ──────────────────────────────────────────────────────────────────
@@ -857,10 +859,21 @@ if HAS_RUMPS:
             st["notetaker"] = {"active": self.notetaker.active, "note_id": self.notetaker.note_id,
                                "started_at": time.time() - self.notetaker.elapsed()}
             st["calendar"] = self.calendar.status
+            st["glass"] = True                    # the window has native frosted glass behind the page
             st["goto"], bridge.goto = getattr(bridge, "goto", None), None
             return st
 
         def handle_message(self, msg, bridge):
+            """Runs a button's action. Failures are shown and logged instead of failing silently."""
+            try:
+                return self._handle_message(msg, bridge)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                self._show_toast("That didn't work", f"{msg.get('type')}: {e}", [("OK", None)], timeout=15)
+                return False
+
+        def _handle_message(self, msg, bridge):
             """Returns False when the sender doesn't need a re-render."""
             kind = msg.get("type")
             if kind == "saveDictionary":
@@ -937,8 +950,10 @@ if HAS_RUMPS:
             panel.setNameFieldStringValue_(f"{name}.md")
             _NSApp.activateIgnoringOtherApps_(True)
             if panel.runModal() == 1:
-                with open(panel.URL().path(), "w") as f:
+                path = str(panel.URL().path())
+                with open(path, "w") as f:
                     f.write(self.notes.to_markdown(note_id))
+                self._show_toast("Note exported", path, [("OK", None)], timeout=6, sound=False)
 
         def _quit(self):
             if self.notetaker.active:
@@ -963,7 +978,7 @@ if __name__ == "__main__":
         w = wave.open(sys.argv[2])
         audio = np.frombuffer(w.readframes(w.getnframes()), np.int16).astype(np.float32) / 32768
         try:     # Notetaker frameworks are imported lazily; make sure the bundle has them
-            import EventKit, ScreenCaptureKit, CoreMedia  # noqa: F401
+            import EventKit, ScreenCaptureKit, CoreMedia, dispatch  # noqa: F401
             print("FRAMEWORKS OK", flush=True)
         except Exception:
             traceback.print_exc()

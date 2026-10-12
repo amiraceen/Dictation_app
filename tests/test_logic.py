@@ -217,6 +217,29 @@ class ChunkerTest(unittest.TestCase):
         self.assertFalse(c.is_silent(tone(1)))
 
 
+class SystemAudioTest(unittest.TestCase):
+
+    def test_planar_stereo_48k_to_mono_16k(self):
+        c = notetaker.SystemAudioConverter()
+        tone = np.sin(2 * np.pi * 440 * np.arange(48000) / 48000).astype(np.float32)
+        out = []
+        for i in range(0, 48000, 1000):                       # buffers not divisible by 3
+            block = tone[i:i + 1000]
+            out.append(c.convert(np.concatenate([block, -block * 0 + block]), len(block)))
+        mono = np.concatenate(out)
+        self.assertEqual(len(mono), 16000)
+        self.assertAlmostEqual(float(np.abs(mono).max()), 1.0, places=1)
+        self.assertEqual(len(c.convert(np.zeros(10, np.float32), 0)), 0)
+
+    def test_clean_transcript(self):
+        segs = [("هل ترون؟ هل ترون؟ هل ترون؟ يوجد خطأ", 0.2, -0.4, 1.5),
+                ("Thank you very much.", 0.9, -0.9, 1.0),           # invented over silence
+                ("la la la la la la la la", 0.1, -0.3, 3.1),         # repetitive
+                ("Let's ship Friday.", 0.05, -0.2, 1.1)]
+        self.assertEqual(notetaker.clean_transcript(segs), "هل ترون؟ يوجد خطأ Let's ship Friday.")
+        self.assertEqual(notetaker.clean_transcript([]), "")
+
+
 class MixerTest(unittest.TestCase):
 
     def test_mix_pads_and_drops_backlog(self):

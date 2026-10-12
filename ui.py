@@ -23,6 +23,7 @@ from AppKit import (
     NSWindowStyleMaskMiniaturizable, NSWindowStyleMaskResizable,
     NSWindowStyleMaskFullSizeContentView, NSWindowTitleHidden,
     NSButton, NSTextField, NSFont, NSAppearance, NSStatusWindowLevel, NSMenu, NSMenuItem,
+    NSVisualEffectView,
 )
 from Foundation import NSObject, NSTimer, NSURL
 from PyObjCTools import AppHelper
@@ -384,13 +385,30 @@ class WebWindow(NSObject):
         w.setMinSize_(min_size)
         w.setReleasedWhenClosed_(False)
         w.center()
+        if mode == "notepad" and not w.setFrameUsingName_("DictationNotepad"):
+            # First time: dock the Notepad to the right edge so it doesn't cover the main window.
+            vf = (NSScreen.mainScreen() or NSScreen.screens()[0]).visibleFrame()
+            w.setFrameOrigin_((vf.origin.x + vf.size.width - w0 - 24, vf.origin.y + (vf.size.height - h0) / 2))
         if mode == "notepad":
             w.setFrameAutosaveName_("DictationNotepad")
 
-        self.web = WKWebView.alloc().initWithFrame_configuration_(w.contentView().bounds(), cfg)
+        # Frosted glass behind the page: the desktop shows through, blurred. The page
+        # paints the light-blue sidebar on top and leaves the content area translucent.
+        glass = NSVisualEffectView.alloc().initWithFrame_(w.contentView().bounds())
+        glass.setMaterial_(7)                              # NSVisualEffectMaterialSidebar
+        glass.setBlendingMode_(0)                          # behind window
+        glass.setState_(1)                                 # always active, even when not focused
+        glass.setAutoresizingMask_(18)
+        w.setOpaque_(False)
+        w.setBackgroundColor_(NSColor.clearColor())
+        w.setContentView_(glass)
+
+        self.web = WKWebView.alloc().initWithFrame_configuration_(glass.bounds(), cfg)
         self.web.setAutoresizingMask_(18)                 # width + height sizable
         self.web.setValue_forKey_(False, "drawsBackground")
-        w.setContentView_(self.web)
+        if hasattr(self.web, "setUnderPageBackgroundColor_"):
+            self.web.setUnderPageBackgroundColor_(NSColor.clearColor())
+        glass.addSubview_(self.web)
         self.bridge.web = self.web
         url = NSURL.fileURLWithPath_(html_path)
         self.web.loadFileURL_allowingReadAccessToURL_(url, url.URLByDeletingLastPathComponent())

@@ -5,16 +5,23 @@
 <title>Dictation 2</title>
 <style>
   :root {
-    --bg: #F4F2EE; --panel: #FBFAF8; --ink: #161514; --muted: #8A857E; --line: #E7E3DC;
-    --hover: #EDEAE4; --accent: #161514; --chip: #ECE8E1; --card: #F3F1ED; --off: #CFCAC1;
-    --red: #D93B30;
-    --serif: "New York", ui-serif, Georgia, serif;
-    --sans: -apple-system, "SF Pro Text", system-ui, sans-serif;
+    /* Light-blue sidebar, frosted-glass content. The window itself is native glass (ui.py);
+       translucent fills here let the blurred desktop show through. */
+    --side: rgba(214, 232, 250, 0.86); --side-ink: #102640; --side-muted: #52698A;
+    --glass: rgba(255, 255, 255, 0.58);
+    --bg: rgba(255, 255, 255, 0.5); --panel: #FFFFFF; --card: rgba(255, 255, 255, 0.62);
+    --chip: rgba(255, 255, 255, 0.75); --hover: rgba(16, 38, 64, 0.06); --rim: rgba(255, 255, 255, 0.7);
+    --ink: #0F1720; --muted: #67717F; --line: rgba(16, 38, 64, 0.09); --off: rgba(16, 38, 64, 0.18);
+    --accent: #2E6FE0; --on-accent: #FFFFFF; --red: #D93B30;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #161615; --panel: #1E1E1D; --ink: #F2F0EC; --muted: #8E8A84; --line: #2C2B29;
-            --hover: #262624; --accent: #F2F0EC; --chip: #2A2927; --card: #242422; --off: #4A4844;
-            --red: #F0605A; }
+    :root { --side: rgba(28, 44, 66, 0.86); --side-ink: #E4EDF8; --side-muted: #9DB1C9;
+            --glass: rgba(22, 25, 30, 0.55);
+            --bg: rgba(255, 255, 255, 0.05); --panel: #1B1F25; --card: rgba(255, 255, 255, 0.06);
+            --chip: rgba(255, 255, 255, 0.1); --hover: rgba(255, 255, 255, 0.06); --rim: rgba(255, 255, 255, 0.08);
+            --ink: #EEF2F7; --muted: #95A0AE; --line: rgba(255, 255, 255, 0.08); --off: rgba(255, 255, 255, 0.22);
+            --accent: #5B9BF8; --on-accent: #FFFFFF; --red: #F0605A; }
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   [hidden] { display: none !important; }
@@ -191,6 +198,73 @@
   body.notepad .page { display: none; }
   body.notepad #pad { display: block; padding: 40px 22px 24px; }
   body.notepad .editor { padding: 0; overflow: visible; }
+
+  /* ── Theme: light-blue sidebar, glass content, minimal type ── */
+  body { background: transparent; font: 13.5px/1.5 var(--sans); letter-spacing: -0.003em; }
+  body.noglass { background: linear-gradient(135deg, #9EC2EA 0%, #DCD3F0 55%, #F3E3CF 100%); }
+  aside { background: var(--side); color: var(--side-ink); width: 212px; padding: 46px 12px 14px;
+          border-right: 1px solid var(--line); }
+  .brand { font-size: 15px; font-weight: 600; letter-spacing: -0.015em; padding: 0 10px 22px; gap: 9px; }
+  .logo { width: 22px; height: 22px; border-radius: 6px; background: var(--side-ink); box-shadow: none; }
+  .logo::after { width: 8px; height: 8px; background: var(--side); }
+  nav button { color: var(--side-ink); font-size: 13.5px; padding: 7px 10px; gap: 10px; border-radius: 8px; }
+  nav button:hover { background: rgba(255, 255, 255, 0.4); }
+  nav button.on { background: var(--chip); font-weight: 600; box-shadow: 0 1px 2px rgba(16, 38, 64, 0.08); }
+  nav svg { width: 16px; height: 16px; stroke-width: 1.7; opacity: 0.85; }
+  nav .sep { background: var(--line); margin: 8px 10px; }
+  .hint { background: rgba(255, 255, 255, 0.35); border: 0; color: var(--side-muted); font-size: 12px; line-height: 1.55; }
+  .hint b { color: var(--side-ink); }
+  kbd { font: 600 11px var(--sans); background: var(--chip); }
+
+  main { margin: 0; border: 0; border-radius: 0; background: var(--glass);
+         -webkit-backdrop-filter: saturate(1.6) blur(28px); backdrop-filter: saturate(1.6) blur(28px); }
+  .page { padding: 40px 44px 44px; }
+  h1 { font: 600 24px/1.2 var(--sans); letter-spacing: -0.022em; margin-bottom: 24px; }
+  h1 .sub { font-size: 13px; margin-top: 6px; font-weight: 400; }
+  h2 { font: 600 13px var(--sans); letter-spacing: -0.005em; margin: 26px 0 10px; }
+  .section { font-size: 11px; letter-spacing: 0.06em; }
+
+  .stat, .list, .card { background: var(--card); border: 1px solid var(--rim); border-radius: 12px; }
+  .stat { padding: 18px 20px; }
+  .stat .n { font: 600 26px/1 var(--sans); letter-spacing: -0.025em; font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 12px; margin-top: 6px; }
+  .row { padding: 14px 18px; }
+  .row:hover, .nitem:hover { background: var(--hover); }
+  .row .x { font-size: 14px; }
+  .row .t { font-size: 12px; }
+
+  .btn { font-size: 12.5px; font-weight: 600; padding: 7px 13px; border-radius: 8px;
+         background: var(--accent); color: var(--on-accent); }
+  .btn.soft { background: var(--chip); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+  .btn.soft:hover { background: var(--panel); }
+  .btn.ghost { font-weight: 500; }
+  .btn.danger, .btn.ghost.danger { background: var(--red); color: #fff; }
+  input, select, textarea { font-size: 13.5px; background: var(--chip); border-color: var(--line); border-radius: 8px; }
+  .set select { background-color: var(--chip); font-size: 13px; }
+  .tog input:checked + span { background: var(--accent); }
+  .tog span::after { background: #fff !important; }
+  .tabs { border-color: var(--line); }
+  .tabs button { font-size: 13px; }
+  .card { padding: 0 20px; }
+  .set { padding: 15px 0; border-color: var(--line); }
+  .set .lbl b { font-size: 13.5px; font-weight: 600; }
+  .set .lbl span { font-size: 12.5px; }
+
+  .nlist { border-color: var(--line); }
+  .nlist h1 { font-size: 22px; }
+  .nitem.on { background: var(--chip); box-shadow: 0 1px 2px rgba(16, 38, 64, 0.06); }
+  .nitem .nt { font-size: 13.5px; font-weight: 600; }
+  .nitem .nm { font-size: 12px; }
+  .tag { font-size: 10px; background: var(--hover); }
+  .ttl { font: 600 24px/1.25 var(--sans); letter-spacing: -0.022em; }
+  .meta-line { font-size: 12.5px; }
+  .recbar { background: var(--card); border: 1px solid var(--rim); border-radius: 10px; }
+  .body { font-size: 14.5px; }
+  .tx .seg { font-size: 14px; }
+  .tools { border-color: var(--line); }
+  .chip { background: var(--chip); font-size: 13px; box-shadow: inset 0 0 0 1px var(--line); }
+  body.notepad main { background: var(--glass); }
+  .nitem.on .tag { background: var(--hover); }
 </style>
 </head>
 <body>
@@ -420,6 +494,15 @@
     if (rec && atBottom) scroller.scrollTop = scroller.scrollHeight;
   }
 
+  // In-page confirmation: the app's web view can't show confirm() dialogs (they return false).
+  function armed(btn, label, action) {
+    if (btn.dataset.armed) { delete btn.dataset.armed; action(); return; }
+    const original = btn.textContent;
+    btn.dataset.armed = '1'; btn.textContent = label; btn.classList.add('danger');
+    setTimeout(() => { if (btn.dataset.armed) { delete btn.dataset.armed; btn.textContent = original;
+      btn.classList.remove('danger'); } }, 3000);
+  }
+
   function editorClick(e) {
     const b = e.target.closest('[data-act]'); if (!b) return;
     const id = this.dataset.note;
@@ -431,7 +514,7 @@
       case 'export': post({ type: 'exportNote', id }); break;
       case 'pad': post({ type: 'openNotepad', id }); break;
       case 'main': post({ type: 'openMain', id }); break;
-      case 'delete': if (confirm('Delete this note?')) post({ type: 'deleteNote', id }); break;
+      case 'delete': armed(b, 'Click again to delete', () => post({ type: 'deleteNote', id })); break;
     }
   }
   $('editor').onclick = editorClick;
@@ -510,6 +593,7 @@
     MODE = mode || 'main';
     document.body.classList.toggle('notepad', MODE === 'notepad');
     document.body.classList.toggle('recording', !!S.notetaker.active);
+    document.body.classList.toggle('noglass', !S.glass);
     if (MODE === 'notepad') {
       document.title = 'Notepad';
       renderEditor($('padEditor'), S.note);
@@ -568,7 +652,7 @@
     $('sKey').value = $('sVal').value = ''; };
   window.addEventListener('beforeunload', flushSaves);
   post({ type: 'ready' });   // ask the app for state once the page has loaded
-  $('clear').onclick = () => { if (confirm('Clear all dictation history?')) post({ type: 'clearHistory' }); };
+  $('clear').onclick = () => armed($('clear'), 'Click again to clear', () => post({ type: 'clearHistory' }));
 </script>
 </body>
 </html>

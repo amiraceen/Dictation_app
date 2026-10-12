@@ -212,10 +212,12 @@ def _output_class():
                 if self is None:
                     return None
                 self.cb = cb
+                from notetaker import SystemAudioConverter
+                self.converter = SystemAudioConverter()
                 return self
 
             def stream_didOutputSampleBuffer_ofType_(self, _stream, sbuf, kind):
-                if kind != 1:                        # SCStreamOutputTypeAudio
+                if kind != 1:                        # SCStreamOutputTypeAudio (screen frames are ignored)
                     return
                 try:
                     import CoreMedia
@@ -223,9 +225,12 @@ def _output_class():
                     if block is None:
                         return
                     n = CoreMedia.CMBlockBufferGetDataLength(block)
+                    frames = CoreMedia.CMSampleBufferGetNumSamples(sbuf)
                     status, data = CoreMedia.CMBlockBufferCopyDataBytes(block, 0, n, None)
                     if status == 0 and data:
-                        self.cb(np.frombuffer(bytes(data), dtype=np.float32))
+                        mono = self.converter.convert(np.frombuffer(bytes(data), dtype=np.float32), frames)
+                        if len(mono):
+                            self.cb(mono)
                 except Exception as e:
                     if not getattr(self, "logged", False):
                         self.logged = True
@@ -235,8 +240,24 @@ def _output_class():
     return _OutputClass
 
 
+SYSTEM_AUDIO_FAILED = ("Only your microphone is being transcribed: macOS didn't start recording the call's sound. "
+                       "Try quitting and reopening Dictation 2, and check it's allowed in System Settings → "
+                       "Privacy & Security → Screen & System Audio Recording.")
+
+
+def _capture_queue():
+    """A serial queue for audio buffers (keeps them off the main thread)."""
+    try:
+        import dispatch
+        return dispatch.dispatch_queue_create(b"dictation.system-audio", None)
+    except Exception:
+        return None
+
+
 class SystemAudioCapture:
-    """Captures what the Mac plays (the other people on the call) as 16 kHz mono float32.
+    """Captures what the Mac plays (the other people on the call), delivered as 16 kHz mono float32.
+    The stream uses ScreenCaptureKit's default 48 kHz stereo (asking it for 16 kHz mono
+    failed on some Macs with error -3818); SystemAudioConverter does the conversion.
     Needs Screen & System Audio Recording permission; macOS asks on first use."""
 
     def __init__(self, on_samples, on_error):
@@ -261,24 +282,28 @@ class SystemAudioCapture:
                 cfg = SCK.SCStreamConfiguration.alloc().init()
                 cfg.setCapturesAudio_(True)
                 cfg.setExcludesCurrentProcessAudio_(True)
-                cfg.setSampleRate_(16000)
-                cfg.setChannelCount_(1)
-                cfg.setWidth_(2)                      # we only want audio: keep video tiny and slow
-                cfg.setHeight_(2)
+                cfg.setSampleRate_(48000)
+                cfg.setChannelCount_(2)
+                cfg.setWidth_(128)                    # we only want audio: keep video small and slow
+                cfg.setHeight_(128)
                 cfg.setMinimumFrameInterval_(CoreMedia.CMTimeMake(1, 1))
                 self._output = out_cls.alloc().initWithCallback_(self.on_samples)
                 stream = SCK.SCStream.alloc().initWithFilter_configuration_delegate_(flt, cfg, None)
-                ok, err = stream.addStreamOutput_type_sampleHandlerQueue_error_(self._output, 1, None, None)
-                if not ok:
-                    raise RuntimeError(str(err))
+                queue = _capture_queue()
+                for kind in (0, 1):                   # screen output too, so frames aren't reported as dropped
+                    ok, err = stream.addStreamOutput_type_sampleHandlerQueue_error_(self._output, kind, queue, None)
+                    if not ok:
+                        raise RuntimeError(str(err))
 
                 def started(err):
                     if err is not None:
-                        self.on_error(f"System audio capture failed: {err}")
+                        print(f"System audio capture failed: {err}", flush=True)
+                        self.on_error(SYSTEM_AUDIO_FAILED)
                 stream.startCaptureWithCompletionHandler_(started)
                 self._stream = stream
             except Exception as e:
-                self.on_error(f"System audio capture failed: {e}")
+                print(f"System audio capture failed: {e}", flush=True)
+                self.on_error(SYSTEM_AUDIO_FAILED)
 
         SCK.SCShareableContent.getShareableContentWithCompletionHandler_(got_content)
 
