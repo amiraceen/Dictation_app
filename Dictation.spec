@@ -18,7 +18,7 @@ datas += [('menubar/' + f, 'menubar') for f in ('idle.png', 'busy.png', 'recordi
 
 datas += [('web/index.html', 'web'), ('web/fonts', 'web/fonts')]
 hiddenimports += ['ui', 'WebKit', 'PyObjCTools.AppHelper', 'ApplicationServices',
-                  'macos', 'meetings', 'notes', 'notetaker', 'settings', 'system', 'speed', 'arabic', 'voicetest',
+                  'macos', 'meetings', 'notes', 'notetaker', 'settings', 'system', 'speed', 'arabic', 'voicetest', 'models', 'huggingface_hub', 'certifi',
                   'EventKit', 'ScreenCaptureKit', 'CoreMedia', 'dispatch']
 
 a = Analysis(['dictation.py'], datas=datas, binaries=binaries, hiddenimports=hiddenimports, noarchive=False)

@@ -263,6 +263,8 @@
           background: rgba(255, 169, 40, 0.14); color: var(--ink); }
   .warn a { color: var(--accent); }
   .warn.on { display: block; }
+  .bar { height: 6px; border-radius: 999px; background: var(--hover); margin-top: 8px; max-width: 320px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--grad); border-radius: 999px; transition: width .4s; }
 
   /* Notepad window */
   body.notepad header, body.notepad .peek { display: none; }
@@ -366,7 +368,8 @@
     <div class="tab on" id="tSystem">
       <h2>Transcribe</h2>
       <div class="card">
-        <div class="set"><div class="lbl"><b>Language</b><span>Pick the language you dictate in and text appears about twice as fast. Auto-detect works out the language each time, which takes longer.</span></div><select data-set="dictation_language"></select></div>
+        <div class="set"><div class="lbl"><b>Language</b><span>Pick the language you speak and text appears faster. "Arabic or English" works out which one each time, which takes a little longer.</span></div><select data-set="dictation_language"></select></div>
+        <div class="set"><div class="lbl"><b>Speech model</b><span id="modelNote"></span><div class="bar" id="modelBar" hidden><i></i></div></div><select data-set="speech_model"></select></div>
       </div>
       <h2>App settings</h2>
       <div class="card">
@@ -424,7 +427,7 @@
           <button class="btn" id="vtRun">Run test</button>
         </div>
       </div>
-      <div class="warn" id="vtWarn">Language is set to English. For an Arabic test, choose Arabic or Auto-detect in System → Language.</div>
+      <div class="warn" id="vtWarn">Language is set to English. For an Arabic test, choose Arabic, or Arabic or English, in System → Language.</div>
       <p class="vt-help">Click <b>Record</b>, read the phrase the way you'd normally say it, then click <b>Stop</b>. Delete phrases you'd never say and add your own. <b>Run test</b> transcribes your recordings and shows how many words the app got right.</p>
       <form class="add" id="vtAdd"><input id="vtIn" dir="auto" placeholder="Add your own phrase, e.g. أبي أحجز طاولة لشخصين"><button class="ib go" aria-label="Add" title="Add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></form>
       <div class="list" id="vtList"></div>
@@ -632,7 +635,7 @@
     $('vtScore').className = 'n ' + (r ? pctClass(r.accuracy) : '');
     $('vtScoreLbl').textContent = v.running ? `Testing ${v.running.done} of ${v.running.total}…`
       : r ? 'of words right' : 'Not tested yet';
-    const langs = { auto: 'Auto-detect', en: 'English', ar: 'Arabic' };
+    const langs = { auto: 'Arabic or English', en: 'English', ar: 'Arabic' };
     $('vtMeta').innerHTML = `${recorded} of ${v.phrases.length} phrases recorded<br>${esc(v.model)} · Language: ${esc(langs[v.language] || v.language)}` +
       (r ? `<br>Last run: ${esc(r.model)}, ${esc(langs[r.language] || r.language)}, ${when(r.when)}` : '');
     $('vtRun').textContent = v.running ? 'Testing…' : 'Run test';
@@ -678,6 +681,21 @@
     $('hintKey').textContent = label;
     if (!capturing) $('scText').innerHTML = `Press <b style="display:inline">${esc(label)}</b> to start or stop the Notetaker`;
     $('calWarn').classList.toggle('on', S.calendar === 'denied');
+    renderModel();
+  }
+  function renderModel() {
+    const m = S.model; if (!m) return;
+    const note = $('modelNote'), bar = $('modelBar');
+    bar.hidden = !m.downloading;
+    if (m.downloading) {
+      const pct = Math.round((m.progress || 0) * 100);
+      bar.firstChild.style.width = pct + '%';
+      note.textContent = `Downloading the accurate model… ${pct}%. Kalam keeps using ${m.active} until it's ready.`;
+    } else if (m.loading) note.textContent = 'Loading the model…';
+    else if (m.error && !m.ready) note.innerHTML = `Download failed: ${esc(m.error)}. <a href="#" id="modelRetry">Try again</a>`;
+    else if (m.choice === 'turbo') note.textContent = 'Much better with Arabic and dialects. Downloaded once (1.6 GB), then works offline. Text takes a little longer to appear.';
+    else note.textContent = 'Built in and fastest. Great for English; weaker with Arabic dialects.';
+    const r = $('modelRetry'); if (r) r.onclick = e => { e.preventDefault(); post({ type: 'retryModel' }); };
   }
   document.querySelectorAll('[data-set]').forEach(el => el.onchange = () => {
     const k = el.dataset.set;

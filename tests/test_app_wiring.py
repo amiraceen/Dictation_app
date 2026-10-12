@@ -150,7 +150,7 @@ import macos  # noqa: E402
 
 DATA_FILES = [("SETTINGS_FILE", "settings.json"), ("NOTES_DIR", "notes"), ("HISTORY_FILE", "history.json"),
               ("SNIPPETS_FILE", "snippets.json"), ("DICT_FILE", "dictionary.txt"),
-              ("VOICE_TEST_DIR", "voice_test")]
+              ("VOICE_TEST_DIR", "voice_test"), ("MODELS_DIR", "models")]
 
 
 class FakeCalendar:
@@ -192,7 +192,7 @@ class AppWiringTest(unittest.TestCase):
         p(macos, "split_screen", lambda app, win: self.calls.append(("split", app)))
         p(macos, "find_meeting_app", lambda hint: hint)
         p(macos, "SystemAudioCapture", None)
-        p(dictation.DictationCore, "load_model", lambda core: setattr(core, "model", object()))
+        p(dictation.DictationCore, "load_model", lambda core, *a: setattr(core, "model", object()) or True)
         p(dictation.DictationCore, "transcribe_meeting", lambda core, audio: "hello from the meeting")
         Fake.made.clear()
         self.app = dictation.MenuBarApp()
@@ -336,6 +336,51 @@ class AppWiringTest(unittest.TestCase):
         self.assertEqual(Fake.made[-1].title, "Voice test finished")
         app.handle_message({"type": "voiceTestAdd", "text": "أبي قهوة"}, b)
         self.assertEqual(app.state_for(b)["voicetest"]["phrases"][-1]["text"], "أبي قهوة")
+
+    def test_auto_language_picks_arabic_and_dialect_prompt(self):
+        seen = {}
+
+        class Seg:
+            text = " كيفش"
+
+        class FakeModel:
+            def detect_language(self, audio, vad_filter=False):
+                return "he", 0.5, [("he", 0.5), ("ar", 0.2), ("en", 0.25)]
+
+            def transcribe(self, audio, **kw):
+                seen.update(kw)
+                return iter([Seg()]), None
+
+        self.app.core.model = FakeModel()
+        self.assertEqual(self.app.core.transcribe_raw(np.zeros(16000, np.float32)), "كيفش")
+        self.assertEqual(seen["language"], "ar")
+        self.assertIn("شحالش", seen["initial_prompt"])
+        self.app.handle_message({"type": "saveSettings", "changes": {"dictation_language": "en"}}, self.bridge())
+        self.app.core.transcribe_raw(np.zeros(16000, np.float32))
+        self.assertEqual(seen["language"], "en")
+        self.assertNotIn("شحالش", seen["initial_prompt"] or "")
+
+    def test_choosing_accurate_model_downloads_then_loads_it(self):
+        loaded, gate = [], threading.Event()
+
+        def fake_download(name, folder):
+            gate.wait(2)
+
+        self.app.models._download = fake_download
+        self.patch(dictation.DictationCore, "load_model",
+                   lambda core, path=None, label=None: loaded.append((path, label)) or True)
+        self.app.handle_message({"type": "saveSettings", "changes": {"speech_model": "turbo"}}, self.bridge())
+        st = self.app.state_for(self.bridge())["model"]
+        self.assertEqual((st["choice"], st["downloading"], st["ready"]), ("turbo", "turbo", False))
+        gate.set()
+        self.app.models._thread.join(2)
+        self.assertTrue(loaded[-1][0].endswith("large-v3-turbo"))
+        self.assertEqual(loaded[-1][1], "Whisper large-v3-turbo")
+        self.app.handle_message({"type": "saveSettings", "changes": {"speech_model": "small"}}, self.bridge())
+        for t in threading.enumerate():
+            if t.name == "load_model":
+                t.join(2)
+        self.assertEqual(loaded[-1][1], "Whisper small")
 
     def test_language_setting(self):
         self.assertIsNone(self.app.core.language())                 # auto-detect by default

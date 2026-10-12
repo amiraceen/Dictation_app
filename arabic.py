@@ -59,3 +59,21 @@ def normalize(text, western_digits=True):
     text = re.sub(r"\s+([.,!?;:،؛؟])", r"\1", text)          # no space before punctuation
     text = re.sub(r"([،؛])(?=\S)", r"\1 ", text)              # one space after Arabic comma/semicolon
     return re.sub(r"\s{2,}", " ", text).strip()
+
+
+# Whisper continues in the style of the text it's given as "previous text". Everyday
+# dialect lines (Gulf/Omani with the feminine -ش, Egyptian, Levantine) nudge it to write
+# colloquial words as said instead of forcing them into formal Arabic or another script.
+DIALECT_PROMPT = ("هلا والله، شحالش؟ وين صرتي؟ بغيتش في شي. كيفكم يا جماعة؟ "
+                  "ازيك، عامل ايه؟ كيفك، شو أخبارك؟")
+
+
+def initial_prompt(language, words=()):
+    """Prompt for Whisper: the dialect primer when dictating Arabic, plus the user's words."""
+    parts = []
+    if language == "ar":
+        parts.append(DIALECT_PROMPT)
+    if words:
+        parts.append(", ".join(words))
+    return " ".join(parts) or None
+

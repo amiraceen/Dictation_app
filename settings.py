@@ -9,6 +9,7 @@ import os
 import threading
 
 from speed import LANGUAGE_OPTIONS
+from models import MODEL_OPTIONS
 
 # Option lists shown as drop-downs in the Settings page: (value, label).
 NOTIFY_OPTIONS = [(-1, "Off"), (0, "At start"), (15, "15 sec"), (60, "1 min"),
@@ -22,6 +23,8 @@ DEFAULT_SHORTCUT = {"keycode": 46, "mods": ["alt"], "label": "⌥ M"}
 DEFAULTS = {
     # System → Dictation: a fixed language skips detection and roughly halves the wait
     "dictation_language": "auto",
+    # System → Transcribe: built-in "small", or the downloaded, more accurate "turbo"
+    "speech_model": "small",
     # System → App settings
     "launch_at_login": False,
     "show_bar_always": False,
@@ -52,6 +55,7 @@ _CHOICES = {
     "notify_before_meeting": {v for v, _ in NOTIFY_OPTIONS},
     "max_recording_minutes": {v for v, _ in MAX_LENGTH_OPTIONS},
     "dictation_language": {v for v, _ in LANGUAGE_OPTIONS},
+    "speech_model": {v for v, _ in MODEL_OPTIONS},
 }
 _MODS = {"alt", "cmd", "ctrl", "shift"}
 
@@ -134,4 +138,4 @@ class Settings:
 def options():
     """Drop-down choices for the Settings page."""
     return {"notify_before_meeting": NOTIFY_OPTIONS, "max_recording_minutes": MAX_LENGTH_OPTIONS,
-            "dictation_language": LANGUAGE_OPTIONS}
+            "dictation_language": LANGUAGE_OPTIONS, "speech_model": MODEL_OPTIONS}

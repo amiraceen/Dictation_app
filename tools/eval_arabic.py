@@ -25,10 +25,10 @@ import time
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import arabic  # noqa: E402,F401
+import arabic  # noqa: E402
 import voicetest  # noqa: E402
 
-ARABIC_PROMPT = "مرحبا، كيف حالك؟ هذا نص عربي مكتوب بعلامات الترقيم."
+ARABIC_PROMPT = arabic.DIALECT_PROMPT          # the app's Arabic prompt (dialect primer)
 
 
 def normalize_for_scoring(text):
@@ -104,8 +104,8 @@ def main():
     ap.add_argument("--out", default="arabic_results.md")
     ap.add_argument("--set", default="",
                     help="score an exported voice test (voice-test.zip) instead of FLEURS")
-    ap.add_argument("--prompt-test", default="large-v3-turbo",
-                    help="also run this model with an Arabic initial prompt ('' to skip)")
+    ap.add_argument("--prompt-test", default="small,large-v3-turbo",
+                    help="also run these models (comma-separated) with the app's Arabic dialect prompt ('' to skip)")
     args = ap.parse_args()
 
     if args.set:
@@ -118,8 +118,8 @@ def main():
     print(f"{len(clips)} {source} clips, {secs:.0f} s of audio", flush=True)
 
     runs = [(m, None, m) for m in args.models.split(",") if m]
-    if args.prompt_test:
-        runs.append((args.prompt_test, ARABIC_PROMPT, f"{args.prompt_test} + Arabic prompt"))
+    for m in filter(None, args.prompt_test.split(",")):
+        runs.append((m, ARABIC_PROMPT, f"{m} + dialect prompt"))
     results = []
     for model_id, prompt, label in runs:
         try:

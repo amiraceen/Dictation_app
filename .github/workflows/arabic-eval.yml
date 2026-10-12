@@ -10,7 +10,7 @@ on:
     inputs:
       models:
         description: "Comma-separated faster-whisper models"
-        default: "small,medium,large-v3-turbo,large-v3"
+        default: "small,large-v3-turbo"
       clips:
         description: "Number of clips"
         default: "40"
@@ -37,7 +37,7 @@ jobs:
       - name: Score models
         run: |
           python tools/eval_arabic.py \
-            --models "${{ github.event.inputs.models || 'small,medium,large-v3-turbo,large-v3' }}" \
+            --models "${{ github.event.inputs.models || 'small,large-v3-turbo' }}" \
             --clips "${{ github.event.inputs.clips || '40' }}" \
             --set "${{ github.event.inputs.set || '' }}" --out arabic_results.md
           cat arabic_results.md >> "$GITHUB_STEP_SUMMARY"

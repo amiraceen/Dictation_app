@@ -31,5 +31,68 @@ class ArabicNormalizeTest(unittest.TestCase):
         self.assertEqual(arabic.remove_fillers("الممثل"), "الممثل")                     # not inside words
 
 
+class LanguagePickTest(unittest.TestCase):
+    """Auto-detect only ever picks Arabic or English, leaning Arabic."""
+
+    def test_pick(self):
+        import speed
+        self.assertEqual(speed.pick_language([("he", 0.45), ("ar", 0.2), ("en", 0.2)]), "ar")   # was Hebrew
+        self.assertEqual(speed.pick_language([("en", 0.5), ("ar", 0.3)]), "ar")                # was English
+        self.assertEqual(speed.pick_language([("en", 0.9), ("ar", 0.04)]), "en")
+        self.assertEqual(speed.pick_language([("fr", 0.9), ("en", 0.05)]), "en")
+
+    def test_prompt(self):
+        self.assertIn("شحالش", arabic.initial_prompt("ar"))
+        self.assertTrue(arabic.initial_prompt("ar", ["مسقط"]).endswith("مسقط"))
+        self.assertEqual(arabic.initial_prompt("en", ["Maal", "Kalam"]), "Maal, Kalam")
+        self.assertIsNone(arabic.initial_prompt("en"))
+
+
+class ModelStoreTest(unittest.TestCase):
+
+    def test_download_then_ready(self):
+        import tempfile
+        import threading
+        import models
+        calls, gate = [], threading.Event()
+
+        def fake(name, folder):
+            calls.append(name)
+            gate.wait(2)
+            with open(os.path.join(folder, "model.bin"), "wb") as f:
+                f.write(b"x" * 1000)
+
+        store = models.ModelStore(tempfile.mkdtemp(), builtin_path="/app/model", downloader=fake)
+        self.assertTrue(store.ready("small"))
+        self.assertEqual(store.path("small"), "/app/model")
+        self.assertFalse(store.ready("turbo"))
+        done = []
+        store.download("turbo", done.append)
+        self.assertEqual(store.downloading, "turbo")
+        self.assertIsNotNone(store.progress())
+        store.download("turbo", done.append)            # second click while running: ignored
+        gate.set()
+        store._thread.join(2)
+        self.assertEqual((calls, done), (["large-v3-turbo"], [True]))
+        self.assertTrue(store.ready("turbo"))
+        self.assertIsNone(store.progress())
+        self.assertTrue(store.path("turbo").endswith("large-v3-turbo"))
+
+    def test_failed_download_reports_error(self):
+        import tempfile
+        import models
+
+        def fail(name, folder):
+            raise OSError("no internet")
+
+        store = models.ModelStore(tempfile.mkdtemp(), downloader=fail)
+        done = []
+        store.download("turbo", done.append)
+        store._thread.join(2)
+        self.assertEqual(done, [False])
+        self.assertEqual(store.error, "no internet")
+        self.assertFalse(store.ready("turbo"))
+
+
 if __name__ == "__main__":
     unittest.main()

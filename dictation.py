@@ -18,7 +18,8 @@ from pynput import keyboard
 
 import arabic
 from notetaker import clean_transcript
-from speed import DECODE, whisper_language
+from speed import DECODE, pick_language, whisper_language
+import models
 
 try:
     import rumps
@@ -72,6 +73,7 @@ HISTORY_FILE  = os.path.join(APP_DIR, "history.json")
 SETTINGS_FILE = os.path.join(APP_DIR, "settings.json")
 NOTES_DIR     = os.path.join(APP_DIR, "notes")
 VOICE_TEST_DIR = os.path.join(APP_DIR, "voice_test")
+MODELS_DIR    = os.path.join(APP_DIR, "models")
 WEB_HTML      = os.path.join(RES_DIR, "web", "index.html")
 
 # ─── Config ──────────────────────────────────────────────────────────────────
@@ -288,7 +290,7 @@ class DictationCore:
         self._cancel   = False
         self.snippets   = _load_snippets()
         self.dictionary = _load_dictionary()
-        self._initial_prompt = None
+        self.model_label = models.MODELS["small"][1]
         self.on_level   = lambda rms: None          # live mic level for the pill
         self.on_result  = lambda text, secs: None   # finished dictation
         self.on_record_state = lambda recording: None   # sounds, mute, pause media
@@ -297,21 +299,36 @@ class DictationCore:
     def reload_config(self):
         self.snippets   = _load_snippets()
         self.dictionary = _load_dictionary()
-        self._initial_prompt = ", ".join(self.dictionary) if self.dictionary else None
         self.on_status_change(ICON_IDLE, "Config reloaded ✓")
 
-    def load_model(self):
+    def load_model(self, path=None, label=None):
+        """Load (or swap to) a speech model. Dictation keeps using the old one until the
+        new one is warmed up. Returns True on success."""
         self.on_status_change(ICON_LOADING, "Loading model… (first run may take a minute)")
         try:
-            self._initial_prompt = ", ".join(self.dictionary) if self.dictionary else None
-            self.model = WhisperModel(MODEL_PATH or MODEL_SIZE, device="cpu", compute_type=COMPUTE_TYPE)
+            model = WhisperModel(path or MODEL_PATH or MODEL_SIZE, device="cpu", compute_type=COMPUTE_TYPE)
             # Warm-up: the first transcription is much slower (memory allocation, caches),
             # so pay that cost now instead of on the first dictation.
             warm = (0.01 * np.random.default_rng(0).standard_normal(16000)).astype(np.float32)
-            list(self.model.transcribe(warm, language="en", **DECODE)[0])
+            list(model.transcribe(warm, language="en", **DECODE)[0])
+            with self.model_lock:
+                self.model, self.model_label = model, label or models.MODELS["small"][1]
             self.on_status_change(ICON_IDLE, "Ready — hold ⌥ Right to dictate")
+            return True
         except Exception as e:
             self.on_status_change(ICON_ERROR, f"Model load failed: {e}")
+            return False
+
+    def _language_for(self, audio):
+        """The Language setting, or Arabic/English chosen from the audio (model_lock held)."""
+        lang = self.language()
+        if lang is None:
+            try:
+                _, _, probs = self.model.detect_language(audio, vad_filter=True)
+                lang = pick_language(probs)
+            except Exception:          # no speech found: nothing will be transcribed anyway
+                lang = "ar"
+        return lang
 
     def start_recording(self):
         with self._lock:
@@ -362,9 +379,10 @@ class DictationCore:
     def transcribe_raw(self, audio):
         """Speech → text exactly as dictation hears it, before clean-up (also used by the voice test)."""
         with self.model_lock:      # segments is lazy: consume it while holding the lock
+            lang = self._language_for(audio)
             segments, _ = self.model.transcribe(
-                audio, language=self.language(),
-                initial_prompt=self._initial_prompt,
+                audio, language=lang,
+                initial_prompt=arabic.initial_prompt(lang, self.dictionary),
                 vad_filter=True,
                 vad_parameters=dict(min_silence_duration_ms=300),
                 **DECODE,
@@ -390,8 +408,9 @@ class DictationCore:
         """Transcribe one Notetaker chunk. Keeps the speaker's words as said:
         no backtrack, snippets or filler removal."""
         with self.model_lock:
+            lang = self._language_for(audio)
             segments, _ = self.model.transcribe(
-                audio, language=self.language(), initial_prompt=self._initial_prompt,
+                audio, language=lang, initial_prompt=arabic.initial_prompt(lang, self.dictionary),
                 vad_filter=True, vad_parameters=dict(min_silence_duration_ms=500), **DECODE)
             return clean_transcript((s.text, s.no_speech_prob, s.avg_logprob, s.compression_ratio)
                                     for s in segments)
@@ -509,6 +528,8 @@ if HAS_RUMPS:
             self.core.on_result = self._on_result
             self.core.on_record_state = self._on_record_state
             self.core.language = lambda: whisper_language(self.settings["dictation_language"])
+            self.models = models.ModelStore(MODELS_DIR, builtin_path=MODEL_PATH)
+            self._model_loading = None
             self.ducker = macos.AudioDucker()
 
             # Notetaker and meeting detection
@@ -531,7 +552,7 @@ if HAS_RUMPS:
             self._ticks = 0
 
             self.hotkey = HotkeyListener(self.core, self.settings, self.toggle_notetaker)
-            threading.Thread(target=self.core.load_model, daemon=True).start()
+            self._load_chosen_model()
             self.hotkey.start()
             ui.on_main(self._startup)
             self._ax_item = rumps.MenuItem("⚠️ Allow Accessibility…", callback=lambda _: self._open_ax())
@@ -791,6 +812,8 @@ if HAS_RUMPS:
         def _tick(self, _=None):
             self._ticks += 1
             now = time.time()
+            if self.models.downloading and self._ticks % 2 == 0:
+                self._refresh_windows()                    # download progress in Settings
             if self.phrase_rec.active and now - self.phrase_rec.started > 30:
                 self._voice_test_stop()                    # forgot to press Stop
                 self._refresh_windows()
@@ -867,6 +890,50 @@ if HAS_RUMPS:
                     self._events_at = 0
                 elif k == "meeting_shortcut":
                     self._update_menu()
+                elif k == "speech_model" and not startup:
+                    self._load_chosen_model()
+
+        # ── Speech model ──
+
+        def _load_chosen_model(self):
+            """Use the model picked in Settings. One that isn't downloaded yet is fetched in the
+            background while the current (or built-in) model keeps working."""
+            choice = self.settings["speech_model"]
+            if self.models.ready(choice):
+                self._start_model_load(choice)
+                return
+            if self.core.model is None and not self._model_loading:
+                self._start_model_load("small")
+            self.models.download(choice, lambda ok: self._model_downloaded(choice, ok))
+
+        def _start_model_load(self, choice):
+            self._model_loading = choice
+            threading.Thread(target=self._load_model_worker, args=(choice,), daemon=True,
+                             name="load_model").start()
+
+        def _load_model_worker(self, choice):
+            try:
+                self.core.load_model(self.models.path(choice), self.models.label(choice))
+            finally:
+                self._model_loading = None
+                ui.on_main(self._refresh_windows)
+
+        def _model_downloaded(self, choice, ok):
+            if ok and self.settings["speech_model"] == choice:
+                self._model_loading = choice
+                self._load_model_worker(choice)          # already on the download thread
+            elif not ok:
+                ui.on_main(self._show_toast, "Couldn't download the accurate model",
+                           f"{self.models.error}. Check your internet connection, then choose "
+                           "it again in Settings → System.", [("OK", None)], 20)
+            ui.on_main(self._refresh_windows)
+
+        def _model_state(self):
+            choice = self.settings["speech_model"]
+            return {"choice": choice, "active": self.core.model_label,
+                    "loading": bool(self._model_loading),
+                    "downloading": self.models.downloading, "progress": self.models.progress(),
+                    "ready": self.models.ready(choice), "error": self.models.error}
 
         # ── Messages from the web pages ──
 
@@ -881,10 +948,11 @@ if HAS_RUMPS:
             st["notetaker"] = {"active": self.notetaker.active, "note_id": self.notetaker.note_id,
                                "started_at": time.time() - self.notetaker.elapsed()}
             st["calendar"] = self.calendar.status
+            st["model"] = self._model_state()
             st["glass"] = True                    # the window has native frosted glass behind the page
             st["voicetest"] = dict(self.voicetest.state(), recording=self.phrase_rec.phrase_id,
                                    rec_started=self.phrase_rec.started, running=self._vt_progress,
-                                   model=f"Whisper {MODEL_SIZE}",
+                                   model=self.core.model_label,
                                    language=self.settings["dictation_language"])
             st["goto"], bridge.goto = getattr(bridge, "goto", None), None
             return st
@@ -913,6 +981,9 @@ if HAS_RUMPS:
                 self._apply_settings(changed)
                 self._refresh_windows()
                 return False
+            elif kind == "retryModel":
+                self.models.error = None
+                self._load_chosen_model()
             elif kind == "captureShortcut":
                 self.hotkey.paused = bool(msg.get("on"))
                 return False
@@ -1029,7 +1100,7 @@ if HAS_RUMPS:
                                     "secs": round(time.perf_counter() - t, 2)}
                     self._vt_progress = {"done": len(per), "total": len(phrases)}
                     ui.on_main(self._refresh_windows)
-                self.voicetest.set_results(f"Whisper {MODEL_SIZE}", self.settings["dictation_language"], per)
+                self.voicetest.set_results(self.core.model_label, self.settings["dictation_language"], per)
             except Exception as e:
                 import traceback
                 traceback.print_exc()
@@ -1100,6 +1171,14 @@ if __name__ == "__main__":
         try:     # Notetaker frameworks are imported lazily; make sure the bundle has them
             import EventKit, ScreenCaptureKit, CoreMedia, dispatch  # noqa: F401
             print("FRAMEWORKS OK", flush=True)
+        except Exception:
+            traceback.print_exc()
+        try:     # the accurate model is downloaded by the app itself: check HTTPS works in the bundle
+            import tempfile
+            from huggingface_hub import hf_hub_download
+            hf_hub_download("mobiuslabsgmbh/faster-whisper-large-v3-turbo", "config.json",
+                            cache_dir=tempfile.mkdtemp())
+            print("DOWNLOAD OK", flush=True)
         except Exception:
             traceback.print_exc()
         core = DictationCore(on_status_change=lambda i, m: print(i, m, flush=True))
