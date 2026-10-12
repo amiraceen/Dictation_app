@@ -71,8 +71,40 @@ def _get_ids(obj, selector):
 
 # Processes that use the mic but aren't calls.
 _NOT_CALLS = {"corespeechd", "siri", "assistantd", "speechrecognitioncore", "localspeechrecognition",
-              "heard", "wispr flow", "dictation", "kalam", "superwhisper", "voiceover"}
+              "heard", "wispr flow", "dictation", "kalam", "superwhisper", "voiceover", "replayd",
+              "screencaptureui", "screencapture", "controlcenter", "universalaccessd", "coreaudiod"}
 _RENAME = {"avconferenced": "FaceTime"}
+_SYSTEM_CALLERS = {"avconferenced"}       # FaceTime's call service lives outside any app
+
+
+def _process_path(pid):
+    try:
+        libc = ctypes.CDLL("/usr/lib/libproc.dylib")
+        buf = ctypes.create_string_buffer(4096)
+        if libc.proc_pidpath(pid, buf, 4096) > 0:
+            return buf.value.decode("utf-8", "replace")
+    except Exception:
+        pass
+    return None
+
+
+def call_app(name, path):
+    """The app name to show for a process recording from the mic, or None if it isn't a
+    call app. Only apps the user opens count (Zoom, Teams, browsers, FaceTime...): macOS
+    background services such as replayd (screen recording) live outside any .app bundle
+    or in /System/Library and are ignored."""
+    raw = (name or "").lower()
+    if raw in _SYSTEM_CALLERS:
+        return _RENAME.get(raw, name)
+    if path:
+        if ".app/" not in path or path.startswith("/System/Library/"):
+            return None
+        # Helpers live inside the main app: '/Applications/Google Chrome.app/.../Google Chrome Helper.app/...'
+        name = path.split(".app/")[0].rsplit("/", 1)[-1]
+    name = _app_name(name)
+    if not name or name.lower() in _NOT_CALLS or name.lower().startswith(("dictation", "kalam")):
+        return None
+    return name
 
 
 def _process_name(pid):
@@ -117,8 +149,8 @@ def mic_used_by_other_app(self_using_mic):
                 pid = _get_value(p, "ppid", ctypes.c_int32)        # kAudioProcessPropertyPID
                 if not pid or pid == me:
                     continue
-                name = _app_name(_process_name(pid))
-                if name and (name.lower() in _NOT_CALLS or name.lower().startswith(("dictation", "kalam"))):
+                name = call_app(_process_name(pid), _process_path(pid))
+                if name is None:
                     continue
                 return True, name
             return False, None

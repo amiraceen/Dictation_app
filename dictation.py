@@ -1187,7 +1187,8 @@ if __name__ == "__main__":
             print("FRAMEWORKS OK", flush=True)
         except Exception:
             traceback.print_exc()
-        need = ["web/index.html", "web/img/header-hill.webp", "web/img/header-beam.webp", "web/img/app-icon.webp",
+        need = ["web/index.html", "web/img/header-voice.webp", "web/img/header-screen.webp",
+                "web/img/header-megaphone.webp", "web/img/header-writer.webp", "web/img/app-icon.webp",
                 "web/fonts/readex-pro-arabic-wght-normal.woff2", "menubar/idle.png", "menubar/recording.png"]
         missing = [n for n in need if not os.path.exists(os.path.join(RES_DIR, n))]
         print("WEB ASSETS OK" if not missing else f"WEB ASSETS MISSING: {missing}", flush=True)

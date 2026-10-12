@@ -95,7 +95,7 @@ The build bundles the Whisper model from your Hugging Face cache, so run it from
 **Kalam** (كلام, "speech"). The look comes from the brand artwork in `docs/brand/`: an open sky blue, a warm sunrise beam, sun yellow and deep night green at the edges, with film grain over everything. The window has frosted glass over a soft gradient in those colours, colourful circle icons in the top bar, and pill-shaped buttons. While you talk, the recording pill is clear glass with orange-to-blue bars.
 
 - Logo: `docs/brand/logo-full.svg` (wordmark) and `logo-mark.svg` (the "k"). The window's top bar uses the wordmark; the menu bar uses the mark (black when idle, faded while working, orange while recording).
-- Header: the Transcribe page shows one of the two banners (`web/img/header-hill.webp`, `header-beam.webp`), picked each time the window opens.
+- Header: the Transcribe page shows one of the four "Write less, speak more." banners (`web/img/header-*.webp`, from `docs/brand/`, with the export's light edge trimmed), picked each time the window opens.
 - Colours: sky `#5DA1D0`, deep blue `#1C5E9B`, sunrise orange `#FD6D39`, sun `#FFE284`, night `#10222B`.
 - Font: [Readex Pro](https://github.com/ThomasJockin/readexpro) (SIL Open Font License, bundled in `web/fonts/`), which covers Latin and Arabic.
 - App icon: `python3 tools/make_icon.py` fits `docs/brand/app-icon-source.jpg` to the macOS icon shape and writes `AppIcon.icns` (preview: `docs/kalam-icon.png`).

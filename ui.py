@@ -350,6 +350,40 @@ def _plain(o):
         return str(o)
 
 
+class DragWebView(WKWebView):
+    """Web view whose top band moves the window, like a normal title bar.
+
+    The page covers the whole window (full-size content view), so macOS never sees a
+    title bar to grab. The page reports how tall its top bar is and where its buttons
+    are; a mouse-down anywhere else in that band drags the window (double-click zooms,
+    as in any Mac app)."""
+
+    def initWithFrame_configuration_(self, frame, cfg):
+        self = objc.super(DragWebView, self).initWithFrame_configuration_(frame, cfg)
+        if self is None:
+            return None
+        self.drag_band = 0.0         # height of the top bar, in points
+        self.no_drag = []            # (x, y, w, h) of buttons in the band, page coordinates
+        return self
+
+    @objc.python_method
+    def drag_here(self, x, y_from_top):
+        if y_from_top > self.drag_band:
+            return False
+        return not any(rx <= x <= rx + rw and ry <= y_from_top <= ry + rh for rx, ry, rw, rh in self.no_drag)
+
+    def mouseDown_(self, event):
+        p = self.convertPoint_fromView_(event.locationInWindow(), None)
+        y = p.y if self.isFlipped() else self.bounds().size.height - p.y
+        if self.window() is not None and self.drag_here(p.x, y):
+            if event.clickCount() == 2:
+                self.window().performZoom_(None)
+            else:
+                self.window().performWindowDragWithEvent_(event)
+            return
+        objc.super(DragWebView, self).mouseDown_(event)
+
+
 class Bridge(NSObject):
     """Receives window.webkit.messageHandlers.app.postMessage({...}) calls.
 
@@ -373,6 +407,11 @@ class Bridge(NSObject):
         except Exception:
             return
         if not isinstance(msg, dict):
+            return
+        if msg.get("type") == "dragRegion":
+            if self.web is not None and hasattr(self.web, "drag_band"):
+                self.web.drag_band = float(msg.get("band", 0))
+                self.web.no_drag = [tuple(float(v) for v in r) for r in msg.get("buttons", []) if len(r) == 4]
             return
         if msg.get("type") == "copy":
             from AppKit import NSPasteboard, NSPasteboardTypeString
@@ -435,7 +474,7 @@ class WebWindow(NSObject):
         w.setBackgroundColor_(NSColor.clearColor())
         w.setContentView_(glass)
 
-        self.web = WKWebView.alloc().initWithFrame_configuration_(glass.bounds(), cfg)
+        self.web = DragWebView.alloc().initWithFrame_configuration_(glass.bounds(), cfg)
         self.web.setAutoresizingMask_(18)                 # width + height sizable
         self.web.setValue_forKey_(False, "drawsBackground")
         if hasattr(self.web, "setUnderPageBackgroundColor_"):

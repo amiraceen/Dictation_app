@@ -63,6 +63,9 @@ const check = (name, ok, detail = '') => { if (!ok) fails++; console.log(`${ok ?
 
   // ── Top bar ──
   let p = await open();
+  await p.waitForTimeout(100);
+  const drag = (await p.evaluate(() => window.__sent)).filter(m => m.type === 'dragRegion').slice(-1)[0];
+  check('page tells the app where the draggable top bar is', drag && drag.band >= 60 && drag.buttons.length === 6, JSON.stringify(drag));
   for (const [id, page, name] of [['home', 'home', 'Transcribe'], ['notes', 'notes', 'Notes'], ['clip', 'clip', 'Clipboard'],
                                   ['dict', 'dict', 'Your words'], ['snip', 'snip', 'Shortcuts'], ['settings', 'settings', 'Settings']]) {
     await p.hover(`.nb[data-p="${id}"]`); await p.waitForTimeout(250);
@@ -80,7 +83,7 @@ const check = (name, ok, detail = '') => { if (!ok) fails++; console.log(`${ok ?
 
   // ── Transcribe ──
   await p.click('.nb[data-p="home"]'); await reset(p);
-  check('header image is shown', await p.evaluate(() => { const i = document.getElementById('heroImg'); return i.complete && i.naturalWidth === 2000; }));
+  check('header image is shown', await p.evaluate(() => { const i = document.getElementById('heroImg'); return i.complete && i.naturalWidth === 1990; }));
   check('logo is shown in the top bar', await p.evaluate(() => document.querySelector('header svg.wordmark').getBoundingClientRect().width > 50));
   await p.hover('#history .row'); await p.click('#history .row [data-copy="0"]');
   let m = await last(p);

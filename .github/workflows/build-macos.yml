@@ -80,6 +80,10 @@ jobs:
           path: dist/Kalam.dmg
           compression-level: 0
 
+      - name: Click-test the real window (WebKit)
+        continue-on-error: true
+        run: venv/bin/python tests/mac_window_check.py
+
       - name: Benchmark dictation speed
         continue-on-error: true
         run: |

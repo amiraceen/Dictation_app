@@ -126,9 +126,12 @@
   h2 { font: 600 13px var(--sans); margin: 26px 0 10px; }
   h2:first-child { margin-top: 0; }
   .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
-  .hero { position: relative; margin: 0 0 22px; border-radius: 20px; overflow: hidden; aspect-ratio: 2000 / 434;
-          max-height: 210px; width: 100%; background: #4EA1D3; box-shadow: 0 10px 28px -14px rgba(16, 34, 43, 0.6); }
-  .hero img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; }
+  /* The rounded corners clip the image itself (not just the box), so no light hairline
+     shows at the edges in WebKit. */
+  .hero { margin: 0 0 22px; aspect-ratio: 1990 / 424; max-height: 210px; width: 100%;
+          filter: drop-shadow(0 10px 18px rgba(16, 34, 43, 0.28)); }
+  .hero img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%;
+              border-radius: 20px; clip-path: inset(0 round 20px); }
   .pills { display: flex; flex-wrap: wrap; gap: 8px; margin: -8px 0 24px; }
   .pill { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px 6px 8px; border-radius: 999px;
           background: var(--chip); box-shadow: inset 0 0 0 1px var(--rim); font-size: 12.5px; color: var(--muted); }
@@ -325,7 +328,7 @@
 
 <main>
   <section class="page on" id="home">
-    <div class="hero"><img id="heroImg" src="img/header-hill.webp" alt="Kalam"></div>
+    <div class="hero"><img id="heroImg" src="img/header-voice.webp" alt="Write less, speak more."></div>
     <h1>Transcribe<span class="sub">Everything you've said, kept on this Mac only.</span></h1>
     <div class="pills">
       <span class="pill"><i class="g-coral"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></i>Hold <kbd>Right ⌥</kbd> to talk</span>
@@ -454,14 +457,15 @@
 
 <script>
   const I = {"mic": "<svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5 11a7 7 0 0 0 14 0M12 18v3\"/></svg>", "notes": "<svg viewBox=\"0 0 24 24\"><path d=\"M6 3h9l4 4v14H6z\"/><path d=\"M15 3v4h4M9 12h7M9 16h5\"/></svg>", "clip": "<svg viewBox=\"0 0 24 24\"><rect x=\"6\" y=\"4\" width=\"12\" height=\"17\" rx=\"2\"/><path d=\"M9 4.5V3h6v1.5M9.5 10h5M9.5 14h5\"/></svg>", "words": "<svg viewBox=\"0 0 24 24\"><path d=\"M3 19 8 5l5 14M4.8 14h6.4\"/><circle cx=\"17.5\" cy=\"15.5\" r=\"3\"/><path d=\"M20.5 12.5V19\"/></svg>", "bolt": "<svg viewBox=\"0 0 24 24\"><path d=\"M13 3 5 13.5h6L10 21l8-10.5h-6z\"/></svg>", "settings": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 7h10M18 7h2M4 17h4M12 17h8\"/><circle cx=\"16\" cy=\"7\" r=\"2\"/><circle cx=\"10\" cy=\"17\" r=\"2\"/></svg>", "copy": "<svg viewBox=\"0 0 24 24\"><rect x=\"8\" y=\"8\" width=\"12\" height=\"12\" rx=\"3\"/><path d=\"M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2\"/></svg>", "check": "<svg viewBox=\"0 0 24 24\"><path d=\"M5 12.5 10 17 19 7\"/></svg>", "trash": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3\"/></svg>", "x": "<svg viewBox=\"0 0 24 24\"><path d=\"M6 6l12 12M18 6 6 18\"/></svg>", "plus": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 5v14M5 12h14\"/></svg>", "export": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 4v11M7 10l5 5 5-5M5 20h14\"/></svg>", "side": "<svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"3\"/><path d=\"M14 4v16\"/></svg>", "window": "<svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"3\"/><path d=\"M3 9h18\"/></svg>", "play": "<svg viewBox=\"0 0 24 24\"><path d=\"M8 5.5v13l10-6.5z\"/></svg>", "type": "<svg viewBox=\"0 0 24 24\"><path d=\"M5 7V5h14v2M12 5v14M9 19h6\"/></svg>", "gauge": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 16a8 8 0 1 1 16 0\"/><path d=\"M12 16l4-5\"/></svg>", "flame": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.3 2.4-5.4 3.8-7.6.5 1.7 1.5 2.8 2.7 3.2-.2-2.6.8-5.3 3-7.4.6 3.4 4.5 6 4.5 11.4 0 3.8-3 6.6-7.5 6.6z\"/></svg>", "laptop": "<svg viewBox=\"0 0 24 24\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"11\" rx=\"2\"/><path d=\"M2 19h20\"/></svg>", "cal": "<svg viewBox=\"0 0 24 24\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"15\" rx=\"3\"/><path d=\"M4 10h16M9 3v4M15 3v4\"/></svg>", "flask": "<svg viewBox=\"0 0 24 24\"><path d=\"M10 3v6L5 19a1.5 1.5 0 0 0 1.4 2h11.2A1.5 1.5 0 0 0 19 19l-5-10V3M9 3h6M7.5 14h9\"/></svg>", "wave": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2\"/></svg>"};
-  // Header artwork: one of the two Kalam banners, picked each time the window opens.
-  document.getElementById('heroImg').src = Math.random() < 0.5 ? 'img/header-hill.webp' : 'img/header-beam.webp';
+  // Header artwork: one of the Kalam banners, picked each time the window opens.
+  const HEROES = ['voice', 'screen', 'megaphone', 'writer'];
+  document.getElementById('heroImg').src = `img/header-${HEROES[Math.floor(Math.random() * HEROES.length)]}.webp`;
   const post = m => window.webkit.messageHandlers.app.postMessage(m);
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   let S = { history: [], dictionary: [], snippets: {}, stats: {}, settings: {}, options: {}, notes: [],
             note: null, notetaker: { active: false } };
-  let MODE = 'main';
+  let MODE = 'main', lastMode = null;
 
   const showPage = p => {
     document.querySelectorAll('.nb, .page').forEach(e => e.classList.remove('on'));
@@ -751,6 +755,7 @@
     document.body.classList.toggle('notepad', MODE === 'notepad');
     document.body.classList.toggle('recording', !!S.notetaker.active);
     document.body.classList.toggle('noglass', !S.glass);
+    if (MODE !== lastMode) { lastMode = MODE; requestAnimationFrame(reportDragRegion); }
     if (MODE === 'notepad') {
       document.title = 'Notepad';
       renderEditor($('padEditor'), S.note);
@@ -809,6 +814,16 @@
   $('sForm').onsubmit = e => { e.preventDefault(); const k = $('sKey').value.trim(), v = $('sVal').value;
     if (!k || !v) return; post({ type: 'saveSnippets', snippets: { ...S.snippets, [k]: v } });
     $('sKey').value = $('sVal').value = ''; };
+  // Tell the app where the top bar is, so dragging it moves the window (WebKit ignores
+  // -webkit-app-region). Buttons inside the bar stay clickable.
+  function reportDragRegion() {
+    const bar = MODE === 'notepad' ? null : document.querySelector('header');
+    const band = bar ? bar.getBoundingClientRect().bottom : 34;
+    const buttons = bar ? [...bar.querySelectorAll('button')].map(b => {
+      const r = b.getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; }) : [];
+    post({ type: 'dragRegion', band, buttons });
+  }
+  window.addEventListener('resize', reportDragRegion);
   window.addEventListener('beforeunload', flushSaves);
   post({ type: 'ready' });   // ask the app for state once the page has loaded
   $('clear').onclick = () => armed($('clear'), 'Clear all?', () => post({ type: 'clearHistory' }));

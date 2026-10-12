@@ -415,7 +415,7 @@ class AppWiringTest(unittest.TestCase):
             sent |= set(pair)
         with open(os.path.join(root, "dictation.py"), encoding="utf-8") as f:
             src = f.read()
-        handled = set(_re.findall(r'kind == "([A-Za-z]+)"', src)) | {"copy", "ready"}   # copy/ready: ui.Bridge
+        handled = set(_re.findall(r'kind == "([A-Za-z]+)"', src)) | {"copy", "ready", "dragRegion"}   # ui.Bridge
         self.assertGreater(len(sent), 20)
         self.assertEqual(sent - handled, set())
 
@@ -522,6 +522,22 @@ class AppWiringTest(unittest.TestCase):
         self.assertTrue(self.wait_until(lambda: not app.notetaker.active))
         items["Quit"].callback(None)
         self.assertTrue(rumps_stub.quits)
+
+    def test_which_mic_users_count_as_calls(self):
+        c = macos.call_app
+        self.assertIsNone(c("replayd", "/usr/libexec/replayd"))                      # screen recording service
+        self.assertIsNone(c("corespeechd", "/System/Library/PrivateFrameworks/CoreSpeech.framework/corespeechd"))
+        self.assertIsNone(c("Something", "/System/Library/CoreServices/Something.app/Contents/MacOS/Something"))
+        self.assertIsNone(c("Kalam", "/Applications/Kalam.app/Contents/MacOS/Kalam"))
+        self.assertEqual(c("zoom.us", "/Applications/zoom.us.app/Contents/MacOS/zoom.us"), "zoom.us")
+        self.assertEqual(c("Google Chrome Helper (Renderer)",
+                           "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/"
+                           "Versions/1/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/x"), "Google Chrome")
+        self.assertEqual(c("Microsoft Teams", "/Applications/Microsoft Teams.app/Contents/MacOS/MSTeams"), "Microsoft Teams")
+        self.assertEqual(c("FaceTime", "/System/Applications/FaceTime.app/Contents/MacOS/FaceTime"), "FaceTime")
+        self.assertEqual(c("avconferenced", "/usr/libexec/avconferenced"), "FaceTime")
+        self.assertEqual(c("Slack", None), "Slack")                                   # path unknown: by name
+        self.assertIsNone(c("replayd", None))
 
     def test_language_setting(self):
         self.assertIsNone(self.app.core.language())                 # auto-detect by default
