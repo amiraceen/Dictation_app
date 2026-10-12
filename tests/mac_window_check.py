@@ -90,6 +90,7 @@ def check(name, ok, detail=""):
 
 def click(win, web, selector, times=1):
     """Real mouse-down/up events at the middle of the element, sent through the window."""
+    win = getattr(win, "win", win)          # ui.WebWindow wraps the NSWindow
     rect = js(web, f"(() => {{ const e = document.querySelector({selector!r}); if (!e) return null;"
                    f" e.scrollIntoView({{block: 'center'}}); const r = e.getBoundingClientRect();"
                    f" return [r.left + r.width / 2, r.top + r.height / 2]; }})()")
