@@ -17,33 +17,37 @@
     src: url(fonts/readex-pro-arabic-wght-normal.woff2) format("woff2");
     unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+200C-200E, U+FB50-FDFF, U+FE70-FEFC; }
 
+  /* Palette taken from the Kalam icon: open sky, a warm sunrise beam, sun yellow and the deep
+     night green at its edges, with film grain over everything. */
   :root {
-    --coral: #FF6B4A; --amber: #FFA928; --rose: #EC4A8B; --violet: #7A5CFF; --sky: #3E9BFF; --mint: #20B98C;
-    --grad: linear-gradient(120deg, #FF8A3D 0%, #EC4A8B 52%, #7A5CFF 100%);
-    --aura: radial-gradient(60% 70% at 4% 0%, rgba(255, 158, 84, 0.55), transparent 70%),
-            radial-gradient(55% 65% at 100% 0%, rgba(122, 92, 255, 0.40), transparent 70%),
-            radial-gradient(50% 60% at 100% 100%, rgba(62, 155, 255, 0.28), transparent 70%),
-            radial-gradient(55% 60% at 0% 100%, rgba(236, 74, 139, 0.30), transparent 70%);
-    --base: rgba(255, 247, 240, 0.74); --solid: #FFF7F0;
-    --glass: rgba(255, 255, 255, 0.56); --panel: #FFFFFF; --card: rgba(255, 255, 255, 0.66);
-    --chip: rgba(255, 255, 255, 0.82); --hover: rgba(34, 27, 46, 0.05); --rim: rgba(255, 255, 255, 0.85);
-    --pop: rgba(255, 252, 249, 0.86); --shadow: 0 10px 30px -8px rgba(60, 30, 50, 0.22);
-    --ink: #221B2E; --muted: #7A7088; --line: rgba(34, 27, 46, 0.08); --off: rgba(34, 27, 46, 0.18);
-    --accent: #EC4A8B; --on-accent: #FFFFFF; --red: #E5484D; --good: #1E9E6A; --ok: #C77A12;
+    --sky: #3E95D1; --deep: #1C5E9B; --orange: #FD6D39; --sun: #F0A623; --teal: #1E7F86; --night: #10222B;
+    --grad: linear-gradient(120deg, #FD6D39 0%, #FF8E45 55%, #FFB84D 100%);
+    --aura: radial-gradient(70% 75% at 50% -10%, rgba(93, 161, 208, 0.62), transparent 72%),
+            radial-gradient(55% 60% at 0% 100%, rgba(253, 109, 57, 0.42), transparent 70%),
+            radial-gradient(45% 50% at 55% 110%, rgba(255, 226, 132, 0.50), transparent 70%),
+            radial-gradient(40% 50% at 100% 70%, rgba(146, 199, 233, 0.40), transparent 70%);
+    --base: rgba(250, 247, 242, 0.76); --solid: #FAF7F2;
+    --glass: rgba(255, 255, 255, 0.58); --panel: #FFFFFF; --card: rgba(255, 255, 255, 0.68);
+    --chip: rgba(255, 255, 255, 0.84); --hover: rgba(16, 34, 43, 0.05); --rim: rgba(255, 255, 255, 0.86);
+    --pop: rgba(252, 250, 247, 0.88); --shadow: 0 10px 30px -8px rgba(16, 34, 43, 0.24);
+    --ink: #10222B; --muted: #5E6E78; --line: rgba(16, 34, 43, 0.08); --off: rgba(16, 34, 43, 0.18);
+    --accent: #E85A27; --on-accent: #FFFFFF; --red: #E5484D; --good: #1E9E6A; --ok: #C77A12;
+    --grain: 0.07;
     --sans: "Readex Pro", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --aura: radial-gradient(60% 70% at 4% 0%, rgba(255, 128, 60, 0.30), transparent 70%),
-              radial-gradient(55% 65% at 100% 0%, rgba(122, 92, 255, 0.32), transparent 70%),
-              radial-gradient(50% 60% at 100% 100%, rgba(62, 155, 255, 0.18), transparent 70%),
-              radial-gradient(55% 60% at 0% 100%, rgba(236, 74, 139, 0.22), transparent 70%);
-      --base: rgba(22, 17, 30, 0.80); --solid: #16111E;
-      --glass: rgba(30, 24, 40, 0.55); --panel: #1D1726; --card: rgba(255, 255, 255, 0.06);
+      --aura: radial-gradient(70% 75% at 50% -10%, rgba(62, 149, 209, 0.34), transparent 72%),
+              radial-gradient(55% 60% at 0% 100%, rgba(253, 109, 57, 0.30), transparent 70%),
+              radial-gradient(45% 50% at 55% 110%, rgba(255, 226, 132, 0.16), transparent 70%),
+              radial-gradient(40% 50% at 100% 70%, rgba(30, 127, 134, 0.30), transparent 70%);
+      --base: rgba(12, 26, 33, 0.82); --solid: #0C1A21;
+      --glass: rgba(16, 34, 43, 0.56); --panel: #13262F; --card: rgba(255, 255, 255, 0.06);
       --chip: rgba(255, 255, 255, 0.10); --hover: rgba(255, 255, 255, 0.06); --rim: rgba(255, 255, 255, 0.09);
-      --pop: rgba(36, 28, 48, 0.90); --shadow: 0 12px 34px -8px rgba(0, 0, 0, 0.55);
-      --ink: #F4EEF8; --muted: #A79CB6; --line: rgba(255, 255, 255, 0.08); --off: rgba(255, 255, 255, 0.22);
-      --accent: #FF6FA6; --red: #FF6369; --good: #3DD68C; --ok: #F5B041;
+      --pop: rgba(18, 36, 45, 0.92); --shadow: 0 12px 34px -8px rgba(0, 0, 0, 0.55);
+      --ink: #EEF3F5; --muted: #93A3AD; --line: rgba(255, 255, 255, 0.08); --off: rgba(255, 255, 255, 0.22);
+      --accent: #FF8452; --red: #FF6369; --good: #3DD68C; --ok: #F5B041;
+      --grain: 0.11;
     }
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -52,6 +56,9 @@
   body { background: var(--aura), var(--base); color: var(--ink); font: 13.5px/1.55 var(--sans); letter-spacing: -0.002em;
          -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; user-select: none; overflow: hidden; }
   body.noglass { background: var(--aura), var(--solid); }
+  /* Film grain, like the brand artwork. */
+  body::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 50; opacity: var(--grain);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
   svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7;
         stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
   .stat .bub svg { width: 20px; height: 20px; stroke-width: 2; }
@@ -63,9 +70,8 @@
   header { height: 70px; flex-shrink: 0; display: flex; align-items: center; gap: 16px; padding: 4px 18px 0 88px;
            -webkit-app-region: drag; position: relative; z-index: 5; }
   .brand { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 18px; letter-spacing: -0.02em; min-width: 120px; }
-  .logo { width: 28px; height: 28px; border-radius: 50%; background: var(--grad); display: grid; place-items: center;
-          color: #fff; box-shadow: 0 4px 12px -3px rgba(236, 74, 139, 0.55); }
-  .logo svg { width: 16px; height: 16px; stroke-width: 2.6; }
+  .logo { width: 30px; height: 30px; border-radius: 8px; display: block; box-shadow: 0 4px 12px -4px rgba(16, 34, 43, 0.45); }
+  header svg.wordmark { display: block; width: auto; height: 19px; color: var(--ink); fill: currentColor; stroke: none; }
   nav { display: flex; align-items: center; gap: 10px; margin: 0 auto; }
   nav .sp { flex: 0 0 4px; }
   .nb { -webkit-app-region: no-drag; all: unset; position: relative; width: 42px; height: 42px; border-radius: 50%;
@@ -76,12 +82,17 @@
   .nb:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--rim), 0 8px 18px -6px var(--hue); }
   .nb.on { color: #fff; background: linear-gradient(140deg, var(--hue2), var(--hue));
            box-shadow: 0 8px 20px -6px var(--hue), inset 0 1px 0 rgba(255, 255, 255, 0.35); }
-  .nb[data-p="home"]     { --hue: var(--coral);  --hue2: #FFA04D; }
-  .nb[data-p="notes"]    { --hue: var(--amber);  --hue2: #FFC94D; }
-  .nb[data-p="clip"]     { --hue: var(--sky);    --hue2: #6FC3FF; }
-  .nb[data-p="dict"]     { --hue: var(--violet); --hue2: #A98BFF; }
-  .nb[data-p="snip"]     { --hue: var(--rose);   --hue2: #FF7FB0; }
-  .nb[data-p="settings"] { --hue: #6E6680;       --hue2: #9C93AE; }
+  .nb[data-p="home"]     { --hue: var(--orange); --hue2: #FF9A5C; }
+  .nb[data-p="notes"]    { --hue: var(--sun);    --hue2: #FFD66B; }
+  .nb[data-p="clip"]     { --hue: var(--sky);    --hue2: #7CC0EA; }
+  .nb[data-p="dict"]     { --hue: var(--deep);   --hue2: #4C8CC9; }
+  .nb[data-p="snip"]     { --hue: var(--teal);   --hue2: #3FB0B0; }
+  .nb[data-p="settings"] { --hue: #5D6B78;       --hue2: #8E9AA5; }
+  @media (prefers-color-scheme: dark) {
+    .nb[data-p="dict"] { --hue: #6FA8E0; --hue2: #2F6FAE; }
+    .nb[data-p="snip"] { --hue: #4FC3C3; --hue2: #1E7F86; }
+    .nb[data-p="settings"] { --hue: #A9B6C1; --hue2: #5D6B78; }
+  }
   .nb .rec { position: absolute; top: 1px; right: 1px; width: 10px; height: 10px; border-radius: 50%; background: var(--red);
              box-shadow: 0 0 0 2px var(--panel); display: none; animation: pulse 1.6s infinite; }
   body.recording .nb .rec { display: block; }
@@ -115,6 +126,9 @@
   h2 { font: 600 13px var(--sans); margin: 26px 0 10px; }
   h2:first-child { margin-top: 0; }
   .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .hero { position: relative; margin: 0 0 22px; border-radius: 20px; overflow: hidden; aspect-ratio: 2000 / 434;
+          max-height: 210px; width: 100%; background: #4EA1D3; box-shadow: 0 10px 28px -14px rgba(16, 34, 43, 0.6); }
+  .hero img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; }
   .pills { display: flex; flex-wrap: wrap; gap: 8px; margin: -8px 0 24px; }
   .pill { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px 6px 8px; border-radius: 999px;
           background: var(--chip); box-shadow: inset 0 0 0 1px var(--rim); font-size: 12.5px; color: var(--muted); }
@@ -126,11 +140,11 @@
   .stat .bub { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #fff; flex-shrink: 0; }
   .stat .n { font: 600 24px/1 var(--sans); letter-spacing: -0.025em; font-variant-numeric: tabular-nums; }
   .stat .l { color: var(--muted); margin-top: 5px; font-size: 12px; }
-  .g-coral  { background: linear-gradient(140deg, #FFA04D, var(--coral)); }
-  .g-amber  { background: linear-gradient(140deg, #FFC94D, var(--amber)); }
-  .g-violet { background: linear-gradient(140deg, #A98BFF, var(--violet)); }
-  .g-rose   { background: linear-gradient(140deg, #FF7FB0, var(--rose)); }
-  .g-sky    { background: linear-gradient(140deg, #6FC3FF, var(--sky)); }
+  .g-coral  { background: linear-gradient(140deg, #FF9A5C, var(--orange)); }
+  .g-amber  { background: linear-gradient(140deg, #FFD66B, var(--sun)); }
+  .g-violet { background: linear-gradient(140deg, #4C8CC9, var(--deep)); }
+  .g-rose   { background: linear-gradient(140deg, #3FB0B0, var(--teal)); }
+  .g-sky    { background: linear-gradient(140deg, #7CC0EA, var(--sky)); }
 
   .section { display: flex; justify-content: space-between; align-items: center; margin: 0 0 10px;
              font-size: 11px; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; }
@@ -149,7 +163,7 @@
   /* Buttons */
   .btn { all: unset; cursor: default; padding: 7px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
          background: var(--grad); color: var(--on-accent); white-space: nowrap; display: inline-flex;
-         align-items: center; gap: 7px; box-shadow: 0 4px 12px -5px rgba(236, 74, 139, 0.6); }
+         align-items: center; gap: 7px; box-shadow: 0 4px 12px -5px rgba(253, 109, 57, 0.55); }
   .btn:hover { filter: brightness(1.05); }
   .btn svg { width: 15px; height: 15px; stroke-width: 2; }
   .btn.ghost { background: transparent; color: var(--muted); padding: 5px 10px; font-weight: 500; box-shadow: none; }
@@ -166,7 +180,7 @@
         color: var(--muted); cursor: default; flex-shrink: 0; }
   .ib svg { width: 16px; height: 16px; }
   .ib:hover { background: var(--hover); color: var(--ink); }
-  .ib.go { background: var(--grad); color: #fff; width: 38px; height: 38px; box-shadow: 0 4px 12px -5px rgba(236, 74, 139, 0.6); }
+  .ib.go { background: var(--grad); color: #fff; width: 38px; height: 38px; box-shadow: 0 4px 12px -5px rgba(253, 109, 57, 0.55); }
   .ib.done { background: var(--good); color: #fff; }
   .ib.danger { width: auto; padding: 0 10px; font-size: 12px; font-weight: 600; border-radius: 999px; }
 
@@ -178,11 +192,11 @@
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip { display: inline-flex; align-items: center; gap: 4px; padding: 5px 5px 5px 13px; border-radius: 999px;
           background: var(--chip); font-size: 13px; box-shadow: inset 0 0 0 1px var(--rim); }
-  .chip:nth-child(5n+1) { box-shadow: inset 0 0 0 1.5px rgba(255, 107, 74, 0.35); }
-  .chip:nth-child(5n+2) { box-shadow: inset 0 0 0 1.5px rgba(122, 92, 255, 0.35); }
-  .chip:nth-child(5n+3) { box-shadow: inset 0 0 0 1.5px rgba(62, 155, 255, 0.35); }
-  .chip:nth-child(5n+4) { box-shadow: inset 0 0 0 1.5px rgba(236, 74, 139, 0.35); }
-  .chip:nth-child(5n)   { box-shadow: inset 0 0 0 1.5px rgba(255, 169, 40, 0.45); }
+  .chip:nth-child(5n+1) { box-shadow: inset 0 0 0 1.5px rgba(253, 109, 57, 0.38); }
+  .chip:nth-child(5n+2) { box-shadow: inset 0 0 0 1.5px rgba(28, 94, 155, 0.32); }
+  .chip:nth-child(5n+3) { box-shadow: inset 0 0 0 1.5px rgba(62, 149, 209, 0.38); }
+  .chip:nth-child(5n+4) { box-shadow: inset 0 0 0 1.5px rgba(30, 127, 134, 0.36); }
+  .chip:nth-child(5n)   { box-shadow: inset 0 0 0 1.5px rgba(240, 166, 35, 0.45); }
   .chip .ib { width: 22px; height: 22px; }
   .chip .ib svg { width: 12px; height: 12px; }
   .clip { grid-template-columns: 1fr auto; cursor: default; }
@@ -297,7 +311,7 @@
 </head>
 <body>
 <header>
-  <div class="brand"><div class="logo"><svg viewBox="0 0 24 24"><path d="M6 10v4M10 6v12M14 8v8M18 11v2"/></svg></div>Kalam</div>
+  <div class="brand"><img class="logo" src="img/app-icon.webp" alt=""><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1257.56 324.01" fill="currentColor" class="wordmark" role="img" aria-label="Kalam"><path d="M362.16,86.12c-38.99,0-71.26,8.81-98.67,26.93l-3.03,2,15.44,29.17,3.71-2.59c21.72-15.16,48.02-22.53,80.39-22.53,53.34,0,76.1,20.83,76.1,69.64v12.96c-28.32-15.21-63.17-23.85-96.77-23.85-28.7,0-51.42,6.16-67.54,18.3-16.18,12.2-24.74,30.18-24.74,52.02,0,43.64,33.05,70.75,86.25,70.75,40.02,0,76.12-15.19,102.79-43.02v37.85h35.56v-128.02c0-67.95-34.79-99.6-109.5-99.6ZM436.11,233.18v7.56c-23.04,28.59-59.74,45.63-98.49,45.63-17.35,0-31.46-3.59-40.82-10.38-9.12-6.62-13.74-16.12-13.74-28.25,0-25.35,20.68-38.2,61.45-38.2,33.27,0,66.5,8.6,91.6,23.65Z"/><rect x="534.72" width="35.56" height="313.74"/><path d="M736.38,86.12c-38.99,0-71.26,8.81-98.67,26.93l-3.03,2,15.44,29.17,3.71-2.59c21.72-15.16,48.02-22.53,80.39-22.53,53.34,0,76.1,20.83,76.1,69.64v12.96c-28.32-15.21-63.17-23.85-96.77-23.85-28.7,0-51.42,6.16-67.54,18.3-16.18,12.2-24.74,30.18-24.74,52.02,0,43.64,33.05,70.75,86.25,70.75,40.02,0,76.12-15.19,102.79-43.02v37.85h35.56v-128.02c0-67.95-34.79-99.6-109.5-99.6ZM810.32,233.18v7.56c-23.04,28.59-59.74,45.63-98.49,45.63-17.35,0-31.46-3.59-40.82-10.38-9.12-6.62-13.74-16.12-13.74-28.25,0-25.35,20.68-38.2,61.46-38.2,33.27,0,66.5,8.6,91.6,23.65Z"/><path d="M1179.92,86.12c-33.29,0-62.36,15.07-86.48,44.81-11.38-28.97-35.46-44.81-68.54-44.81-31.18,0-58.18,13.82-80.4,41.13v-35.96h-35.56v222.45h35.56v-149.61c20.51-29.88,44.95-45.03,72.65-45.03,15.67,0,27.69,4.93,35.73,14.64,8.21,9.93,12.38,24.81,12.38,44.23v135.77h35.56v-140.08c0-5.19-.36-10.04-.75-14.72,20.82-26.81,44.42-39.84,72.11-39.84,16.63,0,29.22,4.94,37.42,14.67,8.23,9.77,12.41,24.64,12.41,44.2v135.77h35.56v-140.08c0-55.63-28.3-87.54-77.64-87.54Z"/><path d="M163.74,159.98c-14.3-8.34-30.25-12.51-47.82-12.51h-15.49l60.78-122.91-27.26-11.62L61.69,147.75V7.91H0v316.1h61.69v-141.68h54.24c11.62,0,21.9,2.23,30.84,6.7,8.94,4.47,16.01,10.95,21.23,19.44,5.21,8.49,7.82,18.25,7.82,29.27,0,9.24-2.16,17.81-6.48,25.7-4.32,7.9-10.28,14.15-17.88,18.77-7.6,4.62-16.17,6.93-25.7,6.93h-11.45v34.86h13.68c14.9,0,28.67-3.72,41.34-11.17,12.66-7.44,22.72-17.43,30.17-29.95,7.44-12.51,11.17-26.21,11.17-41.12,0-17.27-4.25-33.14-12.74-47.6-8.49-14.45-19.89-25.85-34.19-34.19Z"/></svg></div>
   <nav>
     <button class="nb on" data-p="home" aria-label="Transcribe"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
     <button class="nb" data-p="notes" aria-label="Notes"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg><span class="rec"></span></button>
@@ -311,6 +325,7 @@
 
 <main>
   <section class="page on" id="home">
+    <div class="hero"><img id="heroImg" src="img/header-hill.webp" alt="Kalam"></div>
     <h1>Transcribe<span class="sub">Everything you've said, kept on this Mac only.</span></h1>
     <div class="pills">
       <span class="pill"><i class="g-coral"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></i>Hold <kbd>Right ⌥</kbd> to talk</span>
@@ -439,6 +454,8 @@
 
 <script>
   const I = {"mic": "<svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5 11a7 7 0 0 0 14 0M12 18v3\"/></svg>", "notes": "<svg viewBox=\"0 0 24 24\"><path d=\"M6 3h9l4 4v14H6z\"/><path d=\"M15 3v4h4M9 12h7M9 16h5\"/></svg>", "clip": "<svg viewBox=\"0 0 24 24\"><rect x=\"6\" y=\"4\" width=\"12\" height=\"17\" rx=\"2\"/><path d=\"M9 4.5V3h6v1.5M9.5 10h5M9.5 14h5\"/></svg>", "words": "<svg viewBox=\"0 0 24 24\"><path d=\"M3 19 8 5l5 14M4.8 14h6.4\"/><circle cx=\"17.5\" cy=\"15.5\" r=\"3\"/><path d=\"M20.5 12.5V19\"/></svg>", "bolt": "<svg viewBox=\"0 0 24 24\"><path d=\"M13 3 5 13.5h6L10 21l8-10.5h-6z\"/></svg>", "settings": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 7h10M18 7h2M4 17h4M12 17h8\"/><circle cx=\"16\" cy=\"7\" r=\"2\"/><circle cx=\"10\" cy=\"17\" r=\"2\"/></svg>", "copy": "<svg viewBox=\"0 0 24 24\"><rect x=\"8\" y=\"8\" width=\"12\" height=\"12\" rx=\"3\"/><path d=\"M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2\"/></svg>", "check": "<svg viewBox=\"0 0 24 24\"><path d=\"M5 12.5 10 17 19 7\"/></svg>", "trash": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3\"/></svg>", "x": "<svg viewBox=\"0 0 24 24\"><path d=\"M6 6l12 12M18 6 6 18\"/></svg>", "plus": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 5v14M5 12h14\"/></svg>", "export": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 4v11M7 10l5 5 5-5M5 20h14\"/></svg>", "side": "<svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"3\"/><path d=\"M14 4v16\"/></svg>", "window": "<svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"3\"/><path d=\"M3 9h18\"/></svg>", "play": "<svg viewBox=\"0 0 24 24\"><path d=\"M8 5.5v13l10-6.5z\"/></svg>", "type": "<svg viewBox=\"0 0 24 24\"><path d=\"M5 7V5h14v2M12 5v14M9 19h6\"/></svg>", "gauge": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 16a8 8 0 1 1 16 0\"/><path d=\"M12 16l4-5\"/></svg>", "flame": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.3 2.4-5.4 3.8-7.6.5 1.7 1.5 2.8 2.7 3.2-.2-2.6.8-5.3 3-7.4.6 3.4 4.5 6 4.5 11.4 0 3.8-3 6.6-7.5 6.6z\"/></svg>", "laptop": "<svg viewBox=\"0 0 24 24\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"11\" rx=\"2\"/><path d=\"M2 19h20\"/></svg>", "cal": "<svg viewBox=\"0 0 24 24\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"15\" rx=\"3\"/><path d=\"M4 10h16M9 3v4M15 3v4\"/></svg>", "flask": "<svg viewBox=\"0 0 24 24\"><path d=\"M10 3v6L5 19a1.5 1.5 0 0 0 1.4 2h11.2A1.5 1.5 0 0 0 19 19l-5-10V3M9 3h6M7.5 14h9\"/></svg>", "wave": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2\"/></svg>"};
+  // Header artwork: one of the two Kalam banners, picked each time the window opens.
+  document.getElementById('heroImg').src = Math.random() < 0.5 ? 'img/header-hill.webp' : 'img/header-beam.webp';
   const post = m => window.webkit.messageHandlers.app.postMessage(m);
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));

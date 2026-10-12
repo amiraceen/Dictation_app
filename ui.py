@@ -35,8 +35,8 @@ PILL_W, PILL_H = 120, 36
 BARS = 11
 BOTTOM_GAP = 18          # px above the Dock / bottom of the visible frame
 
-# Kalam brand gradient for the bars, left to right: coral → rose → violet.
-BRAND_STOPS = [(1.00, 0.45, 0.30), (0.93, 0.29, 0.55), (0.48, 0.36, 1.00)]
+# Kalam brand gradient for the bars, left to right: sunrise orange → sun yellow → sky blue.
+BRAND_STOPS = [(0.99, 0.43, 0.22), (1.00, 0.76, 0.33), (0.36, 0.63, 0.82)]
 
 
 def brand_color(t, alpha=1.0):

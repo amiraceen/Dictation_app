@@ -7,13 +7,16 @@ faster-whisper's WhisperModel that the app uses (detect_language, transcribe), s
 DictationCore doesn't care which engine it has.
 """
 
+import hashlib
 import sys
 import types
 
 import numpy as np
 
 SAMPLE_RATE = 16000
+WINDOW = 30 * SAMPLE_RATE           # Whisper hears 30 s at a time
 MLX_REPO = "mlx-community/whisper-large-v3-turbo"
+TEMPERATURES = (0.0, 0.2, 0.4, 0.6)  # retry warmer when the greedy result looks broken
 
 
 def _skip_word_timings():
@@ -69,17 +72,28 @@ class MlxWhisper:
         self.path = str(path)
         self._mx = mx
         self.model = ModelHolder.get_model(self.path, mx.float16)    # loads once, then cached
+        self._cached = (None, None)          # (audio fingerprint, encoder output)
+
+    def _features(self, audio):
+        """Encoder output for up to 30 s of audio. The encoder is most of the work, so the
+        result is kept: language detection and transcription of the same clip share it."""
+        key = hashlib.blake2b(np.ascontiguousarray(audio, dtype=np.float32).tobytes(), digest_size=16).digest()
+        if self._cached[0] == key:
+            return self._cached[1]
+        from mlx_whisper.audio import N_FRAMES, N_SAMPLES, log_mel_spectrogram, pad_or_trim
+        mel = log_mel_spectrogram(audio, n_mels=self.model.dims.n_mels, padding=N_SAMPLES)
+        mel = pad_or_trim(mel, N_FRAMES, axis=-2).astype(self._mx.float16)
+        features = self.model.encoder(mel[None])[0]
+        self._cached = (key, features)
+        return features
 
     def detect_language(self, audio, vad_filter=False, vad_parameters=None):
         """(language, probability, [(code, p), ...]) like faster-whisper."""
-        from mlx_whisper.audio import N_FRAMES, N_SAMPLES, log_mel_spectrogram, pad_or_trim
         if vad_filter:
             audio = speech_only(audio)
         if len(audio) == 0:
             raise ValueError("no speech")
-        mel = log_mel_spectrogram(audio, n_mels=self.model.dims.n_mels, padding=N_SAMPLES)
-        mel = pad_or_trim(mel, N_FRAMES, axis=-2).astype(self._mx.float16)
-        _, probs = self.model.detect_language(mel)
+        _, probs = self.model.detect_language(self._features(audio[:WINDOW]))
         ranked = sorted(probs.items(), key=lambda kv: kv[1], reverse=True)
         return ranked[0][0], ranked[0][1], ranked
 
@@ -92,10 +106,29 @@ class MlxWhisper:
             audio = speech_only(audio, ms)
         if len(audio) < SAMPLE_RATE // 10:
             return iter(()), None
+        if len(audio) <= WINDOW:                 # a dictation: one window, encoder output reused
+            return iter(self._decode_window(audio, language, initial_prompt)), None
         out = mlx_whisper.transcribe(
             audio, path_or_hf_repo=self.path, language=language, initial_prompt=initial_prompt,
             condition_on_previous_text=False, verbose=None, fp16=True)
         return iter([_Segment(s) for s in out.get("segments", [])]), None
+
+
+    def _decode_window(self, audio, language, prompt):
+        """Decode one ≤30 s window from the shared encoder output, with Whisper's usual
+        fallback: retry at a higher temperature if the text repeats itself or is unlikely."""
+        from mlx_whisper.decoding import DecodingOptions, decode
+        features = self._features(audio)
+        result = None
+        for t in TEMPERATURES:
+            result = decode(self.model, features, DecodingOptions(
+                language=language, prompt=prompt, temperature=t, fp16=True))
+            if result.no_speech_prob > 0.6 and result.avg_logprob < -1.0:
+                return []                        # silence
+            if result.compression_ratio <= 2.4 and result.avg_logprob >= -1.0:
+                break
+        return [_Segment({"text": result.text, "no_speech_prob": result.no_speech_prob,
+                          "avg_logprob": result.avg_logprob, "compression_ratio": result.compression_ratio})]
 
 
 def download(folder):

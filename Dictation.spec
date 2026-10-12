@@ -16,7 +16,7 @@ datas += [(MODEL_DIR + f, 'model') for f in ('config.json', 'model.bin', 'tokeni
 
 datas += [('menubar/' + f, 'menubar') for f in ('idle.png', 'busy.png', 'recording.png')]
 
-datas += [('web/index.html', 'web'), ('web/fonts', 'web/fonts')]
+datas += [('web/index.html', 'web'), ('web/fonts', 'web/fonts'), ('web/img', 'web/img')]
 datas += collect_data_files('mlx_whisper')          # tokenizer vocabularies, mel filters
 hiddenimports += ['ui', 'WebKit', 'PyObjCTools.AppHelper', 'ApplicationServices',
                   'macos', 'meetings', 'notes', 'notetaker', 'settings', 'system', 'speed', 'arabic', 'voicetest', 'models', 'mlx_engine',

@@ -94,7 +94,26 @@ def _install_stubs():
         def setString_forType_(cls, s, _t):
             cls.text = s
 
-    mod("AppKit", NSPasteboard=Pasteboard, NSPasteboardTypeString="str")
+    class SavePanel:
+        """NSSavePanel stand-in: 'saves' to SavePanel.path when it's set, else cancels."""
+        path = None
+        name = None
+
+        @classmethod
+        def savePanel(cls):
+            return cls()
+
+        def setNameFieldStringValue_(self, name):
+            SavePanel.name = name
+
+        def runModal(self):
+            return 1 if SavePanel.path else 0
+
+        def URL(self):
+            return types.SimpleNamespace(path=lambda: SavePanel.path)
+
+    mod("AppKit", NSPasteboard=Pasteboard, NSPasteboardTypeString="str", NSSavePanel=SavePanel,
+        NSApp=types.SimpleNamespace(activateIgnoringOtherApps_=lambda flag: None))
 
     class Fake:
         """Stand-in for Pill / Toast / WebWindow objects."""
@@ -384,6 +403,125 @@ class AppWiringTest(unittest.TestCase):
             if t.name == "load_model":
                 t.join(2)
         self.assertEqual(loaded[-1][1], "Whisper small")
+
+    def test_every_ui_message_is_handled(self):
+        """Each action the page can send has a handler (a typo would make a button do nothing)."""
+        import re as _re
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        with open(os.path.join(root, "web", "index.html"), encoding="utf-8") as f:
+            html = f.read()
+        sent = set(_re.findall(r"type: '([A-Za-z]+)'", html))
+        for pair in _re.findall(r"type: [\w.]+ \? '([A-Za-z]+)' : '([A-Za-z]+)'", html):    # toggles
+            sent |= set(pair)
+        with open(os.path.join(root, "dictation.py"), encoding="utf-8") as f:
+            src = f.read()
+        handled = set(_re.findall(r'kind == "([A-Za-z]+)"', src)) | {"copy", "ready"}   # copy/ready: ui.Bridge
+        self.assertGreater(len(sent), 20)
+        self.assertEqual(sent - handled, set())
+
+    def test_buttons_do_what_they_say(self):
+        """Every button's message, run through the app, changes what it should."""
+        b, app = self.bridge(), self.app
+        toasts = []
+        self.patch(app, "_show_toast", lambda title, *a, **kw: toasts.append(title))
+        AppKit = sys.modules["AppKit"]
+        out = tempfile.mkdtemp()
+
+        # Transcribe page: history and clear
+        app.store.add("hello there", 1.0)
+        self.assertEqual(len(app.state_for(b)["history"]), 1)
+        app.handle_message({"type": "clearHistory"}, b)
+        self.assertEqual(app.state_for(b)["history"], [])
+        # Your words and Shortcuts
+        app.handle_message({"type": "saveDictionary", "words": ["Kalam", "مسقط"]}, b)
+        self.assertEqual(app.state_for(b)["dictionary"], ["Kalam", "مسقط"])
+        app.handle_message({"type": "saveDictionary", "words": ["Kalam"]}, b)        # remove a word
+        self.assertEqual(app.state_for(b)["dictionary"], ["Kalam"])
+        app.handle_message({"type": "saveSnippets", "snippets": {"my email": "a@b.c"}}, b)
+        self.assertEqual(app.state_for(b)["snippets"], {"my email": "a@b.c"})
+        app.handle_message({"type": "saveSnippets", "snippets": {}}, b)              # remove a shortcut
+        self.assertEqual(app.state_for(b)["snippets"], {})
+
+        # Notes: new, open, open in Notepad / main window, export, delete
+        app.handle_message({"type": "newNote"}, b)
+        nid = b.note_id
+        app.handle_message({"type": "updateNote", "id": nid, "title": "Plan: Q4", "body": "ship"}, b)
+        other = self.bridge()
+        app.handle_message({"type": "openNote", "id": nid}, other)
+        self.assertEqual(app.state_for(other)["note"]["id"], nid)
+        app.handle_message({"type": "openNotepad", "id": nid}, b)
+        self.assertEqual(app._notepad.bridge.note_id, nid)
+        app.handle_message({"type": "openMain", "id": nid}, b)
+        self.assertEqual((app._window.bridge.note_id, app._window.bridge.goto), (nid, "notes"))
+        AppKit.NSSavePanel.path = None                                            # cancelled: nothing written
+        app.handle_message({"type": "exportNote", "id": nid}, b)
+        self.assertEqual(AppKit.NSSavePanel.name, "Plan- Q4.md")
+        AppKit.NSSavePanel.path = os.path.join(out, "plan.md")
+        app.handle_message({"type": "exportNote", "id": nid}, b)
+        with open(AppKit.NSSavePanel.path, encoding="utf-8") as f:
+            self.assertIn("# Plan: Q4", f.read())
+        self.assertIn("Note exported", toasts)
+        app.handle_message({"type": "deleteNote", "id": nid}, b)
+        self.assertIsNone(app.notes.get(nid))
+        self.assertNotIn(nid, [n["id"] for n in app.state_for(b)["notes"]])
+        for br in (b, app._notepad.bridge, app._window.bridge):
+            self.assertIsNone(br.note_id)                      # no window keeps showing the deleted note
+
+        # Notetaker buttons; the note being recorded can't be deleted until it stops
+        app.handle_message({"type": "startNotetaker"}, b)
+        self.assertTrue(app.notetaker.active)
+        live = app.notetaker.note_id
+        app.handle_message({"type": "deleteNote", "id": live}, b)
+        self.assertIsNotNone(app.notes.get(live))
+        app.handle_message({"type": "stopNotetaker"}, b)
+        self.assertTrue(self.wait_until(lambda: not app.notetaker.active))
+        app.handle_message({"type": "deleteNote", "id": live}, b)
+        self.assertIsNone(app.notes.get(live))
+
+        # Voice test: play, remove, export (cancelled and saved)
+        played = []
+        self.patch(macos, "play_file", played.append)
+        pid = app.voicetest.data["phrases"][0]["id"]
+        app.voicetest.save_recording(pid, np.zeros(8000, np.float32))
+        app.handle_message({"type": "voiceTestPlay", "id": pid}, b)
+        self.assertEqual(len(played), 1)
+        AppKit.NSSavePanel.path = os.path.join(out, "voice-test.zip")
+        app.handle_message({"type": "voiceTestExport"}, b)
+        self.assertTrue(os.path.exists(AppKit.NSSavePanel.path))
+        app.handle_message({"type": "voiceTestRemove", "id": pid}, b)
+        self.assertIsNone(app.voicetest.phrase(pid))
+
+        # Settings links and model retry
+        opened = []
+        self.patch(dictation.os, "system", opened.append)
+        app.handle_message({"type": "openPrivacy", "pane": "calendar"}, b)
+        self.assertIn("Privacy_Calendars", opened[-1])
+        reloads = []
+        self.patch(app, "_load_chosen_model", lambda: reloads.append(1))
+        app.models.error = "no internet"
+        app.handle_message({"type": "retryModel"}, b)
+        self.assertEqual((reloads, app.models.error), ([1], None))
+        self.assertEqual([t for t in toasts if "didn't work" in t], [])         # no action failed
+
+    def test_menu_bar_items(self):
+        app = self.app
+        items = {i.title: i for i in app.menu if getattr(i, "title", None)}
+        for title in ("Open Kalam", "New Note", "Copy Last Transcription", "Quit"):
+            self.assertIn(title, items)
+        items["Open Kalam"].callback(None)
+        self.assertEqual(app._window.shown, 2)
+        before = len(app.notes.summaries())
+        items["New Note"].callback(None)
+        self.assertEqual(len(app.notes.summaries()), before + 1)
+        app.store.add("last thing I said", 1.0)
+        items["Copy Last Transcription"].callback(None)
+        self.assertEqual(sys.modules["AppKit"].NSPasteboard.text, "last thing I said")
+        app._notes_item.callback(None)                                   # Start Notetaker
+        self.assertTrue(app.notetaker.active)
+        app._notes_item.callback(None)                                   # Stop
+        self.assertTrue(self.wait_until(lambda: not app.notetaker.active))
+        items["Quit"].callback(None)
+        self.assertTrue(rumps_stub.quits)
 
     def test_language_setting(self):
         self.assertIsNone(self.app.core.language())                 # auto-detect by default

@@ -78,11 +78,23 @@ def transcribe(model, audio, language, prompt):
     return " ".join(s.text for s in segs).strip()
 
 
+def load_model(model_id):
+    """'mlx' = the app's Accurate model (large-v3-turbo on the Mac's GPU); anything else is a
+    faster-whisper model on the CPU."""
+    if model_id == "mlx":
+        import tempfile
+        import mlx_engine
+        folder = tempfile.mkdtemp()
+        mlx_engine.download(folder)
+        return mlx_engine.MlxWhisper(folder)
+    from faster_whisper import WhisperModel
+    return WhisperModel(model_id, device="cpu", compute_type="int8")
+
+
 def evaluate(model_id, clips, language="ar", prompt=None, label=None):
     import jiwer
-    from faster_whisper import WhisperModel
     t0 = time.perf_counter()
-    model = WhisperModel(model_id, device="cpu", compute_type="int8")
+    model = load_model(model_id)
     load_s = time.perf_counter() - t0
     transcribe(model, clips[0][1], language, prompt)              # warm-up
     hyps, refs, times = [], [], []
@@ -99,12 +111,13 @@ def evaluate(model_id, clips, language="ar", prompt=None, label=None):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--models", default="small,medium,large-v3-turbo,large-v3")
+    ap.add_argument("--models", default="small,large-v3-turbo,mlx",
+                    help="faster-whisper models, and/or 'mlx' for the app's Accurate model on the GPU")
     ap.add_argument("--clips", type=int, default=40)
     ap.add_argument("--out", default="arabic_results.md")
     ap.add_argument("--set", default="",
                     help="score an exported voice test (voice-test.zip) instead of FLEURS")
-    ap.add_argument("--prompt-test", default="small,large-v3-turbo",
+    ap.add_argument("--prompt-test", default="mlx",
                     help="also run these models (comma-separated) with the app's Arabic dialect prompt ('' to skip)")
     args = ap.parse_args()
 

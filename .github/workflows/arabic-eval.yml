@@ -10,7 +10,7 @@ on:
     inputs:
       models:
         description: "Comma-separated faster-whisper models"
-        default: "small,large-v3-turbo"
+        default: "small,large-v3-turbo,mlx"
       clips:
         description: "Number of clips"
         default: "40"
@@ -33,11 +33,13 @@ jobs:
           path: ~/.cache/huggingface/hub
           key: arabic-eval-v1
       - name: Install
-        run: python -m pip install --quiet faster-whisper jiwer huggingface_hub numpy soundfile
+        run: |
+          python -m pip install --quiet faster-whisper jiwer huggingface_hub numpy soundfile mlx tiktoken tqdm more-itertools
+          python -m pip install --quiet --no-deps "mlx-whisper==0.4.3"
       - name: Score models
         run: |
           python tools/eval_arabic.py \
-            --models "${{ github.event.inputs.models || 'small,large-v3-turbo' }}" \
+            --models "${{ github.event.inputs.models || 'small,large-v3-turbo,mlx' }}" \
             --clips "${{ github.event.inputs.clips || '40' }}" \
             --set "${{ github.event.inputs.set || '' }}" --out arabic_results.md
           cat arabic_results.md >> "$GITHUB_STEP_SUMMARY"

@@ -21,9 +21,16 @@ def _stub_mlx(calls):
         def astype(self, dtype):
             return self
 
+        def __getitem__(self, i):
+            return self
+
     class Model:
         class dims:
             n_mels = 128
+
+        def encoder(self, mel):
+            calls.append(("encode",))
+            return Arr()
 
         def detect_language(self, mel):
             return None, {"he": 0.5, "ar": 0.3, "en": 0.2}
@@ -41,7 +48,20 @@ def _stub_mlx(calls):
 
     mlx = mod("mlx")
     mlx.core = mod("mlx.core", float16="f16", array=lambda x: x, eval=lambda *a: None)
+    results = []
+
+    def decode(model, features, options):
+        calls.append(("decode", options))
+        r = results.pop(0) if results else dict(text=" كيفش", no_speech_prob=0.1, avg_logprob=-0.2, compression_ratio=1.1)
+        return types.SimpleNamespace(**r)
+
+    class DecodingOptions:
+        def __init__(self, **kw):
+            self.__dict__.update(kw)
+
+    mod("mlx_whisper.decoding", decode=decode, DecodingOptions=DecodingOptions)
     pkg = mod("mlx_whisper", transcribe=transcribe)
+    pkg._results = results
     pkg.transcribe = transcribe
     mod("mlx_whisper.transcribe", ModelHolder=ModelHolder)
     mod("mlx_whisper.audio", N_FRAMES=3000, N_SAMPLES=480000,
@@ -75,9 +95,26 @@ class MlxEngineTest(unittest.TestCase):
                                vad_filter=True, vad_parameters=dict(min_silence_duration_ms=300), beam_size=5)
         seg = list(segs)[0]
         self.assertEqual((seg.text, seg.no_speech_prob), (" كيفش", 0.1))
+        self.assertEqual([c[0] for c in self.calls].count("encode"), 1)   # detection and decoding share it
+        opts = self.calls[-1][1]
+        self.assertEqual((opts.language, opts.prompt, opts.temperature), ("ar", "هلا", 0.0))
+        self.assertFalse(hasattr(opts, "beam_size"))                       # MLX has no beam search
+
+    def test_retries_warmer_when_text_repeats(self):
+        m = self.engine.MlxWhisper("/models/turbo")
+        sys.modules["mlx_whisper"]._results.extend([
+            dict(text=" ha ha ha ha", no_speech_prob=0.1, avg_logprob=-0.3, compression_ratio=3.5),
+            dict(text=" أهلين", no_speech_prob=0.1, avg_logprob=-0.3, compression_ratio=1.2)])
+        segs, _ = m.transcribe(np.ones(16000, np.float32), language="ar")
+        self.assertEqual([s.text for s in segs], [" أهلين"])
+        self.assertEqual([c[1].temperature for c in self.calls if c[0] == "decode"], [0.0, 0.2])
+
+    def test_long_recordings_use_full_transcription(self):
+        m = self.engine.MlxWhisper("/models/turbo")
+        segs, _ = m.transcribe(np.zeros(16000 * 40, np.float32), language="ar", initial_prompt="هلا")
+        self.assertEqual(len(list(segs)), 1)
         kw = self.calls[-1][1]
         self.assertEqual((kw["language"], kw["initial_prompt"], kw["path_or_hf_repo"]), ("ar", "هلا", "/models/turbo"))
-        self.assertNotIn("beam_size", kw)                                   # MLX has no beam search
 
     def test_silence_gives_nothing(self):
         m = self.engine.MlxWhisper("/models/turbo")

@@ -92,9 +92,15 @@ The build bundles the Whisper model from your Hugging Face cache, so run it from
 
 ## Brand
 
-**Kalam** (كلام, "speech"). Warm, friendly and techy: an aura gradient mesh (amber, coral, rose, violet, a touch of sky) behind frosted glass, colourful circle icons, pill-shaped buttons and the recording pill as clear glass with coral-to-violet bars.
+**Kalam** (كلام, "speech"). The look comes from the brand artwork in `docs/brand/`: an open sky blue, a warm sunrise beam, sun yellow and deep night green at the edges, with film grain over everything. The window has frosted glass over a soft gradient in those colours, colourful circle icons in the top bar, and pill-shaped buttons. While you talk, the recording pill is clear glass with orange-to-blue bars.
 
+- Logo: `docs/brand/logo-full.svg` (wordmark) and `logo-mark.svg` (the "k"). The window's top bar uses the wordmark; the menu bar uses the mark (black when idle, faded while working, orange while recording).
+- Header: the Transcribe page shows one of the two banners (`web/img/header-hill.webp`, `header-beam.webp`), picked each time the window opens.
+- Colours: sky `#5DA1D0`, deep blue `#1C5E9B`, sunrise orange `#FD6D39`, sun `#FFE284`, night `#10222B`.
 - Font: [Readex Pro](https://github.com/ThomasJockin/readexpro) (SIL Open Font License, bundled in `web/fonts/`), which covers Latin and Arabic.
-- Colours: coral `#FF6B4A`, amber `#FFA928`, rose `#EC4A8B`, violet `#7A5CFF`, sky `#3E9BFF`; ink `#221B2E` on warm white `#FFF7F0`. Brand gradient: `#FF8A3D → #EC4A8B → #7A5CFF`.
-- App icon: `python3 tools/make_icon.py` redraws `AppIcon.icns` (preview: `docs/kalam-icon.png`).
+- App icon: `python3 tools/make_icon.py` fits `docs/brand/app-icon-source.jpg` to the macOS icon shape and writes `AppIcon.icns` (preview: `docs/kalam-icon.png`).
 
+## Testing
+
+- `python3 -m unittest discover -s tests`: app logic, every button's action run through the app, Arabic clean-up, the speech engines (also run on every build).
+- `NODE_PATH=$(npm root -g) node tests/ui_check.js`: clicks every button, toggle, menu and form in the window (Chromium + Playwright) and checks each one does its job.
