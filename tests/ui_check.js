@@ -20,16 +20,12 @@ const base = () => ({
   stats: { words: 1234, wpm: 140, streak: 3 },
   settings: { dictation_language: 'auto', speech_model: 'small', launch_at_login: false, show_bar_always: false,
     show_in_dock: false, sounds: true, mute_while_dictating: false, pause_media_while_dictating: false,
-    auto_detect_calls: true, max_recording_minutes: 120,
-    stop_when_call_ends: true, meeting_shortcut: { label: '⌥ M' }, hide_from_screen_capture: false,
-    open_notepad_on_start: true, split_screen_on_join: false, show_live_transcript: true, capture_system_audio: true,
     ui_language: 'en' },
   options: { ui_language: [['en', 'English'], ['ar', 'العربية']], dictation_language: [['auto', 'Arabic or English (auto)'], ['ar', 'Arabic'], ['en', 'English']],
-    speech_model: [['small', 'Fast · built in'], ['turbo', 'Accurate · 1.6 GB download']],
-    max_recording_minutes: [[60, '1 hour'], [120, '2 hours']] },
+    speech_model: [['small', 'Fast · built in'], ['turbo', 'Accurate · 1.6 GB download']] },
   notes: [{ id: 'a1', title: 'Weekly sync', created: now - 900, meeting: true, duration: 754, recording: false, preview: 'Decisions' },
           { id: 'b2', title: 'Groceries', created: now - 86400 * 3, meeting: false, duration: 0, recording: false, preview: 'Milk' }],
-  note, notetaker: { active: false }, goto: null,
+  note, goto: null,
   model: { choice: 'turbo', active: 'Whisper small', error: 'No internet', ready: false },
   voicetest: { phrases: [{ id: 'gulf-1', dialect: 'Gulf', text: 'وين صرت؟', secs: 2, recorded: true },
                          { id: 'msa-1', dialect: 'MSA', text: 'شكرا', secs: 0, recorded: false }],
@@ -100,8 +96,7 @@ const check = (name, ok, detail = '') => { if (!ok) fails++; console.log(`${ok ?
   await p.click('.nb[data-p="notes"]'); await reset(p);
   await p.click('#newNote');
   check('New note', (await last(p)).type === 'newNote');
-  await p.click('#ntToggle');
-  check('Notetaker button starts the Notetaker', (await last(p)).type === 'startNotetaker');
+  check('Notetaker button is gone', !(await p.$('#ntToggle')));
   await p.click('.nitem[data-note="b2"]');
   m = await last(p);
   check('clicking a note opens it', m.type === 'openNote' && m.id === 'b2', JSON.stringify(m));
@@ -125,21 +120,7 @@ const check = (name, ok, detail = '') => { if (!ok) fails++; console.log(`${ok ?
   check('Delete deletes on the 2nd click', m.type === 'deleteNote' && m.id === 'a1', JSON.stringify(m));
   await p.close();
 
-  // Recording: Stop works, Delete is hidden for the note being recorded
-  p = await open('main', { ...base(), goto: 'notes', notetaker: { active: true, note_id: 'a1', started_at: now - 75 } });
-  check('red dot on the Notes circle while recording', await visible(p, '.nb[data-p="notes"] .rec'));
-  check('Delete is hidden while the note is recording', !(await visible(p, '#editor [data-act="delete"]')));
-  await p.click('#editor .recbar [data-act="stop"]');
-  check('recording bar Stop stops the Notetaker', (await last(p)).type === 'stopNotetaker');
-  await p.click('#ntToggle');
-  check('Notetaker button stops it while recording', (await last(p)).type === 'stopNotetaker');
-  await p.close();
-
   // Notepad window
-  p = await open('notepad', { ...base(), note: null });
-  await p.click('#padEditor [data-act="start"]');
-  check('Notepad: Start Notetaker', (await last(p)).type === 'startNotetaker');
-  await p.close();
   p = await open('notepad');
   await p.click('#padEditor [data-act="main"]');
   m = await last(p);
@@ -180,43 +161,24 @@ const check = (name, ok, detail = '') => { if (!ok) fails++; console.log(`${ok ?
 
   // ── Settings ──
   await p.click('.nb[data-p="settings"]'); await reset(p);
-  for (const t of ['tNotetaker', 'tSystem']) {
-    await p.click(`.tabs button[data-t="${t}"]`);
-    check(`Settings tab ${t}`, await p.evaluate(id => document.getElementById(id).classList.contains('on'), t));
-  }
-  const toggles = await p.evaluate(() => [...document.querySelectorAll('input[type=checkbox][data-set]')].map(e => [e.dataset.set, e.closest('.tab').id]));
+  check('Settings has no tabs (Notetaker tab is gone)', !(await p.$('.tabs, #tNotetaker')));
+  const toggles = await p.evaluate(() => [...document.querySelectorAll('input[type=checkbox][data-set]')].map(e => [e.dataset.set]));
   for (const [key, tab] of toggles) {
-    await p.click(`.tabs button[data-t="${tab}"]`);
     const before = await p.isChecked(`[data-set="${key}"]`);
     await p.click(`label.tog:has([data-set="${key}"])`);
     m = await last(p);
     check(`toggle ${key}`, m.type === 'saveSettings' && m.changes[key] === !before, JSON.stringify(m));
   }
-  for (const [key, value, expect] of [['dictation_language', 'ar', 'ar'], ['speech_model', 'small', 'small'], ['max_recording_minutes', '60', 60]]) {
-    const tab = await p.evaluate(k => document.querySelector(`[data-set="${k}"]`).closest('.tab').id, key);
-    await p.click(`.tabs button[data-t="${tab}"]`);
+  for (const [key, value, expect] of [['dictation_language', 'ar', 'ar'], ['speech_model', 'small', 'small']]) {
     await p.selectOption(`[data-set="${key}"]`, value);
     m = await last(p);
     check(`menu ${key}`, m.type === 'saveSettings' && m.changes[key] === expect, JSON.stringify(m));
   }
-  await p.click('.tabs button[data-t="tSystem"]');
   check('model download error is shown', (await p.textContent('#modelNote')).includes('No internet'));
   await p.click('#modelRetry');
   check('model Try again', (await last(p)).type === 'retryModel');
-  await p.click('.tabs button[data-t="tNotetaker"]');
-  check('calendar settings are gone', await p.evaluate(() => !document.querySelector('#calWarn, [data-set="notify_before_meeting"], [data-set="show_next_meeting"]')));
-  await p.click('#scrOpen');
-  m = await last(p);
-  check('Open settings (screen recording)', m.type === 'openPrivacy' && m.pane === 'screen', JSON.stringify(m));
-  await p.click('#scBtn');
-  m = await last(p);
-  check('Change shortcut starts listening', m.type === 'captureShortcut' && m.on === true, JSON.stringify(m));
-  await p.keyboard.press('Escape');
-  m = await last(p);
-  check('Esc cancels the shortcut change', m.type === 'captureShortcut' && m.on === false, JSON.stringify(m));
-  await p.click('#scBtn'); await p.keyboard.press('Control+KeyN');
-  m = await last(p);
-  check('new shortcut is sent', m.type === 'setShortcut' && m.code === 'KeyN' && m.mods.includes('ctrl'), JSON.stringify(m));
+  check('calendar and Notetaker settings are gone', await p.evaluate(() => !document.querySelector(
+    '#calWarn, #scBtn, #scrOpen, [data-set="notify_before_meeting"], [data-set="auto_detect_calls"], [data-set="max_recording_minutes"]')));
 
   await p.close();
 
@@ -230,13 +192,13 @@ const check = (name, ok, detail = '') => { if (!ok) fails++; console.log(`${ok ?
   const ar = base(); ar.settings.ui_language = 'ar';
   p = await open('main', ar);
   check('Arabic: page is right-to-left', await p.evaluate(() => document.documentElement.dir === 'rtl' && document.documentElement.lang === 'ar'));
+  check('Arabic: banner is the Arabic copy', await p.evaluate(() => /header-\w+-ar\.webp$/.test(document.getElementById('heroImg').src)
+    && document.getElementById('heroImg').complete && document.getElementById('heroImg').naturalWidth === 1990));
   check('Arabic: top bar stays left-to-right', await p.evaluate(() => getComputedStyle(document.querySelector('header')).direction === 'ltr'));
   const leftovers = [];
   for (const id of ['home', 'notes', 'clip', 'dict', 'snip', 'settings']) {
     await p.click(`.nb[data-p="${id}"]`);
-    const tabs = id === 'settings' ? await p.$$eval('#settings [data-t]', b => b.map(x => x.dataset.t)) : [null];
-    for (const t of tabs) {
-      if (t) await p.click(`#settings [data-t="${t}"]`);
+    {
       leftovers.push(...await p.evaluate(pg => {
         const user = /Weekly sync|Groceries|Decisions|Milk|First thing I said|Kalam|my email|sign off|Best,|a@b\.c|Whisper|⌥|GB|MB|wpm|English|FaceTime|Zoom|Teams|Meet|Slack|WhatsApp|Spotify|Music|Mac|macOS|Siri|Dock|Okay, let us start\.|No internet/g;
         const out = [], w = document.createTreeWalker(document.getElementById(pg), NodeFilter.SHOW_TEXT);

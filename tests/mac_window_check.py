@@ -29,19 +29,14 @@ STATE = {
     "dictionary": ["Kalam"], "snippets": {"my email": "a@b.c"}, "stats": {"words": 4, "wpm": 120, "streak": 1},
     "settings": {"dictation_language": "auto", "speech_model": "small", "launch_at_login": False,
                  "show_bar_always": False, "show_in_dock": False, "sounds": True, "mute_while_dictating": False,
-                 "pause_media_while_dictating": False, 
-                 "auto_detect_calls": True, "max_recording_minutes": 120, "stop_when_call_ends": True,
-                 "meeting_shortcut": {"label": "⌥ M"}, "hide_from_screen_capture": False,
-                 "open_notepad_on_start": True, "split_screen_on_join": False, "show_live_transcript": True,
-                 "capture_system_audio": True, "ui_language": "en"},
+                 "pause_media_while_dictating": False, "ui_language": "en"},
     "options": {"dictation_language": [["auto", "Arabic or English (auto)"], ["ar", "Arabic"], ["en", "English"]],
-                "speech_model": [["small", "Fast"], ["turbo", "Accurate"]],
-                "max_recording_minutes": [[120, "2 hours"]]},
+                "speech_model": [["small", "Fast"], ["turbo", "Accurate"]]},
     "notes": [{"id": "a1", "title": "Weekly sync", "created": NOW - 900, "meeting": True, "duration": 754,
                "recording": False, "preview": "Decisions"},
               {"id": "b2", "title": "Groceries", "created": NOW - 86400, "meeting": False, "duration": 0,
                "recording": False, "preview": "Milk"}],
-    "note": NOTE, "notetaker": {"active": False}, "goto": None,
+    "note": NOTE, "goto": None,
     "model": {"choice": "small", "active": "Whisper small", "ready": True},
     "voicetest": {"phrases": [], "results": None, "recording": None, "rec_started": None, "running": None,
                   "model": "Whisper small", "language": "auto"},
@@ -160,8 +155,6 @@ def main():
     app.received.clear()
     click(win, web, "#newNote")
     check("New note button", last(app).get("type") == "newNote", app.received)
-    click(win, web, "#ntToggle")
-    check("Notetaker button", last(app).get("type") == "startNotetaker", app.received)
     click(win, web, '.nitem[data-note="b2"]')
     m = last(app)
     check("clicking a note opens it", m.get("type") == "openNote" and m.get("id") == "b2", m)

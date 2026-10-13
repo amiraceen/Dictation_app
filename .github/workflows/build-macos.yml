@@ -68,7 +68,6 @@ jobs:
           "$APP" --selftest /tmp/hello.wav
           LOG=~/Library/Application\ Support/Kalam/dictation.log
           cat "$LOG"
-          grep -q "FRAMEWORKS OK" "$LOG"
           grep -q "DOWNLOAD OK" "$LOG"
           grep -q "MLX BUNDLE OK" "$LOG"
           grep -q "WEB ASSETS OK" "$LOG"

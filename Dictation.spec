@@ -19,10 +19,9 @@ datas += [('menubar/' + f, 'menubar') for f in ('idle.png', 'busy.png', 'recordi
 datas += [('web/index.html', 'web'), ('web/strings.js', 'web'), ('web/fonts', 'web/fonts'), ('web/img', 'web/img')]
 datas += collect_data_files('mlx_whisper')          # tokenizer vocabularies, mel filters
 hiddenimports += ['ui', 'WebKit', 'PyObjCTools.AppHelper', 'ApplicationServices',
-                  'macos', 'meetings', 'notes', 'notetaker', 'settings', 'system', 'speed', 'arabic', 'voicetest', 'models', 'mlx_engine', 'i18n',
+                  'macos', 'notes', 'settings', 'system', 'speed', 'arabic', 'voicetest', 'models', 'mlx_engine', 'i18n',
                   'mlx_whisper', 'mlx_whisper.transcribe', 'mlx_whisper.audio', 'mlx_whisper.decoding',
-                  'mlx_whisper.load_models', 'mlx_whisper.tokenizer', 'mlx_whisper.whisper', 'huggingface_hub', 'certifi',
-                  'ScreenCaptureKit', 'CoreMedia', 'dispatch']
+                  'mlx_whisper.load_models', 'mlx_whisper.tokenizer', 'mlx_whisper.whisper', 'huggingface_hub', 'certifi']
 
 # Word timestamps (numba, SciPy) and model conversion (PyTorch) aren't used: keep them out.
 a = Analysis(['dictation.py'], datas=datas, binaries=binaries, hiddenimports=hiddenimports, noarchive=False,
@@ -41,7 +40,7 @@ app = BUNDLE(
         'CFBundleName': 'Kalam',
         'CFBundleDisplayName': 'Kalam',
         'LSUIElement': True,   # menu-bar only; Settings → Show app in Dock adds the icon at runtime
-        'NSMicrophoneUsageDescription': 'Kalam records your voice while you hold Right Option, and meetings when you start the Notetaker.',
+        'NSMicrophoneUsageDescription': 'Kalam records your voice while you hold Right Option.',
         'NSAppleEventsUsageDescription': 'Kalam pauses Music or Spotify while you dictate, and can mute your sound.',
         'NSHighResolutionCapable': True,
     },

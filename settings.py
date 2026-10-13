@@ -12,13 +12,6 @@ from speed import LANGUAGE_OPTIONS
 from models import MODEL_OPTIONS
 from i18n import UI_LANGUAGE_OPTIONS
 
-# Option lists shown as drop-downs in the Settings page: (value, label).
-MAX_LENGTH_OPTIONS = [(30, "30 min"), (60, "1 hour"), (120, "2 hours"),
-                      (180, "3 hours"), (240, "4 hours")]
-
-# Default meeting shortcut: Option + M. keycode is the macOS virtual key code.
-DEFAULT_SHORTCUT = {"keycode": 46, "mods": ["alt"], "label": "⌥ M"}
-
 DEFAULTS = {
     # System → Dictation: a fixed language skips detection and roughly halves the wait
     "dictation_language": "auto",
@@ -33,30 +26,14 @@ DEFAULTS = {
     # System → Sound
     "sounds": True,
     "mute_while_dictating": False,
-    # Experimental
     "pause_media_while_dictating": False,
-    # Notetaker → Meeting detection
-    "auto_detect_calls": True,
-    "max_recording_minutes": 120,
-    "stop_when_call_ends": True,
-    "meeting_shortcut": DEFAULT_SHORTCUT,
-    # Notetaker → While active
-    "hide_from_screen_capture": False,
-    # Notetaker → Notepad
-    "open_notepad_on_start": True,
-    "split_screen_on_join": False,
-    # Notetaker → Transcript
-    "show_live_transcript": True,
-    "capture_system_audio": True,
 }
 
 _CHOICES = {
-    "max_recording_minutes": {v for v, _ in MAX_LENGTH_OPTIONS},
     "dictation_language": {v for v, _ in LANGUAGE_OPTIONS},
     "speech_model": {v for v, _ in MODEL_OPTIONS},
     "ui_language": {v for v, _ in UI_LANGUAGE_OPTIONS},
 }
-_MODS = {"alt", "cmd", "ctrl", "shift"}
 
 
 def _normalize(key, value):
@@ -69,11 +46,6 @@ def _normalize(key, value):
             return int(value)
         if isinstance(value, int):
             return int(value)
-    if key == "meeting_shortcut" and isinstance(value, dict):
-        out = dict(value)
-        if isinstance(out.get("keycode"), float) and out["keycode"].is_integer():
-            out["keycode"] = int(out["keycode"])
-        return out
     return value
 
 
@@ -82,12 +54,6 @@ def _valid(key, value):
     default = DEFAULTS[key]
     if key in _CHOICES:
         return type(value) is type(default) and value in _CHOICES[key]
-    if key == "meeting_shortcut":
-        return (isinstance(value, dict)
-                and isinstance(value.get("keycode"), int) and 0 <= value["keycode"] < 128
-                and isinstance(value.get("mods"), list) and value["mods"]
-                and set(value["mods"]) <= _MODS
-                and isinstance(value.get("label"), str))
     return type(value) is type(default)
 
 
@@ -136,6 +102,5 @@ class Settings:
 
 def options():
     """Drop-down choices for the Settings page."""
-    return {"max_recording_minutes": MAX_LENGTH_OPTIONS,
-            "dictation_language": LANGUAGE_OPTIONS, "speech_model": MODEL_OPTIONS,
+    return {"dictation_language": LANGUAGE_OPTIONS, "speech_model": MODEL_OPTIONS,
             "ui_language": UI_LANGUAGE_OPTIONS}

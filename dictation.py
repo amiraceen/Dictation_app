@@ -17,7 +17,6 @@ from faster_whisper import WhisperModel
 from pynput import keyboard
 
 import arabic
-from notetaker import clean_transcript
 from speed import DECODE, pick_language, whisper_language
 import models
 import i18n
@@ -288,7 +287,7 @@ class DictationCore:
         self.model     = None
         self.recording = False
         self._lock     = threading.Lock()
-        self.model_lock = threading.Lock()          # dictation and Notetaker share one model
+        self.model_lock = threading.Lock()          # loading and dictation never overlap
         self._cancel   = False
         self.snippets   = _load_snippets()
         self.dictionary = _load_dictionary()
@@ -413,30 +412,14 @@ class DictationCore:
         except Exception as e:
             self.on_status_change(ICON_ERROR, f"Error: {e}")
 
-    def transcribe_meeting(self, audio):
-        """Transcribe one Notetaker chunk. Keeps the speaker's words as said:
-        no backtrack, snippets or filler removal."""
-        with self.model_lock:
-            lang = self._language_for(audio)
-            segments, _ = self.model.transcribe(
-                audio, language=lang, initial_prompt=arabic.initial_prompt(lang, self.dictionary, self.dialect_prompt),
-                vad_filter=True, vad_parameters=dict(min_silence_duration_ms=500), **DECODE)
-            return clean_transcript((s.text, s.no_speech_prob, s.avg_logprob, s.compression_ratio)
-                                    for s in segments)
-
 
 # ─── Hotkey ──────────────────────────────────────────────────────────────────
 
 class HotkeyListener:
-    """Hold-to-talk on Right Option, plus the Notetaker shortcut (default ⌥M).
+    """Hold-to-talk on Right Option."""
 
-    The shortcut is swallowed so it doesn't also type a character (⌥M = µ)."""
-
-    def __init__(self, core, settings=None, on_shortcut=None):
+    def __init__(self, core):
         self.core, self._held = core, False
-        self.settings = settings
-        self.on_shortcut = on_shortcut
-        self.paused = False             # True while Settings is recording a new shortcut
 
     def restart(self):
         if getattr(self, "_listener", None) is not None:
@@ -445,34 +428,9 @@ class HotkeyListener:
         self.start()
 
     def start(self):
-        kwargs = {}
-        if self.settings is not None and self.on_shortcut is not None:
-            kwargs["darwin_intercept"] = self._intercept
-        self._listener = keyboard.Listener(
-            on_press=self._on_press, on_release=self._on_release, **kwargs)
+        self._listener = keyboard.Listener(on_press=self._on_press, on_release=self._on_release)
         self._listener.daemon = True
         self._listener.start()
-
-    def _intercept(self, event_type, event):
-        import Quartz
-        if self.paused or event_type not in (Quartz.kCGEventKeyDown, Quartz.kCGEventKeyUp):
-            return event
-        try:
-            from system import shortcut_matches
-            keycode = Quartz.CGEventGetIntegerValueField(event, Quartz.kCGKeyboardEventKeycode)
-            if not shortcut_matches(self.settings["meeting_shortcut"], keycode, Quartz.CGEventGetFlags(event)):
-                return event
-            if event_type == Quartz.kCGEventKeyDown and not Quartz.CGEventGetIntegerValueField(
-                    event, Quartz.kCGKeyboardEventAutorepeat):
-                if self._held:                  # Right ⌥ was the shortcut's modifier, not dictation
-                    self._held = False
-                    self.core.cancel_recording()
-                from PyObjCTools import AppHelper
-                AppHelper.callAfter(self.on_shortcut)
-            return None
-        except Exception as e:
-            print(f"Shortcut error: {e}", flush=True)
-            return event
 
     def _on_press(self, key):
         if key == HOTKEY and not self._held:
@@ -491,17 +449,9 @@ if HAS_RUMPS:
     import objc
     import ui
     import macos
-    import meetings
-    import system
     from notes import NotesStore
     import voicetest
-    from notetaker import Notetaker
     from settings import Settings, options as setting_options
-
-    def _clock(secs):
-        secs = int(secs)
-        h, m, s = secs // 3600, secs // 60 % 60, secs % 60
-        return f"{h}:{m:02d}:{s:02d}" if h else f"{m}:{s:02d}"
 
     class MenuBarApp(rumps.App):
         def __init__(self):
@@ -517,7 +467,6 @@ if HAS_RUMPS:
             self._vt_progress = None              # {"done", "total"} while the voice test runs
             self.notes.recover_interrupted()
             self._status = rumps.MenuItem("Loading model…")
-            self._notes_item = rumps.MenuItem("Start Notetaker", callback=lambda _: self.toggle_notetaker())
             # Items keep their English names as menu keys; _apply_language sets what's shown.
             self._open_item = rumps.MenuItem("Open Kalam", callback=lambda _: self._open_window())
             self._new_item = rumps.MenuItem("New Note", callback=lambda _: self._new_note())
@@ -526,7 +475,6 @@ if HAS_RUMPS:
             self.menu = [
                 self._open_item,
                 self._new_item,
-                self._notes_item,
                 self._copy_item,
                 None,
                 self._status,
@@ -548,22 +496,10 @@ if HAS_RUMPS:
             self._model_loading = None
             self.ducker = macos.AudioDucker()
 
-            # Notetaker and meeting detection
-            self.notetaker = Notetaker(
-                transcribe=self.core.transcribe_meeting,
-                on_segment=self._on_segment,
-                on_stopped=lambda nid, dur, reason: ui.on_main(self._notetaker_stopped, nid, dur, reason),
-                on_warning=lambda nid, left: ui.on_main(self._notetaker_warning, left),
-                on_error=lambda msg: ui.on_main(self._notetaker_error, msg),
-                system_audio=macos.SystemAudioCapture,
-                device=_best_input_device)
-            self.calls = meetings.CallTracker()
-            self._notes_from_call = False
             self._shown_errors = set()
-            self._quitting = False
             self._ticks = 0
 
-            self.hotkey = HotkeyListener(self.core, self.settings, self.toggle_notetaker)
+            self.hotkey = HotkeyListener(self.core)
             self._load_chosen_model()
             self.hotkey.start()
             ui.on_main(self._startup)
@@ -579,7 +515,6 @@ if HAS_RUMPS:
             ui.install_edit_menu()
             self._install_reopen_handler()
             self._apply_settings(list(self.settings.all()), startup=True)
-            self._update_menu()
             self._open_window()                  # show the window once at launch
 
         def _install_reopen_handler(self):
@@ -644,8 +579,6 @@ if HAS_RUMPS:
                 self._ax_item.title = self._t("app.allowAx")
             if getattr(self, "_last_status", None):
                 self._status.title = self._status_text(self._last_status)
-            if getattr(self, "notetaker", None) is not None:
-                self._update_menu()
 
         def _status_text(self, msg):
             key = self._STATUS_KEYS.get(msg)
@@ -672,13 +605,10 @@ if HAS_RUMPS:
             if self._pill is None:
                 self._pill = ui.Pill.alloc().init()
                 self._pill.always = self.settings["show_bar_always"]
-                macos.set_hidden_from_capture(self._pill.panel, self.settings["hide_from_screen_capture"])
             return self._pill
 
         def _refresh_title(self):
             parts = [self._error_mark] if self._error_mark else []
-            if getattr(self, "notetaker", None) is not None and self.notetaker.active:
-                parts.append("● " + _clock(self.notetaker.elapsed()))
             text = " ".join(parts) or None
             if text != self._title_text:
                 self._title_text = text
@@ -726,7 +656,6 @@ if HAS_RUMPS:
         def _open_notepad(self, note_id=None):
             if self._notepad is None:
                 self._notepad = ui.WebWindow.alloc().initWithApp_html_mode_(self, WEB_HTML, "notepad")
-                macos.set_hidden_from_capture(self._notepad.win, self.settings["hide_from_screen_capture"])
             if note_id:
                 self._notepad.bridge.note_id = note_id
             self._notepad.show()
@@ -746,7 +675,6 @@ if HAS_RUMPS:
             if self._toast is not None:
                 self._toast.close()
             t = ui.Toast.alloc().initWithTitle_body_buttons_(title, body, buttons)
-            macos.set_hidden_from_capture(t.panel, self.settings["hide_from_screen_capture"])
 
             def closed(tt):
                 if self._toast is tt:
@@ -757,89 +685,7 @@ if HAS_RUMPS:
             if sound and self.settings["sounds"]:
                 macos.play_sound("Glass")
 
-        # ── Notetaker ──
-
-        def toggle_notetaker(self):
-            if self.notetaker.active:
-                self.stop_notetaker()
-            else:
-                self.start_notetaker()
-
-        def start_notetaker(self, title=None, from_call=False):
-            if self.notetaker.active:
-                self._open_notepad(self.notetaker.note_id)
-                return
-            if self.core.model is None:
-                self._show_toast(self._t("toast.notReady"), self._t("toast.notReadyBody"),
-                                 [(self._t("toast.ok"), None)], timeout=8)
-                return
-            if not title:
-                if self.calls.in_call and self.calls.app:
-                    title = f"{self.calls.app} call"
-                else:
-                    title = "Meeting notes"
-            note = self.notes.create(title, meeting=True)
-            self.notes.set_recording(note["id"], True)
-            self._notes_from_call = from_call or self.calls.in_call
-            self.notetaker.start(note["id"], self.settings["max_recording_minutes"] * 60,
-                                 capture_system=self.settings["capture_system_audio"])
-            if self.settings["sounds"]:
-                macos.play_sound("Tink")
-            if self.settings["open_notepad_on_start"] or self.settings["split_screen_on_join"]:
-                self._open_notepad(note["id"])
-                if self.settings["split_screen_on_join"]:
-                    macos.split_screen(macos.find_meeting_app(self.calls.app if self.calls.in_call else None),
-                                       self._notepad.win)
-            self._update_menu()
-            self._refresh_title()
-            self._refresh_windows()
-
-        def stop_notetaker(self, reason="user"):
-            self.notetaker.stop(reason)
-
-        def _on_segment(self, note_id, start, text):
-            self.notes.append_transcript(note_id, start, text)
-            ui.on_main(self._refresh_windows)
-
-        def _notetaker_stopped(self, note_id, duration, reason):
-            self.notes.set_recording(note_id, False, duration)
-            self._notes_from_call = False
-            self._update_menu()
-            self._refresh_title()
-            self._refresh_windows()
-            if self._quitting:
-                rumps.quit_application()
-                return
-            note = self.notes.get(note_id) or {}
-            why = {"max_length": "toast.why.max", "call_ended": "toast.why.call", "error": "toast.why.error"}.get(reason)
-            why = self._t(why) + " " if why else ""
-            self._show_toast(self._t("toast.saved"),
-                             f"{why}{note.get('title') or self._t('notes.untitled')} · {_clock(duration)}",
-                             [(self._t("toast.open"), lambda: self._open_window(page="notes", note_id=note_id)),
-                              (self._t("toast.dismiss"), None)], timeout=15, sound=False)
-            if self.settings["sounds"]:
-                macos.play_sound("Pop")
-
-        def _notetaker_warning(self, secs_left):
-            mins = max(1, round(secs_left / 60))
-            m = self.settings["max_recording_minutes"]
-            limit = self._t(f"opt.max_recording_minutes.{m}")
-            self._show_toast(self._t("toast.stopsSoon", n=mins), self._t("toast.limitBody", limit=limit),
-                             [(self._t("toast.ok"), None)], timeout=20)
-
-        def _notetaker_error(self, msg):
-            print(msg, flush=True)
-            if msg in self._shown_errors:
-                return
-            self._shown_errors.add(msg)
-            self._show_toast(self._t("notes.notetaker"), msg, [(self._t("toast.ok"), None)], timeout=20)
-
-        def _update_menu(self):
-            label = self.settings["meeting_shortcut"]["label"]
-            self._notes_item.title = (self._t("app.stopNotetaker") if self.notetaker.active
-                                      else self._t("app.startNotetaker", key=label))
-
-        # ── Once a second: call detection, menu-bar text ──
+        # ── Once a second: download progress ──
 
         def _tick(self, _=None):
             self._ticks += 1
@@ -849,22 +695,6 @@ if HAS_RUMPS:
             if self.phrase_rec.active and now - self.phrase_rec.started > 30:
                 self._voice_test_stop()                    # forgot to press Stop
                 self._refresh_windows()
-            s = self.settings
-            if self._ticks % 2 == 0 and (s["auto_detect_calls"] or
-                                          (self.notetaker.active and s["stop_when_call_ends"])):
-                r = macos.mic_used_by_other_app(self_using_mic=self.core.recording or self.notetaker.active)
-                if r is not None:
-                    event = self.calls.update(r[0], now, r[1])
-                    if event == "started" and s["auto_detect_calls"] and not self.notetaker.active:
-                        heading = (self._t("toast.call", app=self.calls.app) if self.calls.app
-                                   else self._t("toast.callAny"))
-                        self._show_toast(heading, self._t("toast.callBody"),
-                                         [(self._t("toast.takeNotes"), lambda: self.start_notetaker(from_call=True)),
-                                          (self._t("toast.notNow"), None)], timeout=25)
-                    elif event == "ended" and self.notetaker.active and self._notes_from_call \
-                            and s["stop_when_call_ends"]:
-                        self.stop_notetaker("call_ended")
-            self._refresh_title()
 
         # ── Settings ──
 
@@ -878,13 +708,6 @@ if HAS_RUMPS:
                     macos.set_dock_icon(v)
                 elif k == "show_bar_always" and (v or not startup):
                     self._ensure_pill().set_always(v)
-                elif k == "hide_from_screen_capture":
-                    for w in (self._pill and self._pill.panel, self._notepad and self._notepad.win,
-                              self._toast and self._toast.panel):
-                        if w:
-                            macos.set_hidden_from_capture(w, v)
-                elif k == "meeting_shortcut":
-                    self._update_menu()
                 elif k == "ui_language":
                     self._apply_language()
                 elif k == "speech_model" and not startup:
@@ -944,11 +767,7 @@ if HAS_RUMPS:
             st["settings"] = self.settings.all()
             st["options"] = setting_options()
             st["notes"] = self.notes.summaries()
-            if bridge.mode == "notepad" and self.notetaker.active:
-                bridge.note_id = self.notetaker.note_id
             st["note"] = self.notes.get(bridge.note_id) if bridge.note_id else None
-            st["notetaker"] = {"active": self.notetaker.active, "note_id": self.notetaker.note_id,
-                               "started_at": time.time() - self.notetaker.elapsed()}
             st["model"] = self._model_state()
             st["glass"] = True                    # the window has native frosted glass behind the page
             st["voicetest"] = dict(self.voicetest.state(), recording=self.phrase_rec.phrase_id,
@@ -985,16 +804,6 @@ if HAS_RUMPS:
             elif kind == "retryModel":
                 self.models.error = None
                 self._load_chosen_model()
-            elif kind == "captureShortcut":
-                self.hotkey.paused = bool(msg.get("on"))
-                return False
-            elif kind == "setShortcut":
-                self.hotkey.paused = False
-                sc = system.shortcut_from_js(str(msg.get("code", "")), list(msg.get("mods", [])))
-                if sc and self.settings.update({"meeting_shortcut": sc}):
-                    self._apply_settings(["meeting_shortcut"])
-                self._refresh_windows()
-                return False
             elif kind == "openNote":
                 bridge.note_id = msg.get("id")
             elif kind == "newNote":
@@ -1006,11 +815,10 @@ if HAS_RUMPS:
                 return False
             elif kind == "deleteNote":
                 nid = str(msg.get("id"))
-                if nid != self.notetaker.note_id:
-                    self.notes.delete(nid)
-                    for b in (bridge, self._window and self._window.bridge, self._notepad and self._notepad.bridge):
-                        if b is not None and b.note_id == nid:
-                            b.note_id = None
+                self.notes.delete(nid)
+                for b in (bridge, self._window and self._window.bridge, self._notepad and self._notepad.bridge):
+                    if b is not None and b.note_id == nid:
+                        b.note_id = None
                 self._refresh_windows()
                 return False
             elif kind == "copyNote":
@@ -1024,12 +832,6 @@ if HAS_RUMPS:
                 return False
             elif kind == "openMain":
                 self._open_window(page="notes", note_id=msg.get("id"))
-                return False
-            elif kind == "startNotetaker":
-                self.start_notetaker()
-                return False
-            elif kind == "stopNotetaker":
-                self.stop_notetaker()
                 return False
             elif kind == "voiceTestRecord":
                 pid = str(msg.get("id"))
@@ -1058,8 +860,7 @@ if HAS_RUMPS:
                 self._voice_test_export()
                 return False
             elif kind == "openPrivacy":
-                pane = {"screen": "Privacy_ScreenCapture",
-                        "mic": "Privacy_Microphone"}.get(msg.get("pane"), "Privacy")
+                pane = {"mic": "Privacy_Microphone"}.get(msg.get("pane"), "Privacy")
                 os.system(f'open "x-apple.systempreferences:com.apple.preference.security?{pane}"')
                 return False
             return True
@@ -1148,14 +949,7 @@ if HAS_RUMPS:
                 self._show_toast(self._t("toast.exported"), path, [(self._t("toast.ok"), None)], timeout=6, sound=False)
 
         def _quit(self):
-            if self.notetaker.active:
-                # Let the last chunk transcribe and save, then quit (or give up after 15 s).
-                self._quitting = True
-                self.stop_notetaker()
-                self._quit_timer = rumps.Timer(lambda _: rumps.quit_application(), 15)
-                self._quit_timer.start()
-            else:
-                rumps.quit_application()
+            rumps.quit_application()
 
 
 # ─── Entry ───────────────────────────────────────────────────────────────────
@@ -1169,13 +963,10 @@ if __name__ == "__main__":
         import traceback, wave
         w = wave.open(sys.argv[2])
         audio = np.frombuffer(w.readframes(w.getnframes()), np.int16).astype(np.float32) / 32768
-        try:     # Notetaker frameworks are imported lazily; make sure the bundle has them
-            import ScreenCaptureKit, CoreMedia, dispatch  # noqa: F401
-            print("FRAMEWORKS OK", flush=True)
-        except Exception:
-            traceback.print_exc()
         need = ["web/index.html", "web/img/header-voice.webp", "web/img/header-screen.webp",
-                "web/img/header-megaphone.webp", "web/img/header-writer.webp", "web/img/app-icon.webp",
+                "web/img/header-megaphone.webp", "web/img/header-writer.webp", "web/img/header-voice-ar.webp",
+                "web/img/header-screen-ar.webp", "web/img/header-megaphone-ar.webp", "web/img/header-writer-ar.webp",
+                "web/img/app-icon.webp",
                 "web/fonts/readex-pro-arabic-wght-normal.woff2", "menubar/idle.png", "menubar/recording.png"]
         missing = [n for n in need if not os.path.exists(os.path.join(RES_DIR, n))]
         print("WEB ASSETS OK" if not missing else f"WEB ASSETS MISSING: {missing}", flush=True)

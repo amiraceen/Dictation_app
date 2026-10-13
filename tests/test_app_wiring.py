@@ -1,5 +1,5 @@
 """Wiring test for the menu-bar app: loads dictation.py with macOS libraries stubbed
-out and drives the bridge messages, Notetaker, meeting heads-up and call detection.
+out and drives the bridge messages, menus and settings.
 
 Run: python3 -m unittest discover -s tests
 """
@@ -189,25 +189,16 @@ class AppWiringTest(unittest.TestCase):
 
     def setUp(self):
         self.calls = []
-        self.mic = (False, None)
         p = self.patch
         data = tempfile.mkdtemp()
         for name, path in DATA_FILES:
             p(dictation, name, os.path.join(data, path))
-        p(macos, "mic_used_by_other_app", lambda self_using_mic: self.mic)
         p(macos, "play_sound", lambda name: self.calls.append(("sound", name)))
-        p(macos, "set_hidden_from_capture", lambda w, h: self.calls.append(("hide", h)))
         p(macos, "set_launch_at_login", lambda *a: self.calls.append(("login", a[0])))
         p(macos, "set_dock_icon", lambda v: self.calls.append(("dock", v)))
-        p(macos, "split_screen", lambda app, win: self.calls.append(("split", app)))
-        p(macos, "find_meeting_app", lambda hint: hint)
-        p(macos, "SystemAudioCapture", None)
         p(dictation.DictationCore, "load_model", lambda core, *a: setattr(core, "model", object()) or True)
-        p(dictation.DictationCore, "transcribe_meeting", lambda core, audio: "hello from the meeting")
         Fake.made.clear()
         self.app = dictation.MenuBarApp()
-        self.app.notetaker._input_stream = FakeStream
-        self.app.notetaker._system_audio = None
         for t in threading.enumerate():
             if t.name != "MainThread" and t.is_alive() and "load_model" in repr(t):
                 t.join(1)
@@ -224,9 +215,9 @@ class AppWiringTest(unittest.TestCase):
     def test_startup_opens_window_and_state_is_complete(self):
         self.assertEqual(self.app._window.shown, 1)
         st = self.app.state_for(self.bridge())
-        for key in ("history", "settings", "options", "notes", "note", "notetaker"):
+        for key in ("history", "settings", "options", "notes", "note"):
             self.assertIn(key, st)
-        self.assertIn("Start Notetaker (⌥ M)", self.app._notes_item.title)
+        self.assertNotIn("notetaker", st)
 
     def test_notes_messages(self):
         b = self.bridge()
@@ -241,19 +232,13 @@ class AppWiringTest(unittest.TestCase):
         self.assertIsNone(self.app.notes.get(nid))
         self.assertIsNone(b.note_id)
 
-    def test_settings_and_shortcut_messages(self):
+    def test_settings_messages(self):
         b = self.bridge()
         self.app.handle_message({"type": "saveSettings", "changes": {"show_in_dock": True, "show_bar_always": True,
                                                                      "launch_at_login": True}}, b)
         self.assertIn(("dock", True), self.calls)
         self.assertIn(("login", True), self.calls)
         self.assertTrue(self.app._pill.always)
-        self.app.handle_message({"type": "captureShortcut", "on": True}, b)
-        self.assertTrue(self.app.hotkey.paused)
-        self.app.handle_message({"type": "setShortcut", "code": "KeyN", "mods": ["ctrl", "alt"]}, b)
-        self.assertFalse(self.app.hotkey.paused)
-        self.assertEqual(self.app.settings["meeting_shortcut"]["label"], "⌃⌥ N")
-        self.assertIn("⌃⌥ N", self.app._notes_item.title)
 
     def wait_until(self, cond, timeout=5):
         end = time.time() + timeout
@@ -262,42 +247,6 @@ class AppWiringTest(unittest.TestCase):
                 return True
             time.sleep(0.02)
         return False
-
-    def test_notetaker_start_transcribe_stop(self):
-        self.app.settings.update({"split_screen_on_join": True})
-        self.app.toggle_notetaker()
-        nt = self.app.notetaker
-        self.assertTrue(nt.active)
-        self.assertIsNotNone(self.app._notepad)
-        self.assertIn(("split", None), self.calls)
-        self.assertEqual(self.app.state_for(self.app._notepad.bridge)["note"]["id"], nt.note_id)
-        self.app._refresh_title()
-        self.assertTrue(self.app.title.startswith("● 0:0"))
-        nid = nt.note_id
-        time.sleep(0.3)
-        self.app.toggle_notetaker()
-        self.assertTrue(self.wait_until(lambda: not nt.active))
-        note = self.app.notes.get(nid)
-        self.assertFalse(note["recording"])
-        self.assertEqual(note["transcript"][0]["text"], "hello from the meeting")
-        self.assertEqual(Fake.made[-1].title, "Meeting notes saved")
-
-    def test_call_detected_then_ended_stops_notetaker(self):
-        tracker = self.app.calls
-        tracker.START_AFTER = tracker.END_AFTER = 0
-        self.mic = (True, "zoom.us")
-        self.app._ticks = 1
-        self.app._tick()                                 # tick 2 → first sample flips immediately
-        self.assertTrue(tracker.in_call)
-        self.assertEqual(Fake.made[-1].title, "Call detected in zoom.us")
-        Fake.made[-1].buttons[0][1]()
-        self.assertTrue(self.app.notetaker.active)
-        self.assertEqual(self.app.notes.get(self.app.notetaker.note_id)["title"], "zoom.us call")
-        self.mic = (False, None)
-        self.app._ticks = 1
-        self.app._tick()
-        self.assertTrue(self.wait_until(lambda: not self.app.notetaker.active))
-        self.assertTrue(Fake.made[-1].body.startswith("Stopped because the call ended."))
 
     def test_dictation_sounds_and_ducking(self):
         events = []
@@ -392,7 +341,7 @@ class AppWiringTest(unittest.TestCase):
         with open(os.path.join(root, "dictation.py"), encoding="utf-8") as f:
             src = f.read()
         handled = set(_re.findall(r'kind == "([A-Za-z]+)"', src)) | {"copy", "ready", "dragRegion"}   # ui.Bridge
-        self.assertGreater(len(sent), 20)
+        self.assertGreater(len(sent), 12)
         self.assertEqual(sent - handled, set())
 
     def test_buttons_do_what_they_say(self):
@@ -443,17 +392,6 @@ class AppWiringTest(unittest.TestCase):
         for br in (b, app._notepad.bridge, app._window.bridge):
             self.assertIsNone(br.note_id)                      # no window keeps showing the deleted note
 
-        # Notetaker buttons; the note being recorded can't be deleted until it stops
-        app.handle_message({"type": "startNotetaker"}, b)
-        self.assertTrue(app.notetaker.active)
-        live = app.notetaker.note_id
-        app.handle_message({"type": "deleteNote", "id": live}, b)
-        self.assertIsNotNone(app.notes.get(live))
-        app.handle_message({"type": "stopNotetaker"}, b)
-        self.assertTrue(self.wait_until(lambda: not app.notetaker.active))
-        app.handle_message({"type": "deleteNote", "id": live}, b)
-        self.assertIsNone(app.notes.get(live))
-
         # Voice test: play, remove, export (cancelled and saved)
         played = []
         self.patch(macos, "play_file", played.append)
@@ -490,10 +428,7 @@ class AppWiringTest(unittest.TestCase):
         app.store.add("last thing I said", 1.0)
         items["Copy Last Transcription"].callback(None)
         self.assertEqual(sys.modules["AppKit"].NSPasteboard.text, "last thing I said")
-        app._notes_item.callback(None)                                   # Start Notetaker
-        self.assertTrue(app.notetaker.active)
-        app._notes_item.callback(None)                                   # Stop
-        self.assertTrue(self.wait_until(lambda: not app.notetaker.active))
+        self.assertFalse(any("Notetaker" in str(i.title) for i in app.menu if getattr(i, "title", None)))
         app.handle_message({"type": "saveSettings", "changes": {"ui_language": "ar"}}, None)
         self.assertEqual(app._open_item.title, "افتح كلام")                # menu follows the app language
         self.assertEqual(app.settings["ui_language"], "ar")
@@ -501,22 +436,6 @@ class AppWiringTest(unittest.TestCase):
         self.assertEqual(app._open_item.title, "Open Kalam")
         items["Quit Kalam"].callback(None)
         self.assertTrue(rumps_stub.quits)
-
-    def test_which_mic_users_count_as_calls(self):
-        c = macos.call_app
-        self.assertIsNone(c("replayd", "/usr/libexec/replayd"))                      # screen recording service
-        self.assertIsNone(c("corespeechd", "/System/Library/PrivateFrameworks/CoreSpeech.framework/corespeechd"))
-        self.assertIsNone(c("Something", "/System/Library/CoreServices/Something.app/Contents/MacOS/Something"))
-        self.assertIsNone(c("Kalam", "/Applications/Kalam.app/Contents/MacOS/Kalam"))
-        self.assertEqual(c("zoom.us", "/Applications/zoom.us.app/Contents/MacOS/zoom.us"), "zoom.us")
-        self.assertEqual(c("Google Chrome Helper (Renderer)",
-                           "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/"
-                           "Versions/1/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/x"), "Google Chrome")
-        self.assertEqual(c("Microsoft Teams", "/Applications/Microsoft Teams.app/Contents/MacOS/MSTeams"), "Microsoft Teams")
-        self.assertEqual(c("FaceTime", "/System/Applications/FaceTime.app/Contents/MacOS/FaceTime"), "FaceTime")
-        self.assertEqual(c("avconferenced", "/usr/libexec/avconferenced"), "FaceTime")
-        self.assertEqual(c("Slack", None), "Slack")                                   # path unknown: by name
-        self.assertIsNone(c("replayd", None))
 
     def test_language_setting(self):
         self.assertIsNone(self.app.core.language())                 # auto-detect by default

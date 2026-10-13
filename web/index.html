@@ -93,9 +93,6 @@
     .nb[data-p="snip"] { --hue: #4FC3C3; --hue2: #1E7F86; }
     .nb[data-p="settings"] { --hue: #A9B6C1; --hue2: #5D6B78; }
   }
-  .nb .rec { position: absolute; top: 1px; right: 1px; width: 10px; height: 10px; border-radius: 50%; background: var(--red);
-             box-shadow: 0 0 0 2px var(--panel); display: none; animation: pulse 1.6s infinite; }
-  body.recording .nb .rec { display: block; }
   .hdr-r { min-width: 120px; display: flex; justify-content: flex-end; }
 
   /* Hover preview */
@@ -177,7 +174,6 @@
   .btn .dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; }
   .btn.soft .dot { background: var(--red); }
   .btn.stop .dot { border-radius: 2px; }
-  .btn.capturing { background: var(--ink); color: var(--panel); }
   /* Round icon buttons */
   .ib { all: unset; width: 30px; height: 30px; border-radius: 50%; display: inline-grid; place-items: center;
         color: var(--muted); cursor: default; flex-shrink: 0; }
@@ -232,21 +228,12 @@
          user-select: text; unicode-bidi: plaintext; }
   .ttl::placeholder { color: var(--off); }
   .meta-line { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; color: var(--muted); font-size: 12.5px; margin: 8px 0 18px; }
-  .recbar { display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 16px; border-radius: 999px;
-            background: var(--card); box-shadow: inset 0 0 0 1px var(--rim); margin-bottom: 18px; }
-  .recbar .clock { font-variant-numeric: tabular-nums; font-weight: 600; }
-  .recbar .grow { flex: 1; color: var(--muted); font-size: 13px; }
   .body { width: 100%; min-height: 160px; resize: none; background: transparent; border: 0; padding: 0;
           font: 14.5px/1.65 var(--sans); border-radius: 0; unicode-bidi: plaintext; }
   .body:focus { border: 0; }
   .body::placeholder { color: var(--off); }
   .tools { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--line); }
   .tools .right { margin-inline-start: auto; }
-  .tx { margin-top: 26px; }
-  .tx .seg { display: grid; grid-template-columns: 52px 1fr; gap: 10px; padding: 6px 0; font-size: 14px; }
-  .tx .seg span:last-child { unicode-bidi: plaintext; }
-  .tx .seg .ts { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; padding-top: 2px; }
-  .tx .wait { color: var(--muted); font-size: 13px; padding: 10px 0; }
 
   /* Settings */
   .tabs { display: inline-flex; gap: 4px; margin: -6px 0 24px; padding: 4px; border-radius: 999px;
@@ -302,8 +289,8 @@
 <header>
   <div class="brand"><img class="logo" src="img/app-icon.webp" alt=""><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1242.07 343.95" fill="currentColor" class="wordmark" role="img" aria-label="Kalam"><path d="M511.92,104.77l-.02-.02-.11-.1c-18.09-15.02-40.01-22.63-65.14-22.63-16.01,0-31.09,3.32-44.81,9.88-13.82,6.61-25.23,15.75-33.91,27.19l-15.99,19.98,41.09,30.33,15.33-20.11.09-.12c3.65-4.93,8.86-8.99,15.48-12.06,6.94-3.21,14.59-4.85,22.73-4.85,12.92,0,23.45,3.48,32.2,10.63,7.93,6.49,11.63,13.44,11.63,21.86v13.36h-47.34c-25.81,0-48.31,7.55-66.79,22.38-20.68,16.23-31.17,36.53-31.17,60.34s10.48,44.49,31.08,60.66c18.56,14.9,41.06,22.46,66.88,22.46s48.4-7.54,67.21-22.41l.12-.1c20.06-16.24,30.23-36.49,30.23-60.21v-96.47c0-23.57-9.68-43.75-28.78-59.98ZM490.47,261.22c0,7.86-3.67,14.54-11.54,21.01-9.68,7.62-21.72,11.49-35.81,11.49s-25.99-3.87-35.45-11.52c-8.11-6.49-11.89-13.28-11.89-21.37s3.79-14.49,11.95-21.02c9.42-7.61,21.33-11.47,35.39-11.47h47.34v32.89Z"/><rect x="579.35" width="50.23" height="343.95"/><path d="M834.99,104.77l-.14-.12c-18.09-15.02-40.01-22.63-65.14-22.63-16.01,0-31.09,3.32-44.81,9.88-13.82,6.61-25.23,15.75-33.91,27.19l-15.99,19.98,41.09,30.33,15.33-20.11.09-.12c3.65-4.93,8.86-8.99,15.48-12.06,6.94-3.21,14.59-4.85,22.73-4.85,12.92,0,23.45,3.48,32.2,10.63,7.93,6.49,11.63,13.44,11.63,21.86v13.36h-47.34c-25.81,0-48.31,7.55-66.79,22.38-20.68,16.23-31.17,36.53-31.17,60.34s10.48,44.49,31.08,60.66c18.56,14.9,41.06,22.46,66.88,22.46s48.4-7.54,67.24-22.43l.1-.08c20.06-16.24,30.23-36.49,30.23-60.21v-96.47c0-23.57-9.68-43.75-28.77-59.98ZM813.54,261.22c0,7.86-3.67,14.54-11.53,21.01-9.68,7.63-21.72,11.49-35.81,11.49s-25.99-3.87-35.45-11.52c-8.11-6.49-11.89-13.28-11.89-21.37s3.79-14.49,11.95-21.03c9.42-7.61,21.32-11.47,35.39-11.47h47.34v32.89Z"/><path d="M1214.3,112.76l-.08-.09c-18.8-20.33-42.12-30.65-69.32-30.65s-50.93,10.32-69.74,30.67l-.25.28c-.88,1.01-1.75,2.04-2.61,3.08-.97-1.15-1.96-2.28-2.98-3.39-18.8-20.33-42.12-30.65-69.32-30.65s-50.59,10.29-69.7,30.63l-.1.1c-18.43,20.24-27.77,44.7-27.77,72.7v158.5h50.23v-158.5c0-15.24,4.65-27.74,14.21-38.22,9.32-10.22,19.85-14.98,33.13-14.98,8.21,0,15.99,2.29,23.12,6.81,7.37,4.68,13.3,11.14,17.63,19.19,4.38,8.14,6.59,17.29,6.59,27.2v158.5h50.23v-158.5c0-15.24,4.65-27.74,14.21-38.22,9.32-10.22,19.84-14.98,33.13-14.98s23.43,4.76,32.74,14.98c9.56,10.49,14.21,22.99,14.21,38.22v158.5h50.23v-158.5c0-27.99-9.34-52.44-27.77-72.69Z"/><path d="M290.53,193.92c-8.6-15.1-20.31-27.19-34.81-35.92-14.54-8.75-30.93-13.19-48.71-13.19h-52.99l55.1-114.99-39.52-17.39-82.66,159.17v22.83h120.07c9.64,0,18.2,1.9,25.47,5.65,7.13,3.68,12.62,8.87,16.78,15.86,4.17,7.01,6.2,14.92,6.2,24.17,0,7.65-1.68,14.54-5.13,21.05-3.42,6.46-8.01,11.43-14.01,15.19-5.94,3.73-12.51,5.55-20.09,5.55H0v49.62h218.33c15.29,0,29.64-4.01,42.66-11.91,12.94-7.85,23.37-18.54,30.99-31.76,7.67-13.31,11.56-28.06,11.56-43.85,0-18.07-4.37-34.92-13-50.08h0Z"/><rect y="14.64" width="48.28" height="229.31"/></svg></div>
   <nav>
-    <button class="nb on" data-p="home" data-i18n-aria="nav.home" aria-label="Transcribe"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
-    <button class="nb" data-p="notes" data-i18n-aria="nav.notes" aria-label="Notes"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg><span class="rec"></span></button>
+    <button class="nb on" data-p="home" data-i18n-aria="nav.home" aria-label="Transcribe"><svg viewBox="0 0 24 24"><path d="M4 11.5 12 4.5l8 7"/><path d="M6.5 9.8V20h11V9.8"/><path d="M10 20v-5.5h4V20"/></svg></button>
+    <button class="nb" data-p="notes" data-i18n-aria="nav.notes" aria-label="Notes"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg></button>
     <button class="nb" data-p="clip" data-i18n-aria="nav.clip" aria-label="Clipboard"><svg viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M9.5 10h5M9.5 14h5"/></svg></button>
     <button class="nb" data-p="dict" data-i18n-aria="nav.dict" aria-label="Your words"><svg viewBox="0 0 24 24"><path d="M3 19 8 5l5 14M4.8 14h6.4"/><circle cx="17.5" cy="15.5" r="3"/><path d="M20.5 12.5V19"/></svg></button>
     <button class="nb" data-p="snip" data-i18n-aria="nav.snip" aria-label="Shortcuts"><svg viewBox="0 0 24 24"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/></svg></button>
@@ -318,7 +305,6 @@
     <h1><span data-i18n="nav.home">Transcribe</span><span class="sub" data-i18n="home.sub">Everything you've said, kept on this Mac only.</span></h1>
     <div class="pills">
       <span class="pill"><i class="g-coral"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></i><span data-i18n-html="home.holdTalk">Hold <kbd>Right ⌥</kbd> to talk</span></span>
-      <span class="pill"><i class="g-amber"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg></i><span data-i18n-html="home.meetingKey"><kbd id="hintKey">⌥ M</kbd> for meeting notes</span></span>
     </div>
     <div class="stats">
       <div class="stat"><div class="bub g-coral"><svg viewBox="0 0 24 24"><path d="M5 7V5h14v2M12 5v14M9 19h6"/></svg></div><div><div class="n" id="sWords">0</div><div class="l" data-i18n="stat.words">total words</div></div></div>
@@ -335,7 +321,6 @@
         <h1 data-i18n="nav.notes">Notes</h1>
         <div class="acts">
           <button class="btn soft" id="newNote"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="notes.new">New</span></button>
-          <button class="btn" id="ntToggle"><span class="dot"></span>Notetaker</button>
         </div>
       </div>
       <div class="nitems" id="nitems"></div>
@@ -350,7 +335,7 @@
 
   <section class="page" id="dict">
     <h1><span data-i18n="nav.dict">Your words</span><span class="sub" data-i18n="dict.sub">Names, brands and terms Kalam should spell your way.</span></h1>
-    <form class="add" id="dForm"><input id="dIn" placeholder="Add a word, e.g. be'ah, Maal, 144 Arc" data-i18n-ph="dict.ph"><button class="ib go" aria-label="Add" title="Add" data-i18n-aria="common.add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></form>
+    <form class="add" id="dForm"><input id="dIn" placeholder="Add a word, e.g. Ceen Marketing" data-i18n-ph="dict.ph"><button class="ib go" aria-label="Add" title="Add" data-i18n-aria="common.add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></form>
     <div class="chips" id="words"></div>
   </section>
 
@@ -362,10 +347,6 @@
 
   <section class="page" id="settings">
     <h1 data-i18n="nav.settings">Settings</h1>
-    <div class="tabs">
-      <button data-t="tSystem" class="on"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 19h20"/></svg><span data-i18n="tab.system">System</span></button>
-      <button data-t="tNotetaker"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span data-i18n="tab.notetaker">Notetaker</span></button>
-    </div>
 
     <div class="tab on" id="tSystem">
       <h2 data-i18n="h.transcribe">Transcribe</h2>
@@ -388,29 +369,6 @@
       </div>
     </div>
 
-    <div class="tab" id="tNotetaker">
-      <h2 data-i18n="h.detect">Meeting detection</h2>
-      <div class="card">
-        <div class="set"><div class="lbl"><b data-i18n="set.calls">Automatically detect any call</b><span data-i18n="set.calls.d">Notetaker asks if you want to start a note when you join a call</span></div><label class="tog"><input type="checkbox" data-set="auto_detect_calls"><span></span></label></div>
-        <div class="set"><div class="lbl"><b data-i18n="set.maxLen">Maximum recording length</b><span data-i18n="set.maxLen.d">Notetaker stops automatically at this length, with a warning shortly before</span></div><select data-set="max_recording_minutes"></select></div>
-        <div class="set"><div class="lbl"><b data-i18n="set.stopEnd">Stop Notetaker when a call ends</b><span data-i18n="set.stopEnd.d">Notetaker stops automatically so you don't have to</span></div><label class="tog"><input type="checkbox" data-set="stop_when_call_ends"><span></span></label></div>
-        <div class="set"><div class="lbl"><b data-i18n="set.shortcut">Keyboard shortcut</b><span id="scText">Press <b style="display:inline">⌥ M</b> to start or stop the Notetaker</span></div><button class="btn soft" id="scBtn">Change shortcut</button></div>
-      </div>
-      <h2 data-i18n="h.active">While Notetaker is active</h2>
-      <div class="card">
-        <div class="set"><div class="lbl"><b data-i18n="set.hide">Don't show Notepad and the Kalam bar in screen capture</b><span data-i18n="set.hide.d">Notepad and the bar won't appear in screenshots or when you share your screen. Always ask for consent before transcribing.</span></div><label class="tog"><input type="checkbox" data-set="hide_from_screen_capture"><span></span></label></div>
-      </div>
-      <h2 data-i18n="pad.title">Notepad</h2>
-      <div class="card">
-        <div class="set"><div class="lbl"><b data-i18n="set.openPad">Open Notepad when starting Notetaker</b><span data-i18n="set.openPad.d">Opens your notes when you start the Notetaker</span></div><label class="tog"><input type="checkbox" data-set="open_notepad_on_start"><span></span></label></div>
-        <div class="set"><div class="lbl"><b data-i18n="set.split">Split the screen when joining</b><span data-i18n="set.split.d">Puts your meeting on the left and your Notepad on the right, side by side</span></div><label class="tog"><input type="checkbox" data-set="split_screen_on_join"><span></span></label></div>
-      </div>
-      <h2 data-i18n="notes.transcript">Transcript</h2>
-      <div class="card">
-        <div class="set"><div class="lbl"><b data-i18n="set.live">Show live transcript</b><span data-i18n="set.live.d">See the words appear on screen when the Notetaker is on</span></div><label class="tog"><input type="checkbox" data-set="show_live_transcript"><span></span></label></div>
-        <div class="set"><div class="lbl"><b data-i18n="set.others">Transcribe other participants</b><span><span data-i18n="set.others.d">Records what your Mac plays as well as your mic, so everyone on the call is transcribed. macOS asks for Screen &amp; System Audio Recording permission the first time.</span> <a href="#" id="scrOpen" data-i18n="set.openSettings">Open settings</a></span></div><label class="tog"><input type="checkbox" data-set="capture_system_audio"><span></span></label></div>
-      </div>
-    </div>
   </section>
 
   <section class="page" id="pad"><div class="editor" id="padEditor"></div></section>
@@ -420,13 +378,15 @@
 <script>
   const I = {"mic": "<svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5 11a7 7 0 0 0 14 0M12 18v3\"/></svg>", "notes": "<svg viewBox=\"0 0 24 24\"><path d=\"M6 3h9l4 4v14H6z\"/><path d=\"M15 3v4h4M9 12h7M9 16h5\"/></svg>", "clip": "<svg viewBox=\"0 0 24 24\"><rect x=\"6\" y=\"4\" width=\"12\" height=\"17\" rx=\"2\"/><path d=\"M9 4.5V3h6v1.5M9.5 10h5M9.5 14h5\"/></svg>", "words": "<svg viewBox=\"0 0 24 24\"><path d=\"M3 19 8 5l5 14M4.8 14h6.4\"/><circle cx=\"17.5\" cy=\"15.5\" r=\"3\"/><path d=\"M20.5 12.5V19\"/></svg>", "bolt": "<svg viewBox=\"0 0 24 24\"><path d=\"M13 3 5 13.5h6L10 21l8-10.5h-6z\"/></svg>", "settings": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 7h10M18 7h2M4 17h4M12 17h8\"/><circle cx=\"16\" cy=\"7\" r=\"2\"/><circle cx=\"10\" cy=\"17\" r=\"2\"/></svg>", "copy": "<svg viewBox=\"0 0 24 24\"><rect x=\"8\" y=\"8\" width=\"12\" height=\"12\" rx=\"3\"/><path d=\"M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2\"/></svg>", "check": "<svg viewBox=\"0 0 24 24\"><path d=\"M5 12.5 10 17 19 7\"/></svg>", "trash": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3\"/></svg>", "x": "<svg viewBox=\"0 0 24 24\"><path d=\"M6 6l12 12M18 6 6 18\"/></svg>", "plus": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 5v14M5 12h14\"/></svg>", "export": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 4v11M7 10l5 5 5-5M5 20h14\"/></svg>", "side": "<svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"3\"/><path d=\"M14 4v16\"/></svg>", "window": "<svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"3\"/><path d=\"M3 9h18\"/></svg>", "play": "<svg viewBox=\"0 0 24 24\"><path d=\"M8 5.5v13l10-6.5z\"/></svg>", "type": "<svg viewBox=\"0 0 24 24\"><path d=\"M5 7V5h14v2M12 5v14M9 19h6\"/></svg>", "gauge": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 16a8 8 0 1 1 16 0\"/><path d=\"M12 16l4-5\"/></svg>", "flame": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.3 2.4-5.4 3.8-7.6.5 1.7 1.5 2.8 2.7 3.2-.2-2.6.8-5.3 3-7.4.6 3.4 4.5 6 4.5 11.4 0 3.8-3 6.6-7.5 6.6z\"/></svg>", "laptop": "<svg viewBox=\"0 0 24 24\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"11\" rx=\"2\"/><path d=\"M2 19h20\"/></svg>", "cal": "<svg viewBox=\"0 0 24 24\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"15\" rx=\"3\"/><path d=\"M4 10h16M9 3v4M15 3v4\"/></svg>", "flask": "<svg viewBox=\"0 0 24 24\"><path d=\"M10 3v6L5 19a1.5 1.5 0 0 0 1.4 2h11.2A1.5 1.5 0 0 0 19 19l-5-10V3M9 3h6M7.5 14h9\"/></svg>", "wave": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2\"/></svg>"};
   // Header artwork: one of the Kalam banners, picked each time the window opens.
+  // Arabic has its own copy of each banner (header-*-ar.webp); applyLang swaps them.
   const HEROES = ['voice', 'screen', 'megaphone', 'writer'];
-  document.getElementById('heroImg').src = `img/header-${HEROES[Math.floor(Math.random() * HEROES.length)]}.webp`;
+  const HERO = HEROES[Math.floor(Math.random() * HEROES.length)];
+  document.getElementById('heroImg').src = `img/header-${HERO}.webp`;
   const post = m => window.webkit.messageHandlers.app.postMessage(m);
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   let S = { history: [], dictionary: [], snippets: {}, stats: {}, settings: {}, options: {}, notes: [],
-            note: null, notetaker: { active: false } };
+            note: null };
   let MODE = 'main', lastMode = null;
 
   // ── Language: every word on screen comes from strings.js (English and Arabic) ──
@@ -442,15 +402,14 @@
     LANG = lang === 'ar' ? 'ar' : 'en';
     document.documentElement.lang = LANG;
     document.documentElement.dir = LANG === 'ar' ? 'rtl' : 'ltr';
-    const key = esc(((S.settings || {}).meeting_shortcut || {}).label || '⌥ M');
+    $('heroImg').src = `img/header-${HERO}${LANG === 'ar' ? '-ar' : ''}.webp`;
     document.querySelectorAll('[data-i18n]').forEach(e => e.textContent = t(e.dataset.i18n));
-    document.querySelectorAll('[data-i18n-html]').forEach(e => e.innerHTML = t(e.dataset.i18nHtml, { key }));
+    document.querySelectorAll('[data-i18n-html]').forEach(e => e.innerHTML = t(e.dataset.i18nHtml));
     document.querySelectorAll('[data-i18n-ph]').forEach(e => e.placeholder = t(e.dataset.i18nPh));
     document.querySelectorAll('[data-i18n-alt]').forEach(e => e.alt = t(e.dataset.i18nAlt));
     document.querySelectorAll('[data-i18n-aria]').forEach(e => {
       e.setAttribute('aria-label', t(e.dataset.i18nAria)); if (e.hasAttribute('title')) e.title = t(e.dataset.i18nAria); });
     document.querySelectorAll('select[data-set]').forEach(e => e.innerHTML = '');   // refilled with the new labels
-    $('scBtn').textContent = t('set.shortcut.btn');
     $('editor').dataset.note = ''; $('padEditor').dataset.note = '';               // rebuild the note tools
   }
 
@@ -472,7 +431,7 @@
   const PEEK = {
     home: () => { const h = S.history.slice(-3).reverse();
       return [t('home.peekCount', { n: fmt(S.stats.words || 0) }), h.map(e => pi(e.text, time(e.ts))).join('') || pe(t('home.peekEmpty'))]; },
-    notes: () => [S.notetaker.active ? t('notes.recordingNow') : t('notes.count', { n: S.notes.length }),
+    notes: () => [t('notes.count', { n: S.notes.length }),
       S.notes.slice(0, 3).map(n => pi(n.title || t('notes.untitled'), when(n.created))).join('') || pe(t('notes.empty'))],
     clip: () => { const h = S.history.slice(-3).reverse();
       return [t('clip.count', { n: Math.min(S.history.length, 100) }), h.map(e => pi(e.text)).join('') || pe(t('clip.peekEmpty'))]; },
@@ -482,7 +441,6 @@
       return [`${k.length}`, k.slice(0, 3).map(w => pi(`${w} ${LANG === 'ar' ? '←' : '→'} ${S.snippets[w]}`)).join('') || pe(t('snip.empty'))]; },
     settings: () => {
       return ['', pi(t('opt.dictation_language.' + S.settings.dictation_language), t('peek.lang'))
-        + pi(S.settings.meeting_shortcut.label, t('peek.notetaker'))
         + pi(t(S.settings.launch_at_login ? 'common.on' : 'common.off'), t('peek.login'))]; },
   };
   let peekTimer = null;
@@ -497,10 +455,6 @@
     peekTimer = setTimeout(() => el.classList.add('on'), 120);
   }
   function hidePeek() { clearTimeout(peekTimer); $('peek').classList.remove('on'); }
-  document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
-    document.querySelectorAll('.tabs button, .tab').forEach(e => e.classList.remove('on'));
-    b.classList.add('on'); $(b.dataset.t).classList.add('on');
-  });
 
   const fmt = n => n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1) + 'K' : String(n);
   const time = ts => { const s = new Date(ts * 1000).toLocaleTimeString(LOCALE(), { hour: 'numeric', minute: '2-digit' });
@@ -509,9 +463,6 @@
     return d.toDateString() === now.toDateString() ? 'today' : d.toDateString() === y.toDateString() ? 'yesterday' : ''; };
   const day = ts => dayKind(ts) ? t('day.' + dayKind(ts))
     : new Date(ts * 1000).toLocaleDateString(LOCALE(), { weekday: 'long', month: 'short', day: 'numeric' });
-  const clock = secs => { secs = Math.max(0, Math.floor(secs)); const h = Math.floor(secs / 3600),
-    m = Math.floor(secs / 60) % 60, s = secs % 60, p = n => String(n).padStart(2, '0');
-    return h ? `${h}:${p(m)}:${p(s)}` : `${m}:${p(s)}`; };
   const dur = secs => secs >= 3600 ? t('dur.hm', { h: Math.floor(secs / 3600), m: Math.round(secs / 60) % 60 })
                                    : secs >= 60 ? t('dur.min', { n: Math.round(secs / 60) }) : t('dur.sec', { n: Math.round(secs) });
   const when = ts => (dayKind(ts) ? t('day.' + dayKind(ts))
@@ -531,13 +482,10 @@
   const autosize = ta => { ta.style.height = 'auto'; ta.style.height = Math.max(160, ta.scrollHeight) + 'px'; };
 
   function renderEditor(root, note) {
-    const nt = S.notetaker, rec = note && nt.active && nt.note_id === note.id;
     const shown = root.dataset.note || '';
     if (!note) {
       root.dataset.note = '';
-      root.innerHTML = MODE === 'notepad'
-        ? `<div class="empty"><p style="margin-bottom:14px">${t('notes.noMeeting')}</p><button class="btn" data-act="start"><span class="dot"></span>${t('notes.startNotetaker')}</button></div>`
-        : `<div class="empty">${t('notes.select')}</div>`;
+      root.innerHTML = `<div class="empty">${t('notes.select')}</div>`;
       return;
     }
     if (shown !== note.id) {
@@ -545,10 +493,7 @@
       root.innerHTML = `
         <input class="ttl" placeholder="${t('notes.untitled')}" maxlength="300">
         <div class="meta-line"></div>
-        <div class="recbar" hidden><span class="live"></span><span class="clock">0:00</span><span class="grow">${t('notes.recording')}</span>
-          <button class="btn stop" data-act="stop"><span class="dot"></span>${t('notes.stop')}</button></div>
         <textarea class="body" placeholder="${t('notes.bodyPh')}"></textarea>
-        <div class="tx"></div>
         <div class="tools">
           <button class="ib" data-act="copy" title="${t('notes.copyMd')}">${I.copy}</button>
           <button class="ib" data-act="export" title="${t('notes.export')}">${I.export}</button>
@@ -568,24 +513,7 @@
       if (document.activeElement !== body && !(pending[note.id] || {}).body && body.value !== note.body) {
         body.value = note.body; autosize(body); }
     }
-    const meta = [when(note.created)];
-    if (note.meeting) meta.push(t('notes.meeting'));
-    if (note.duration && !rec) meta.push(dur(note.duration));
-    root.querySelector('.meta-line').innerHTML = meta.map(esc).join(' · ');
-    root.querySelector('.recbar').hidden = !rec;
-    if (rec) root.querySelector('.recbar .clock').textContent = clock(Date.now() / 1000 - nt.started_at);
-    root.querySelector('[data-act="delete"]').hidden = rec;
-
-    const tx = root.querySelector('.tx');
-    const scroller = document.querySelector('main');
-    const atBottom = MODE === 'notepad' && scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 40;
-    if (!note.meeting && !note.transcript.length) tx.innerHTML = '';
-    else if (rec && !S.settings.show_live_transcript)
-      tx.innerHTML = `<div class="section">${t('notes.transcript')}</div><div class="wait">${t('notes.txLater')}</div>`;
-    else tx.innerHTML = `<div class="section">${t('notes.transcript')}</div>` + (note.transcript.map(s =>
-        `<div class="seg"><span class="ts">${clock(s.t)}</span><span>${esc(s.text)}</span></div>`).join('') ||
-        `<div class="wait">${rec ? t('notes.listening') : t('notes.nothing')}</div>`);
-    if (rec && atBottom) scroller.scrollTop = scroller.scrollHeight;
+    root.querySelector('.meta-line').textContent = when(note.created);
   }
 
   // In-page confirmation: the app's web view can't show confirm() dialogs (they return false).
@@ -602,8 +530,6 @@
     const id = this.dataset.note;
     flushSaves();
     switch (b.dataset.act) {
-      case 'start': post({ type: 'startNotetaker' }); break;
-      case 'stop': post({ type: 'stopNotetaker' }); break;
       case 'copy': post({ type: 'copyNote', id }); b.innerHTML = I.check; b.classList.add('done');
         setTimeout(() => { b.innerHTML = I.copy; b.classList.remove('done'); }, 1500); break;
       case 'export': post({ type: 'exportNote', id }); break;
@@ -616,26 +542,14 @@
   $('padEditor').onclick = editorClick;
 
   function renderNotes() {
-    const nt = S.notetaker;
     $('nitems').innerHTML = S.notes.map(n => `<div class="nitem ${S.note && S.note.id === n.id ? 'on' : ''}" data-note="${n.id}">
-        <div class="nt">${n.recording ? '<span class="live"></span>' : ''}${esc(n.title || t('notes.untitled'))}</div>
-        <div class="nm">${esc(when(n.created))}${n.meeting ? ` · <span class="tag">${t('notes.meeting')}</span>` : ''}${n.preview ? ' · ' + esc(n.preview) : ''}</div>
+        <div class="nt">${esc(n.title || t('notes.untitled'))}</div>
+        <div class="nm">${esc(when(n.created))}${n.preview ? ' · ' + esc(n.preview) : ''}</div>
       </div>`).join('') || `<div class="empty" style="padding:24px 8px">${t('notes.empty')}</div>`;
     $('nitems').querySelectorAll('[data-note]').forEach(r => r.onclick = () => { flushSaves(); post({ type: 'openNote', id: r.dataset.note }); });
-    const tg = $('ntToggle');
-    tg.className = nt.active ? 'btn stop' : 'btn';
-    tg.innerHTML = `<span class="dot"></span>${nt.active ? t('notes.stop') : t('notes.notetaker')}`;
-    tg.title = nt.active ? t('notes.stopTitle') : t('notes.startTitle', { key: S.settings.meeting_shortcut.label });
     renderEditor($('editor'), S.note);
   }
   $('newNote').onclick = () => { flushSaves(); post({ type: 'newNote' }); };
-  $('ntToggle').onclick = () => post({ type: S.notetaker.active ? 'stopNotetaker' : 'startNotetaker' });
-
-  setInterval(() => {      // recording clocks tick locally between updates
-    if (!S.notetaker.active) return;
-    const c = clock(Date.now() / 1000 - S.notetaker.started_at);
-    document.querySelectorAll('.recbar .clock').forEach(e => e.textContent = c);
-  }, 1000);
 
   // ── Settings ──
   function renderSettings() {
@@ -648,9 +562,6 @@
         el.value = String(st[k]);
       } else el.checked = !!st[k];
     });
-    const label = st.meeting_shortcut.label;
-    $('hintKey').textContent = label;
-    if (!capturing) $('scText').innerHTML = t('set.shortcut.d', { key: esc(label) }).replace('<b>', '<b style="display:inline">');
     renderModel();
   }
   function renderModel() {
@@ -673,28 +584,6 @@
     S.settings[k] = v;
     post({ type: 'saveSettings', changes: { [k]: v } });
   });
-  $('scrOpen').onclick = e => { e.preventDefault(); post({ type: 'openPrivacy', pane: 'screen' }); };
-
-  let capturing = false;
-  const MODS = ['Control', 'Alt', 'Shift', 'Meta'];
-  const endCapture = () => { capturing = false; $('scBtn').classList.remove('capturing');
-    $('scBtn').textContent = t('set.shortcut.btn'); post({ type: 'captureShortcut', on: false }); renderSettings(); };
-  $('scBtn').onclick = () => {
-    if (capturing) return endCapture();
-    capturing = true; $('scBtn').classList.add('capturing'); $('scBtn').textContent = t('set.shortcut.cancel');
-    $('scText').textContent = t('set.shortcut.press');
-    post({ type: 'captureShortcut', on: true });
-  };
-  window.addEventListener('keydown', e => {
-    if (!capturing) return;
-    e.preventDefault(); e.stopPropagation();
-    if (e.key === 'Escape') return endCapture();
-    if (MODS.includes(e.key)) return;
-    const mods = [e.ctrlKey && 'ctrl', e.altKey && 'alt', e.shiftKey && 'shift', e.metaKey && 'cmd'].filter(Boolean);
-    if (!mods.some(m => m !== 'shift')) { $('scText').textContent = t('set.shortcut.needMod'); return; }
-    capturing = false; $('scBtn').classList.remove('capturing'); $('scBtn').textContent = t('set.shortcut.btn');
-    post({ type: 'setShortcut', code: e.code, mods });
-  }, true);
 
   // ── Render ──
   window.render = (state, mode) => {
@@ -703,7 +592,6 @@
     const lang = (S.settings || {}).ui_language === 'ar' ? 'ar' : 'en';
     if (lang !== LANG) applyLang(lang);
     document.body.classList.toggle('notepad', MODE === 'notepad');
-    document.body.classList.toggle('recording', !!S.notetaker.active);
     document.body.classList.toggle('noglass', !S.glass);
     if (MODE !== lastMode) { lastMode = MODE; requestAnimationFrame(reportDragRegion); }
     if (MODE === 'notepad') {
