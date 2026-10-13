@@ -5,7 +5,7 @@ Everything shown matches `KALAM.md`. The names and messages are sample text only
 
 **Format:** 1080×1920, 30 fps, no voiceover. Bilingual captions, with English on top and Arabic underneath (right to left).
 **Music:** upbeat at 120 BPM (one bar = 2 s). There's a quiet build-up for 4 s, then the beat drops when Right ⌥ is pressed.
-Every cut is a fast blurred swipe on the beat.
+Every cut is a parallax slide on the beat: background, floating shapes and content move at different speeds. Inside each scene the background drifts slowly behind the content. Pop-ins settle softly, with no bounce.
 
 ---
 
@@ -13,7 +13,7 @@ Every cut is a fast blurred swipe on the beat.
 
 | Time | What happens on screen | English caption | Arabic caption |
 |---|---|---|---|
-| 0:00 | An email window ("New Message", To: Sara, Subject: Campaign brief). Someone types slowly, with a typo: **"Hi Sr" → "Hi Sara,"** | Still typing? | لين الحين تكتب؟ |
+| 0:00 | An email window ("New Message", To: Halima, Subject: Campaign brief). Someone types slowly, with a typo: **"Hi Halu" → "Hi Halima,"** | Still typing? | لين الحين تكتب؟ |
 | 0:03 | A big **Right ⌥ option** key drops in from the top | | |
 | 0:04 | **DROP.** The key slams down, the screen shakes and coral fills the frame. The Kalam recording bar pops up with live sound levels | Hold **Right ⌥** and talk. | اضغط مطوّل على **⌥ اليمين** وتكلّم |
 | 0:06 | Key released. The text springs into the email: **"Thanks for the update! Let's review the brief tomorrow at 10."** | Let go. It's typed. | تفكّه، وينكتب على طول |
@@ -27,7 +27,7 @@ Four app cards swing in one after another. Each one shows the recording bar, the
 | Time | App | Text typed |
 |---|---|---|
 | 0:08 | Email · "Re: Final brief" | Attached is the final brief. Let me know what you think! |
-| 0:09.6 | WhatsApp Web · "Mum" | واصل بعد 10 دقايق، جهّزي القهوة |
+| 0:09.6 | WhatsApp Web · "Mum" | واصل بعد 10 دقايق، تجهّزي |
 | 0:10.9 | Slack · "#marketing" | New captions are up in the shared folder. |
 | 0:12.1 | Notes · "Friday shoot" | Ideas: launch reel, client brief, behind the scenes. |
 
@@ -38,7 +38,7 @@ Caption: **Works in any app.** / **يشتغل في أي تطبيق**
 | Time | What happens on screen |
 |---|---|
 | 0:14.6 | Recording bar. A language switch (English · العربية) lands on **العربية** |
-| 0:15.6 | Chat bubble, tagged "Arabic · عربي": **شحالج؟ نتلاقى الساعة 4 في الكوفي؟** |
+| 0:15.6 | Chat bubble, tagged "Arabic · عربي": **شحالش؟ نتلاقى الساعة 4 في الكوفي؟** |
 | 0:16.3 | Recording bar again. The switch slides to **English** |
 | 0:17.3 | Chat bubble, tagged "English · إنجليزي": **Perfect, see you at 4!** |
 | 0:18 | Dialect chips bounce in: **خليجي Gulf** and **عُماني Omani** (highlighted), then **فصحى MSA**, **مصري Egyptian** and **شامي Levantine** |
@@ -47,7 +47,7 @@ Caption: **Arabic or English. It just knows.** / **عربي أو إنجليزي�
 
 ## 4 · Smart touches (0:20 – 0:28) · warm sun
 
-**4a (0:20 – 0:22.7)**: Changed your mind? / غيّرت رأيك؟
+**4a (0:20 – 0:22.7)**: Changed your mind mid speaking? / غيّرت رأيك وانت تتكلم؟
 - Big words pop in on the beat: **"Meet at / 3, no wait, / 4"**
 - "3, no wait," gets slashed out, then **✓ Meet at 4.** slams in
 
@@ -83,7 +83,6 @@ Caption: **Everything stays on your Mac.** / **كل شي يبقى على جها�
 - Kalam icon (pops in with a burst) and the Kalam wordmark
 - **Write less, speak more.**
 - **اشرح بلا حدود**
-- Powered by Amira Hamood
 
 **Sound:** half-time beat, a bell chord on the logo, then fade out.
 

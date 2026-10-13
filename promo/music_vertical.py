@@ -249,14 +249,14 @@ L *= duck
 R *= duck
 
 # ── SFX cues (match scenes-vertical.html) ────────────────────────────────────
-for t in (0.7, 1.0, 1.35, 1.85, 2.2, 2.75, 3.1, 3.35, 3.55, 3.8):
+for t in (0.6, 0.85, 1.1, 1.5, 1.8, 2.25, 2.5, 2.95, 3.15, 3.35, 3.55, 3.75):
     add(keyclick(0.9), t, 1.0, pan=-0.1)
 add(whip(0.4), 3.3, 0.5)                    # key drops in
 add(thock(), 4.0, 1.0); add(boom(), 4.0, 0.6); add(bloop(), 4.05, 0.8)
 add(keyclick(), 6.2, 0.8)
 add(sparkle(), 6.5, 1.0); add(pop(), 6.55, 0.6)
 for c in CUTS + [OUTRO]:
-    add(whip(), c - 0.16, 0.6)
+    add(whip(0.6), c - 0.3, 0.6)          # parallax slide
 for a in (8.35, 9.6, 10.85, 12.1):          # cards whip in
     add(whip(0.25), a - 0.05, 0.35, pan=0.3)
     add(bloop(), a + 0.12, 0.5)
