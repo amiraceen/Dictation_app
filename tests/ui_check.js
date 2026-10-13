@@ -14,7 +14,8 @@ const note = { id: 'a1', title: 'Weekly sync', body: 'Decisions', created: now -
   duration: 754, recording: false, transcript: [{ t: 0, text: 'Okay, let us start.' }] };
 const base = () => ({
   glass: false,
-  history: [{ ts: now - 3600, text: 'First thing I said', words: 4, secs: 2 },
+  history: [{ ts: now - 86400 * 3, text: 'Older one', words: 2, secs: 1 },
+            { ts: now - 3600, text: 'First thing I said', words: 4, secs: 2 },
             { ts: now - 60, text: 'وين صرت؟', words: 2, secs: 1 }],
   dictionary: ['Kalam', 'مسقط'], snippets: { 'my email': 'a@b.c', 'sign off': 'Best,' },
   stats: { words: 1234, wpm: 140, streak: 3 },
@@ -86,11 +87,40 @@ const check = (name, ok, detail = '') => { if (!ok) fails++; console.log(`${ok ?
   let m = await last(p);
   check('history Copy copies the newest text', m.type === 'copy' && m.text === 'وين صرت؟', JSON.stringify(m));
   check('history Copy shows a tick', await p.evaluate(() => document.querySelector('[data-copy="0"]').classList.contains('done')));
+  // Clearing: each day has its own button, and the Clear menu has date ranges
+  const days = await p.$$('#history .day');
+  check('history is grouped by day, each with a clear button', days.length >= 2
+    && (await p.$$('#history .day [data-clearday]')).length === days.length);
+  const cleared = async () => (await sent(p)).filter(x => x.type === 'clearHistory');
+  await reset(p);
+  const oldBtn = '#history .day:last-child [data-clearday]';
+  await p.hover('#history .day:last-child'); await p.click(oldBtn);
+  check('Clear a day asks first', (await cleared()).length === 0 && (await p.textContent(oldBtn)).includes('Click again to clear'));
+  await p.click(oldBtn);
+  m = (await cleared())[0] || {};
+  const oldTs = now - 86400 * 3;
+  check('Clear a day sends just that day', m.from <= oldTs && oldTs < m.to && m.to - m.from >= 82800 && m.to - m.from <= 90000
+    && m.from > now - 86400 * 5, JSON.stringify(m));
+  await reset(p);
   await p.click('#clear');
-  check('Clear history asks first (1 click does nothing)', (await sent(p)).filter(x => x.type === 'clearHistory').length === 0);
-  check('Clear history button says "Clear all?"', (await p.textContent('#clear')).includes('Clear all?'));
-  await p.click('#clear');
-  check('Clear history clears on the 2nd click', (await sent(p)).filter(x => x.type === 'clearHistory').length === 1);
+  check('Clear menu opens with 4 ranges', await p.isVisible('#clearPop') && (await p.$$('#clearPop [data-range]')).length === 4);
+  await p.click('#clearPop [data-range="7"]');
+  check('Clear range asks first', (await cleared()).length === 0);
+  await p.click('#clearPop [data-range="7"]');
+  m = (await cleared())[0] || {};
+  check('Clear last 7 days', Math.abs(m.from - (Date.now() / 1000 - 7 * 86400)) < 60 && m.to === undefined, JSON.stringify(m));
+  check('Clear menu closes after clearing', !(await p.isVisible('#clearPop')));
+  await reset(p);
+  await p.click('#clear'); await p.click('#clearPop [data-range="today"]'); await p.click('#clearPop [data-range="today"]');
+  m = (await cleared())[0] || {};
+  const midnight = new Date(); midnight.setHours(0, 0, 0, 0);
+  check('Clear today', m.from === midnight.getTime() / 1000, JSON.stringify(m));
+  await reset(p);
+  await p.click('#clear'); await p.click('#clearPop [data-range="all"]'); await p.click('#clearPop [data-range="all"]');
+  m = (await cleared())[0] || {};
+  check('Clear everything', m.type === 'clearHistory' && m.from === undefined, JSON.stringify(m));
+  await p.click('#clear'); await p.click('h1');
+  check('Clear menu closes when clicking elsewhere', !(await p.isVisible('#clearPop')));
 
   // ── Notes ──
   await p.click('.nb[data-p="notes"]'); await reset(p);
@@ -200,7 +230,7 @@ const check = (name, ok, detail = '') => { if (!ok) fails++; console.log(`${ok ?
     await p.click(`.nb[data-p="${id}"]`);
     {
       leftovers.push(...await p.evaluate(pg => {
-        const user = /Weekly sync|Groceries|Decisions|Milk|First thing I said|Kalam|my email|sign off|Best,|a@b\.c|Whisper|⌥|GB|MB|wpm|English|FaceTime|Zoom|Teams|Meet|Slack|WhatsApp|Spotify|Music|Mac|macOS|Siri|Dock|Okay, let us start\.|No internet|Powered by Amira Hamood/g;
+        const user = /Weekly sync|Groceries|Decisions|Milk|First thing I said|Kalam|my email|sign off|Best,|a@b\.c|Whisper|⌥|GB|MB|wpm|English|FaceTime|Zoom|Teams|Meet|Slack|WhatsApp|Spotify|Music|Mac|macOS|Siri|Dock|Okay, let us start\.|No internet|Older one|Powered by Amira Hamood/g;
         const out = [], w = document.createTreeWalker(document.getElementById(pg), NodeFilter.SHOW_TEXT);
         while (w.nextNode()) {
           const n = w.currentNode, el = n.parentElement;

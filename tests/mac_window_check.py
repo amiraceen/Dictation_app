@@ -167,8 +167,13 @@ def main():
     got = NSPasteboard.generalPasteboard().stringForType_(NSPasteboardTypeString)
     check("history Copy puts the text on the clipboard", got == "Hello from the history", got)
     app.received.clear()
-    click(win, web, "#clear", times=2)
-    check("Clear history (two clicks)", last(app).get("type") == "clearHistory", app.received)
+    click(win, web, "#clear")
+    click(win, web, '#clearPop [data-range="all"]', times=2)
+    check("Clear history from the menu (two clicks)", last(app).get("type") == "clearHistory", app.received)
+    app.received.clear()
+    click(win, web, "#history [data-clearday]", times=2)
+    m = last(app)
+    check("Clear one day", m.get("type") == "clearHistory" and m.get("to", 0) - m.get("from", 0) > 80000, m)
 
     # Settings: a toggle and a menu
     click(win, web, '.nb[data-p="settings"]')

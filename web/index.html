@@ -150,6 +150,20 @@
              font-size: 11px; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; }
   .stat, .list, .card { background: var(--card); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--rim); }
   .list { overflow: hidden; }
+  .section.hist { margin-bottom: 4px; }
+  .day .section { margin-top: 18px; }
+  .day .section .ib { width: 26px; height: 26px; opacity: .45; transition: opacity .15s; }
+  .day .section .ib svg { width: 14px; height: 14px; }
+  .day:hover .section .ib, .day .section .ib.danger, .day .section .ib:focus-visible { opacity: 1; }
+  .clearwrap { position: relative; }
+  .clearwrap .btn.ghost { display: inline-flex; align-items: center; gap: 6px; text-transform: none; letter-spacing: 0; }
+  .clearpop { position: absolute; top: calc(100% + 6px); inset-inline-end: 0; z-index: 5; min-width: 170px; padding: 6px;
+    border-radius: 14px; background: var(--panel); box-shadow: 0 12px 32px -12px rgba(16, 34, 43, .35), inset 0 0 0 1px var(--line);
+    display: grid; gap: 2px; text-transform: none; letter-spacing: 0; }
+  .clearpop[hidden] { display: none; }
+  .clearpop button { all: unset; padding: 8px 12px; border-radius: 9px; font-size: 13px; color: var(--ink); cursor: default; }
+  .clearpop button:hover { background: var(--hover); }
+  .clearpop button.danger { background: var(--red); color: #fff; font-weight: 600; }
   .row { display: grid; grid-template-columns: 80px 1fr auto; gap: 14px; padding: 13px 16px 13px 18px;
          border-top: 1px solid var(--line); align-items: center; }
   .row:first-child { border-top: 0; }
@@ -313,8 +327,15 @@
       <div class="stat"><div class="bub g-violet"><svg viewBox="0 0 24 24"><path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-5"/></svg></div><div><div class="n" id="sWpm">0</div><div class="l" data-i18n="stat.wpm">words per minute</div></div></div>
       <div class="stat"><div class="bub g-amber"><svg viewBox="0 0 24 24"><path d="M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.3 2.4-5.4 3.8-7.6.5 1.7 1.5 2.8 2.7 3.2-.2-2.6.8-5.3 3-7.4.6 3.4 4.5 6 4.5 11.4 0 3.8-3 6.6-7.5 6.6z"/></svg></div><div><div class="n" id="sStreak">0</div><div class="l" data-i18n="stat.streak">day streak</div></div></div>
     </div>
-    <div class="section"><span id="dayLabel">TODAY</span><button class="ib" id="clear" aria-label="Clear history" title="Clear history" data-i18n-aria="home.clear"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>
-    <div class="list" id="history"></div>
+    <div class="section hist"><span data-i18n="home.history">History</span>
+      <div class="clearwrap"><button class="btn ghost" id="clear" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span data-i18n="home.clear">Clear history</span></button>
+        <div class="clearpop" id="clearPop" hidden>
+          <button data-range="today" data-i18n="home.clearToday">Today</button>
+          <button data-range="7" data-i18n="home.clear7">Last 7 days</button>
+          <button data-range="30" data-i18n="home.clear30">Last 30 days</button>
+          <button data-range="all" data-i18n="home.clearAll">Everything</button>
+        </div></div></div>
+    <div id="history"></div>
   </section>
 
   <section class="page" id="notes">
@@ -611,13 +632,21 @@
     let html = '', last = null;
     h.forEach((e, i) => {
       const d = day(e.ts);
-      if (d !== last && i > 0) html += `</div><div class="section" style="margin-top:28px"><span>${d}</span></div><div class="list">`;
+      if (d !== last) {
+        const start = new Date(e.ts * 1000); start.setHours(0, 0, 0, 0);
+        html += `${last === null ? '' : '</div></div>'}<div class="day"><div class="section"><span>${esc(d)}</span>
+          <button class="ib" data-clearday="${start.getTime() / 1000}" title="${t('home.clearDay')}" aria-label="${t('home.clearDay')}">${I.trash}</button></div><div class="list">`;
+      }
       last = d;
       html += `<div class="row"><div class="t">${time(e.ts)}</div><div class="x">${esc(e.text)}</div>
                <button class="ib c" data-copy="${i}" title="${t('common.copy')}">${I.copy}</button></div>`;
     });
-    $('dayLabel').textContent = h.length ? day(h[0].ts) : t('day.today');
-    $('history').outerHTML = `<div class="list" id="history">${html || `<div class="empty">${t('home.empty')}</div>`}</div>`;
+    $('history').outerHTML = `<div id="history">${html ? html + '</div></div>' : `<div class="list"><div class="empty">${t('home.empty')}</div></div>`}</div>`;
+    $('clear').hidden = !h.length;
+    document.querySelectorAll('[data-clearday]').forEach(b => b.onclick = () => {
+      const from = +b.dataset.clearday, end = new Date(from * 1000); end.setDate(end.getDate() + 1);
+      armed(b, t('home.clearSure'), () => post({ type: 'clearHistory', from, to: end.getTime() / 1000 }));
+    });
     document.querySelectorAll('[data-copy]').forEach(b => b.onclick = () => {
       post({ type: 'copy', text: h[+b.dataset.copy].text }); b.innerHTML = I.check; b.classList.add('done'); });
 
@@ -666,7 +695,19 @@
   window.addEventListener('resize', reportDragRegion);
   window.addEventListener('beforeunload', flushSaves);
   post({ type: 'ready' });   // ask the app for state once the page has loaded
-  $('clear').onclick = () => armed($('clear'), t('home.clearConfirm'), () => post({ type: 'clearHistory' }));
+  const closeClearMenu = () => { $('clearPop').hidden = true; $('clear').setAttribute('aria-expanded', 'false'); };
+  $('clear').onclick = e => { e.stopPropagation(); const open = $('clearPop').hidden;
+    $('clearPop').hidden = !open; $('clear').setAttribute('aria-expanded', String(open)); };
+  document.addEventListener('click', e => { if (!e.target.closest('.clearwrap')) closeClearMenu(); });
+  $('clearPop').querySelectorAll('[data-range]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    armed(b, t('home.clearSure'), () => {
+      const r = b.dataset.range, now = Date.now() / 1000, today = new Date(); today.setHours(0, 0, 0, 0);
+      const from = r === 'today' ? today.getTime() / 1000 : r === 'all' ? null : now - (+r) * 86400;
+      post(from === null ? { type: 'clearHistory' } : { type: 'clearHistory', from });
+      closeClearMenu();
+    });
+  });
 </script>
 </body>
 </html>

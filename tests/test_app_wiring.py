@@ -355,7 +355,13 @@ class AppWiringTest(unittest.TestCase):
         # Transcribe page: history and clear
         app.store.add("hello there", 1.0)
         self.assertEqual(len(app.state_for(b)["history"]), 1)
-        app.handle_message({"type": "clearHistory"}, b)
+        app.store.history[0]["ts"] = 1000.0                                      # an old entry
+        app.store.add("today", 1.0)
+        app.handle_message({"type": "clearHistory", "from": 500, "to": 2000}, b)  # one day / range
+        self.assertEqual([e["text"] for e in app.state_for(b)["history"]], ["today"])
+        app.handle_message({"type": "clearHistory", "from": "yesterday"}, b)      # bad range: nothing cleared
+        self.assertEqual(len(app.state_for(b)["history"]), 1)
+        app.handle_message({"type": "clearHistory"}, b)                           # everything
         self.assertEqual(app.state_for(b)["history"], [])
         # Your words and Shortcuts
         app.handle_message({"type": "saveDictionary", "words": ["Kalam", "مسقط"]}, b)

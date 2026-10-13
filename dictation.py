@@ -246,9 +246,15 @@ class Store:
                                  "words": len(text.split()), "secs": round(seconds, 2)})
             self._save_history()
 
-    def clear_history(self):
+    def clear_history(self, start=None, end=None):
+        """Remove history from start up to end (Unix times); with neither, remove it all."""
         with self._lock:
-            self.history = []
+            if start is None and end is None:
+                self.history = []
+            else:
+                lo = float("-inf") if start is None else start
+                hi = float("inf") if end is None else end
+                self.history = [e for e in self.history if not lo <= e["ts"] < hi]
             self._save_history()
 
     def save_dictionary(self, words):
@@ -795,7 +801,11 @@ if HAS_RUMPS:
             elif kind == "saveSnippets":
                 self.store.save_snippets({str(k): str(v) for k, v in dict(msg.get("snippets", {})).items()})
             elif kind == "clearHistory":
-                self.store.clear_history()
+                num = lambda v: float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else None
+                start, end = num(msg.get("from")), num(msg.get("to"))
+                if ("from" in msg or "to" in msg) and start is None and end is None:
+                    return False                      # a range that didn't make sense: clear nothing
+                self.store.clear_history(start, end)
             elif kind == "saveSettings":
                 changed = self.settings.update(dict(msg.get("changes", {})))
                 self._apply_settings(changed)
