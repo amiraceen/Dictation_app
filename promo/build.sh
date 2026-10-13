@@ -15,7 +15,7 @@ mkdir -p "$OUT"
 
 if [ "${1:-}" = "dynamic" ]; then
   export PAGE=scenes-dynamic.html SIZE=1080x1920
-  MUSIC=music_dynamic.py NAME=kalam-promo-vertical-dynamic POSTER_T=58
+  MUSIC=music_dynamic.py NAME=kalam-promo-vertical-dynamic POSTER_T=58 CRF=23
 elif [ "${1:-}" = "lively" ]; then
   export PAGE=scenes-lively.html SIZE=1080x1920
   MUSIC=music_lively.py NAME=kalam-promo-vertical-lively POSTER_T=58
@@ -35,7 +35,7 @@ python3 "$HERE/$MUSIC" "$WORK/music.wav"
 node "$HERE/render.mjs" frames "$WORK/frames" 30
 
 ffmpeg -y -hide_banner -loglevel error -framerate 30 -i "$WORK/frames/f%05d.jpg" -i "$WORK/music.wav" \
-  -c:v libx264 -preset slow -crf 21 -pix_fmt yuv420p -profile:v high -movflags +faststart \
+  -c:v libx264 -preset slow -crf ${CRF:-21} -pix_fmt yuv420p -profile:v high -movflags +faststart \
   -af "loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000,alimiter=limit=0.7:level=false" -c:a aac -b:a 192k -ar 48000 -shortest "$OUT/$NAME.mp4"
 
 node "$HERE/render.mjs" stills "$WORK/poster" "$POSTER_T"
