@@ -200,7 +200,7 @@ const check = (name, ok, detail = '') => { if (!ok) fails++; console.log(`${ok ?
     await p.click(`.nb[data-p="${id}"]`);
     {
       leftovers.push(...await p.evaluate(pg => {
-        const user = /Weekly sync|Groceries|Decisions|Milk|First thing I said|Kalam|my email|sign off|Best,|a@b\.c|Whisper|⌥|GB|MB|wpm|English|FaceTime|Zoom|Teams|Meet|Slack|WhatsApp|Spotify|Music|Mac|macOS|Siri|Dock|Okay, let us start\.|No internet/g;
+        const user = /Weekly sync|Groceries|Decisions|Milk|First thing I said|Kalam|my email|sign off|Best,|a@b\.c|Whisper|⌥|GB|MB|wpm|English|FaceTime|Zoom|Teams|Meet|Slack|WhatsApp|Spotify|Music|Mac|macOS|Siri|Dock|Okay, let us start\.|No internet|Powered by Amira Hamood/g;
         const out = [], w = document.createTreeWalker(document.getElementById(pg), NodeFilter.SHOW_TEXT);
         while (w.nextNode()) {
           const n = w.currentNode, el = n.parentElement;
@@ -222,6 +222,7 @@ const check = (name, ok, detail = '') => { if (!ok) fails++; console.log(`${ok ?
   for (const id of ['notes', 'clip', 'dict', 'snip', 'settings', 'home']) await p.click(`.nb[data-p="${id}"]`);
   check('Voice test and Experimental tabs are gone', await p.evaluate(() => !document.querySelector('[data-t="tVoice"], [data-t="tExperimental"], #tVoice, #tExperimental')));
   check('Pause music is in System settings', await p.evaluate(() => !!document.querySelector('#tSystem [data-set="pause_media_while_dictating"]')));
+  check('credit line at the bottom', (await p.textContent('.credit')) === 'Powered by Amira Hamood' && await p.isVisible('.credit'));
   check('dark mode: all pages open', await p.evaluate(() => document.getElementById('home').classList.contains('on')));
   await p.close();
 
