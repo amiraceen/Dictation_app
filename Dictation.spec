@@ -22,7 +22,7 @@ hiddenimports += ['ui', 'WebKit', 'PyObjCTools.AppHelper', 'ApplicationServices'
                   'macos', 'meetings', 'notes', 'notetaker', 'settings', 'system', 'speed', 'arabic', 'voicetest', 'models', 'mlx_engine', 'i18n',
                   'mlx_whisper', 'mlx_whisper.transcribe', 'mlx_whisper.audio', 'mlx_whisper.decoding',
                   'mlx_whisper.load_models', 'mlx_whisper.tokenizer', 'mlx_whisper.whisper', 'huggingface_hub', 'certifi',
-                  'EventKit', 'ScreenCaptureKit', 'CoreMedia', 'dispatch']
+                  'ScreenCaptureKit', 'CoreMedia', 'dispatch']
 
 # Word timestamps (numba, SciPy) and model conversion (PyTorch) aren't used: keep them out.
 a = Analysis(['dictation.py'], datas=datas, binaries=binaries, hiddenimports=hiddenimports, noarchive=False,
@@ -42,8 +42,6 @@ app = BUNDLE(
         'CFBundleDisplayName': 'Kalam',
         'LSUIElement': True,   # menu-bar only; Settings → Show app in Dock adds the icon at runtime
         'NSMicrophoneUsageDescription': 'Kalam records your voice while you hold Right Option, and meetings when you start the Notetaker.',
-        'NSCalendarsUsageDescription': 'Kalam shows your next meeting and reminds you to take notes before it starts.',
-        'NSCalendarsFullAccessUsageDescription': 'Kalam shows your next meeting and reminds you to take notes before it starts.',
         'NSAppleEventsUsageDescription': 'Kalam pauses Music or Spotify while you dictate, and can mute your sound.',
         'NSHighResolutionCapable': True,
     },

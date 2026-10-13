@@ -10,7 +10,6 @@ pillow
 pyinstaller
 pynput
 pyobjc-framework-Quartz
-pyobjc-framework-EventKit
 pyobjc-framework-ScreenCaptureKit
 pyobjc-framework-CoreMedia
 pyobjc-framework-libdispatch

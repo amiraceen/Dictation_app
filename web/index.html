@@ -389,11 +389,8 @@
     </div>
 
     <div class="tab" id="tNotetaker">
-      <div class="warn" id="calWarn"><span data-i18n="set.calWarn">Calendar access is off, so meeting heads-ups and the menu-bar countdown can't see your meetings.</span> <a href="#" id="calOpen" data-i18n="set.calOpen">Open Privacy settings</a></div>
       <h2 data-i18n="h.detect">Meeting detection</h2>
       <div class="card">
-        <div class="set"><div class="lbl"><b data-i18n="set.notify">Notify before scheduled meetings start</b><span data-i18n="set.notify.d">Choose when to get a heads-up before a meeting on your calendar starts</span></div><select data-set="notify_before_meeting"></select></div>
-        <div class="set"><div class="lbl"><b data-i18n="set.next">Show your next meeting in the menu bar</b><span data-i18n="set.next.d">Shows the meeting name and a countdown next to the Kalam icon. Turning it off keeps the icon and its meeting menu.</span></div><label class="tog"><input type="checkbox" data-set="show_next_meeting"><span></span></label></div>
         <div class="set"><div class="lbl"><b data-i18n="set.calls">Automatically detect any call</b><span data-i18n="set.calls.d">Notetaker asks if you want to start a note when you join a call</span></div><label class="tog"><input type="checkbox" data-set="auto_detect_calls"><span></span></label></div>
         <div class="set"><div class="lbl"><b data-i18n="set.maxLen">Maximum recording length</b><span data-i18n="set.maxLen.d">Notetaker stops automatically at this length, with a warning shortly before</span></div><select data-set="max_recording_minutes"></select></div>
         <div class="set"><div class="lbl"><b data-i18n="set.stopEnd">Stop Notetaker when a call ends</b><span data-i18n="set.stopEnd.d">Notetaker stops automatically so you don't have to</span></div><label class="tog"><input type="checkbox" data-set="stop_when_call_ends"><span></span></label></div>
@@ -654,7 +651,6 @@
     const label = st.meeting_shortcut.label;
     $('hintKey').textContent = label;
     if (!capturing) $('scText').innerHTML = t('set.shortcut.d', { key: esc(label) }).replace('<b>', '<b style="display:inline">');
-    $('calWarn').classList.toggle('on', S.calendar === 'denied');
     renderModel();
   }
   function renderModel() {
@@ -677,7 +673,6 @@
     S.settings[k] = v;
     post({ type: 'saveSettings', changes: { [k]: v } });
   });
-  $('calOpen').onclick = e => { e.preventDefault(); post({ type: 'openPrivacy', pane: 'calendar' }); };
   $('scrOpen').onclick = e => { e.preventDefault(); post({ type: 'openPrivacy', pane: 'screen' }); };
 
   let capturing = false;

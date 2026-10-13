@@ -20,16 +20,16 @@ const base = () => ({
   stats: { words: 1234, wpm: 140, streak: 3 },
   settings: { dictation_language: 'auto', speech_model: 'small', launch_at_login: false, show_bar_always: false,
     show_in_dock: false, sounds: true, mute_while_dictating: false, pause_media_while_dictating: false,
-    notify_before_meeting: 15, show_next_meeting: true, auto_detect_calls: true, max_recording_minutes: 120,
+    auto_detect_calls: true, max_recording_minutes: 120,
     stop_when_call_ends: true, meeting_shortcut: { label: '⌥ M' }, hide_from_screen_capture: false,
     open_notepad_on_start: true, split_screen_on_join: false, show_live_transcript: true, capture_system_audio: true,
     ui_language: 'en' },
   options: { ui_language: [['en', 'English'], ['ar', 'العربية']], dictation_language: [['auto', 'Arabic or English (auto)'], ['ar', 'Arabic'], ['en', 'English']],
     speech_model: [['small', 'Fast · built in'], ['turbo', 'Accurate · 1.6 GB download']],
-    notify_before_meeting: [[-1, 'Off'], [15, '15 sec'], [60, '1 min']], max_recording_minutes: [[60, '1 hour'], [120, '2 hours']] },
+    max_recording_minutes: [[60, '1 hour'], [120, '2 hours']] },
   notes: [{ id: 'a1', title: 'Weekly sync', created: now - 900, meeting: true, duration: 754, recording: false, preview: 'Decisions' },
           { id: 'b2', title: 'Groceries', created: now - 86400 * 3, meeting: false, duration: 0, recording: false, preview: 'Milk' }],
-  note, notetaker: { active: false }, calendar: 'denied', goto: null,
+  note, notetaker: { active: false }, goto: null,
   model: { choice: 'turbo', active: 'Whisper small', error: 'No internet', ready: false },
   voicetest: { phrases: [{ id: 'gulf-1', dialect: 'Gulf', text: 'وين صرت؟', secs: 2, recorded: true },
                          { id: 'msa-1', dialect: 'MSA', text: 'شكرا', secs: 0, recorded: false }],
@@ -192,8 +192,7 @@ const check = (name, ok, detail = '') => { if (!ok) fails++; console.log(`${ok ?
     m = await last(p);
     check(`toggle ${key}`, m.type === 'saveSettings' && m.changes[key] === !before, JSON.stringify(m));
   }
-  for (const [key, value, expect] of [['dictation_language', 'ar', 'ar'], ['speech_model', 'small', 'small'],
-                                       ['notify_before_meeting', '60', 60], ['max_recording_minutes', '60', 60]]) {
+  for (const [key, value, expect] of [['dictation_language', 'ar', 'ar'], ['speech_model', 'small', 'small'], ['max_recording_minutes', '60', 60]]) {
     const tab = await p.evaluate(k => document.querySelector(`[data-set="${k}"]`).closest('.tab').id, key);
     await p.click(`.tabs button[data-t="${tab}"]`);
     await p.selectOption(`[data-set="${key}"]`, value);
@@ -205,10 +204,7 @@ const check = (name, ok, detail = '') => { if (!ok) fails++; console.log(`${ok ?
   await p.click('#modelRetry');
   check('model Try again', (await last(p)).type === 'retryModel');
   await p.click('.tabs button[data-t="tNotetaker"]');
-  check('calendar warning shows when access is off', await visible(p, '#calWarn'));
-  await p.click('#calOpen');
-  m = await last(p);
-  check('Open Privacy settings (calendar)', m.type === 'openPrivacy' && m.pane === 'calendar', JSON.stringify(m));
+  check('calendar settings are gone', await p.evaluate(() => !document.querySelector('#calWarn, [data-set="notify_before_meeting"], [data-set="show_next_meeting"]')));
   await p.click('#scrOpen');
   m = await last(p);
   check('Open settings (screen recording)', m.type === 'openPrivacy' && m.pane === 'screen', JSON.stringify(m));

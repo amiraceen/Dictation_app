@@ -518,7 +518,6 @@ if HAS_RUMPS:
             self.notes.recover_interrupted()
             self._status = rumps.MenuItem("Loading model…")
             self._notes_item = rumps.MenuItem("Start Notetaker", callback=lambda _: self.toggle_notetaker())
-            self._meeting_item = rumps.MenuItem("No upcoming meetings")
             # Items keep their English names as menu keys; _apply_language sets what's shown.
             self._open_item = rumps.MenuItem("Open Kalam", callback=lambda _: self._open_window())
             self._new_item = rumps.MenuItem("New Note", callback=lambda _: self._new_note())
@@ -529,8 +528,6 @@ if HAS_RUMPS:
                 self._new_item,
                 self._notes_item,
                 self._copy_item,
-                None,
-                self._meeting_item,
                 None,
                 self._status,
                 None,
@@ -560,11 +557,7 @@ if HAS_RUMPS:
                 on_error=lambda msg: ui.on_main(self._notetaker_error, msg),
                 system_audio=macos.SystemAudioCapture,
                 device=_best_input_device)
-            self.calendar = macos.Calendar()
-            self.notifier = meetings.MeetingNotifier()
             self.calls = meetings.CallTracker()
-            self._events, self._events_at, self._cal_status = [], 0.0, None
-            self._next = None
             self._notes_from_call = False
             self._shown_errors = set()
             self._quitting = False
@@ -653,7 +646,6 @@ if HAS_RUMPS:
                 self._status.title = self._status_text(self._last_status)
             if getattr(self, "notetaker", None) is not None:
                 self._update_menu()
-                self._update_meeting_item(time.time())
 
         def _status_text(self, msg):
             key = self._STATUS_KEYS.get(msg)
@@ -687,9 +679,6 @@ if HAS_RUMPS:
             parts = [self._error_mark] if self._error_mark else []
             if getattr(self, "notetaker", None) is not None and self.notetaker.active:
                 parts.append("● " + _clock(self.notetaker.elapsed()))
-            elif getattr(self, "settings", None) is not None and self.settings["show_next_meeting"] \
-                    and getattr(self, "_next", None):
-                parts.append(meetings.menubar_text(self._next, time.time()))
             text = " ".join(parts) or None
             if text != self._title_text:
                 self._title_text = text
@@ -784,11 +773,8 @@ if HAS_RUMPS:
                 self._show_toast(self._t("toast.notReady"), self._t("toast.notReadyBody"),
                                  [(self._t("toast.ok"), None)], timeout=8)
                 return
-            now = time.time()
             if not title:
-                if self._next and abs(self._next["start"] - now) < 15 * 60:
-                    title = self._next["title"]
-                elif self.calls.in_call and self.calls.app:
+                if self.calls.in_call and self.calls.app:
                     title = f"{self.calls.app} call"
                 else:
                     title = "Meeting notes"
@@ -853,7 +839,7 @@ if HAS_RUMPS:
             self._notes_item.title = (self._t("app.stopNotetaker") if self.notetaker.active
                                       else self._t("app.startNotetaker", key=label))
 
-        # ── Once a second: calendar, heads-up, call detection, menu-bar text ──
+        # ── Once a second: call detection, menu-bar text ──
 
         def _tick(self, _=None):
             self._ticks += 1
@@ -864,31 +850,6 @@ if HAS_RUMPS:
                 self._voice_test_stop()                    # forgot to press Stop
                 self._refresh_windows()
             s = self.settings
-            wants_calendar = s["notify_before_meeting"] >= 0 or s["show_next_meeting"]
-            if wants_calendar:
-                if now - self._events_at > 60 or self.calendar.status != self._cal_status:
-                    self._events = self.calendar.events(now)
-                    self._events_at = now
-                    self._cal_status = self.calendar.status
-            else:
-                self._events = []
-            self._next = meetings.next_meeting(self._events, now)
-            self._update_meeting_item(now)
-
-            for e in self.notifier.due(self._events, now, s["notify_before_meeting"]):
-                if self.notetaker.active:
-                    continue
-                left = e["start"] - now
-                title = e["title"]
-                if self.settings["ui_language"] == "en":
-                    when = "is starting" if left <= 1 else f"starts {meetings.format_countdown(left)}"
-                    heading = f"{title} {when}"
-                else:
-                    heading = self._t("toast.meetingNow" if left <= 1 else "toast.meetingSoon", title=title)
-                self._show_toast(heading, self._t("toast.meetingBody"),
-                                 [(self._t("toast.takeNotes"), lambda t=title: self.start_notetaker(title=t)),
-                                  (self._t("toast.dismiss"), None)], timeout=30)
-
             if self._ticks % 2 == 0 and (s["auto_detect_calls"] or
                                           (self.notetaker.active and s["stop_when_call_ends"])):
                 r = macos.mic_used_by_other_app(self_using_mic=self.core.recording or self.notetaker.active)
@@ -904,20 +865,6 @@ if HAS_RUMPS:
                             and s["stop_when_call_ends"]:
                         self.stop_notetaker("call_ended")
             self._refresh_title()
-
-        def _update_meeting_item(self, now):
-            e = self._next
-            if e is None:
-                text = self._t("app.allowCal") if self.calendar.status == "denied" else self._t("app.noMeetings")
-                cb = (lambda _: os.system('open "x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars"')) \
-                    if self.calendar.status == "denied" else None
-            else:
-                at = time.strftime("%I:%M %p", time.localtime(e["start"])).lstrip("0").lower()
-                text = self._t("app.meetingItem", title=e["title"], at=at)
-                cb = lambda _, t=e["title"]: self.start_notetaker(title=t)
-            if self._meeting_item.title != text:
-                self._meeting_item.title = text
-                self._meeting_item.set_callback(cb)
 
         # ── Settings ──
 
@@ -936,8 +883,6 @@ if HAS_RUMPS:
                               self._toast and self._toast.panel):
                         if w:
                             macos.set_hidden_from_capture(w, v)
-                elif k in ("notify_before_meeting", "show_next_meeting"):
-                    self._events_at = 0
                 elif k == "meeting_shortcut":
                     self._update_menu()
                 elif k == "ui_language":
@@ -1004,7 +949,6 @@ if HAS_RUMPS:
             st["note"] = self.notes.get(bridge.note_id) if bridge.note_id else None
             st["notetaker"] = {"active": self.notetaker.active, "note_id": self.notetaker.note_id,
                                "started_at": time.time() - self.notetaker.elapsed()}
-            st["calendar"] = self.calendar.status
             st["model"] = self._model_state()
             st["glass"] = True                    # the window has native frosted glass behind the page
             st["voicetest"] = dict(self.voicetest.state(), recording=self.phrase_rec.phrase_id,
@@ -1114,7 +1058,7 @@ if HAS_RUMPS:
                 self._voice_test_export()
                 return False
             elif kind == "openPrivacy":
-                pane = {"calendar": "Privacy_Calendars", "screen": "Privacy_ScreenCapture",
+                pane = {"screen": "Privacy_ScreenCapture",
                         "mic": "Privacy_Microphone"}.get(msg.get("pane"), "Privacy")
                 os.system(f'open "x-apple.systempreferences:com.apple.preference.security?{pane}"')
                 return False
@@ -1226,7 +1170,7 @@ if __name__ == "__main__":
         w = wave.open(sys.argv[2])
         audio = np.frombuffer(w.readframes(w.getnframes()), np.int16).astype(np.float32) / 32768
         try:     # Notetaker frameworks are imported lazily; make sure the bundle has them
-            import EventKit, ScreenCaptureKit, CoreMedia, dispatch  # noqa: F401
+            import ScreenCaptureKit, CoreMedia, dispatch  # noqa: F401
             print("FRAMEWORKS OK", flush=True)
         except Exception:
             traceback.print_exc()

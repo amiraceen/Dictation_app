@@ -166,65 +166,6 @@ def mic_used_by_other_app(self_using_mic):
         return None
 
 
-# ─── Calendar (EventKit) ─────────────────────────────────────────────────────
-
-class Calendar:
-    """Upcoming events from the macOS Calendar (covers iCloud, Google and Exchange
-    accounts added in System Settings → Internet Accounts)."""
-
-    def __init__(self):
-        self._store = None
-        self._requested = False
-        self.status = "unknown"           # unknown | granted | denied | unavailable
-
-    def _ensure(self):
-        if self._store is not None:
-            return self.status == "granted"
-        try:
-            import EventKit
-        except ImportError:
-            self.status = "unavailable"
-            self._store = False
-            return False
-        self._ek = EventKit
-        self._store = EventKit.EKEventStore.alloc().init()
-        st = EventKit.EKEventStore.authorizationStatusForEntityType_(EventKit.EKEntityTypeEvent)
-        if st == 3:                                   # authorized / full access
-            self.status = "granted"
-        elif st in (1, 2, 4):                         # restricted / denied / write-only
-            self.status = "denied"
-        elif not self._requested:
-            self._requested = True
-
-            def done(granted, _err=None):
-                self.status = "granted" if granted else "denied"
-            if hasattr(self._store, "requestFullAccessToEventsWithCompletion_"):
-                self._store.requestFullAccessToEventsWithCompletion_(done)       # macOS 14+
-            else:
-                self._store.requestAccessToEntityType_completion_(EventKit.EKEntityTypeEvent, done)
-        return self.status == "granted"
-
-    def events(self, now, horizon=86400):
-        if not self._ensure():
-            return []
-        try:
-            from Foundation import NSDate
-            start = NSDate.dateWithTimeIntervalSince1970_(now - 3600)
-            end = NSDate.dateWithTimeIntervalSince1970_(now + horizon)
-            pred = self._store.predicateForEventsWithStartDate_endDate_calendars_(start, end, None)
-            out = []
-            for e in self._store.eventsMatchingPredicate_(pred) or []:
-                if e.status() == 3:                   # EKEventStatusCanceled
-                    continue
-                out.append({"id": str(e.calendarItemIdentifier()), "title": str(e.title() or "Meeting"),
-                            "start": e.startDate().timeIntervalSince1970(),
-                            "end": e.endDate().timeIntervalSince1970(), "all_day": bool(e.isAllDay())})
-            return out
-        except Exception as ex:
-            print(f"Calendar error: {ex}", flush=True)
-            return []
-
-
 # ─── System audio (other meeting participants) via ScreenCaptureKit ──────────
 
 _OutputClass = None

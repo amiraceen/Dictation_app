@@ -39,8 +39,7 @@ class SettingsTest(unittest.TestCase):
 
     def test_rejects_invalid(self):
         s = settings.Settings(self.path)
-        self.assertEqual(s.update({"sounds": "yes", "max_recording_minutes": 7, "nope": 1,
-                                   "notify_before_meeting": True}), [])
+        self.assertEqual(s.update({"sounds": "yes", "max_recording_minutes": 7, "nope": 1}), [])
         self.assertEqual(s.update({"meeting_shortcut": {"keycode": 46, "mods": [], "label": "M"}}), [])
         self.assertFalse(os.path.exists(self.path))
 
@@ -99,37 +98,6 @@ class NotesTest(unittest.TestCase):
 
 
 class MeetingsTest(unittest.TestCase):
-
-    def ev(self, start, end=None, title="Sync", all_day=False, id_="1"):
-        return {"id": id_, "title": title, "start": start, "end": end or start + 1800, "all_day": all_day}
-
-    def test_countdown(self):
-        self.assertEqual(meetings.format_countdown(-5), "now")
-        self.assertEqual(meetings.format_countdown(45), "in 45s")
-        self.assertEqual(meetings.format_countdown(61), "in 2m")
-        self.assertEqual(meetings.format_countdown(3600), "in 1h")
-        self.assertEqual(meetings.format_countdown(3900), "in 1h 5m")
-
-    def test_next_meeting(self):
-        now = 10_000
-        evs = [self.ev(now - 3000, now + 600, id_="long-running"),     # started 50 min ago
-               self.ev(now + 900, id_="later"), self.ev(now + 300, id_="soon"),
-               self.ev(now + 100, all_day=True, id_="allday"),
-               self.ev(now + 13 * 3600, id_="tomorrow")]
-        self.assertEqual(meetings.next_meeting(evs, now)["id"], "soon")
-        self.assertEqual(meetings.next_meeting([self.ev(now - 120, id_="now")], now)["id"], "now")
-        self.assertIsNone(meetings.next_meeting(evs[3:], now))
-        self.assertEqual(meetings.menubar_text(self.ev(now + 300, title="A very long meeting title indeed"), now),
-                         "A very long meeting t… · in 5m")
-
-    def test_notifier_fires_once(self):
-        n = meetings.MeetingNotifier()
-        e = self.ev(1000)
-        self.assertEqual(n.due([e], 980, 15), [])
-        self.assertEqual(n.due([e], 985, 15), [e])
-        self.assertEqual(n.due([e], 990, 15), [])
-        self.assertEqual(n.due([self.ev(1000, id_="2")], 1100, 15), [])    # too late
-        self.assertEqual(n.due([self.ev(2000, id_="3")], 1999, -1), [])    # off
 
     def test_call_tracker_debounce(self):
         t = meetings.CallTracker()

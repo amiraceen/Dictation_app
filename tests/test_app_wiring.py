@@ -172,14 +172,6 @@ DATA_FILES = [("SETTINGS_FILE", "settings.json"), ("NOTES_DIR", "notes"), ("HIST
               ("VOICE_TEST_DIR", "voice_test"), ("MODELS_DIR", "models")]
 
 
-class FakeCalendar:
-    status = "granted"
-    evs = []
-
-    def events(self, now, horizon=86400):
-        return list(self.evs)
-
-
 class FakeStream:
     def __enter__(self):
         return self
@@ -202,7 +194,6 @@ class AppWiringTest(unittest.TestCase):
         data = tempfile.mkdtemp()
         for name, path in DATA_FILES:
             p(dictation, name, os.path.join(data, path))
-        p(macos, "Calendar", FakeCalendar)
         p(macos, "mic_used_by_other_app", lambda self_using_mic: self.mic)
         p(macos, "play_sound", lambda name: self.calls.append(("sound", name)))
         p(macos, "set_hidden_from_capture", lambda w, h: self.calls.append(("hide", h)))
@@ -233,7 +224,7 @@ class AppWiringTest(unittest.TestCase):
     def test_startup_opens_window_and_state_is_complete(self):
         self.assertEqual(self.app._window.shown, 1)
         st = self.app.state_for(self.bridge())
-        for key in ("history", "settings", "options", "notes", "note", "notetaker", "calendar"):
+        for key in ("history", "settings", "options", "notes", "note", "notetaker"):
             self.assertIn(key, st)
         self.assertIn("Start Notetaker (⌥ M)", self.app._notes_item.title)
 
@@ -290,21 +281,6 @@ class AppWiringTest(unittest.TestCase):
         self.assertFalse(note["recording"])
         self.assertEqual(note["transcript"][0]["text"], "hello from the meeting")
         self.assertEqual(Fake.made[-1].title, "Meeting notes saved")
-
-    def test_meeting_heads_up_and_menubar(self):
-        now = time.time()
-        FakeCalendar.evs = [{"id": "e1", "title": "Design review", "start": now + 10, "end": now + 1800,
-                             "all_day": False}]
-        self.addCleanup(setattr, FakeCalendar, "evs", [])
-        self.app._tick()
-        self.assertTrue(self.app.title.startswith("Design review · in "))
-        self.assertTrue(Fake.made[-1].title.startswith("Design review starts in"))
-        self.assertIn("Take notes", self.app._meeting_item.title)
-        Fake.made[-1].buttons[0][1]()                   # "Take notes"
-        self.assertTrue(self.wait_until(lambda: self.app.notetaker.active))
-        self.assertEqual(self.app.notes.get(self.app.notetaker.note_id)["title"], "Design review")
-        self.app.stop_notetaker()
-        self.assertTrue(self.wait_until(lambda: not self.app.notetaker.active))
 
     def test_call_detected_then_ended_stops_notetaker(self):
         tracker = self.app.calls
@@ -494,8 +470,6 @@ class AppWiringTest(unittest.TestCase):
         # Settings links and model retry
         opened = []
         self.patch(dictation.os, "system", opened.append)
-        app.handle_message({"type": "openPrivacy", "pane": "calendar"}, b)
-        self.assertIn("Privacy_Calendars", opened[-1])
         reloads = []
         self.patch(app, "_load_chosen_model", lambda: reloads.append(1))
         app.models.error = "no internet"

@@ -13,8 +13,6 @@ from models import MODEL_OPTIONS
 from i18n import UI_LANGUAGE_OPTIONS
 
 # Option lists shown as drop-downs in the Settings page: (value, label).
-NOTIFY_OPTIONS = [(-1, "Off"), (0, "At start"), (15, "15 sec"), (60, "1 min"),
-                  (120, "2 min"), (300, "5 min")]
 MAX_LENGTH_OPTIONS = [(30, "30 min"), (60, "1 hour"), (120, "2 hours"),
                       (180, "3 hours"), (240, "4 hours")]
 
@@ -38,8 +36,6 @@ DEFAULTS = {
     # Experimental
     "pause_media_while_dictating": False,
     # Notetaker → Meeting detection
-    "notify_before_meeting": 15,          # seconds; -1 = off
-    "show_next_meeting": True,
     "auto_detect_calls": True,
     "max_recording_minutes": 120,
     "stop_when_call_ends": True,
@@ -55,7 +51,6 @@ DEFAULTS = {
 }
 
 _CHOICES = {
-    "notify_before_meeting": {v for v, _ in NOTIFY_OPTIONS},
     "max_recording_minutes": {v for v, _ in MAX_LENGTH_OPTIONS},
     "dictation_language": {v for v, _ in LANGUAGE_OPTIONS},
     "speech_model": {v for v, _ in MODEL_OPTIONS},
@@ -141,6 +136,6 @@ class Settings:
 
 def options():
     """Drop-down choices for the Settings page."""
-    return {"notify_before_meeting": NOTIFY_OPTIONS, "max_recording_minutes": MAX_LENGTH_OPTIONS,
+    return {"max_recording_minutes": MAX_LENGTH_OPTIONS,
             "dictation_language": LANGUAGE_OPTIONS, "speech_model": MODEL_OPTIONS,
             "ui_language": UI_LANGUAGE_OPTIONS}
