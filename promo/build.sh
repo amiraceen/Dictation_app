@@ -4,6 +4,7 @@
 #   promo/build.sh vertical   → kalam-promo-vertical.mp4 + kalam-promo-vertical-poster.png (9:16, 1080×1920)
 #   promo/build.sh calm       → kalam-promo-vertical-calm.mp4 + poster (9:16, calm 3D cut)
 #   promo/build.sh lively     → kalam-promo-vertical-lively.mp4 + poster (9:16, lively cut, 60 s)
+#   promo/build.sh dynamic    → kalam-promo-vertical-dynamic.mp4 + poster (9:16, parallax cut on the supplied backgrounds, 60 s)
 # Needs node + Playwright (Chromium), python3 + numpy + Pillow, and ffmpeg.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -12,7 +13,10 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 mkdir -p "$OUT"
 
-if [ "${1:-}" = "lively" ]; then
+if [ "${1:-}" = "dynamic" ]; then
+  export PAGE=scenes-dynamic.html SIZE=1080x1920
+  MUSIC=music_dynamic.py NAME=kalam-promo-vertical-dynamic POSTER_T=58
+elif [ "${1:-}" = "lively" ]; then
   export PAGE=scenes-lively.html SIZE=1080x1920
   MUSIC=music_lively.py NAME=kalam-promo-vertical-lively POSTER_T=58
 elif [ "${1:-}" = "calm" ]; then
