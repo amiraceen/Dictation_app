@@ -343,7 +343,7 @@ const op = (el, o) => { el.style.opacity = o; };
 const DURATION = 42, DROP = 4.0, BEAT = 0.5;
 // Kick pulse on every beat after the drop.
 let REAL = 0;   // real seconds in the 60 s video
-const pulse = () => (REAL < 5 || REAL > 58) ? 0 : Math.exp(-((REAL - 5) % BEAT) * 9);   // beat after the drop at 5 s
+const pulse = () => 0;   // no beat pulse: the background stays steady so the eye stays on the text
 
 // ── Scenes and whip transitions ─────────────────────────────────────────────
 const SC = [["s1", 0, 8], ["s2", 8, 14], ["s3", 14, 20], ["s4", 20, 28], ["s5", 28, 34], ["s6", 34, 37.5], ["s7", 37.5, 42]];

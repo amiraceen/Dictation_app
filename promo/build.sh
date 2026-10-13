@@ -15,7 +15,7 @@ mkdir -p "$OUT"
 
 if [ "${1:-}" = "dynamic" ]; then
   export PAGE=scenes-dynamic.html SIZE=1080x1920
-  MUSIC=music_dynamic.py NAME=kalam-promo-vertical-dynamic POSTER_T=58 CRF=23
+  MUSIC=music_dynamic.py NAME=kalam-promo-vertical-dynamic POSTER_T=58 CRF=${CRF:-16} ABR=${ABR:-320k}   # top quality; shared by link, not chat
 elif [ "${1:-}" = "lively" ]; then
   export PAGE=scenes-lively.html SIZE=1080x1920
   MUSIC=music_lively.py NAME=kalam-promo-vertical-lively POSTER_T=58
@@ -32,11 +32,14 @@ fi
 
 python3 "$HERE/crop_screens.py"
 python3 "$HERE/$MUSIC" "$WORK/music.wav"
+# Normalise loudness and limit peaks on the WAV first, so the AAC encode stays below 0 dBTP.
+ffmpeg -y -hide_banner -loglevel error -i "$WORK/music.wav" \
+  -af "loudnorm=I=-15:TP=-2:LRA=11,aresample=48000,alimiter=limit=0.63:attack=1:release=60:level=false" -ar 48000 "$WORK/music-norm.wav"
 node "$HERE/render.mjs" frames "$WORK/frames" 30
 
-ffmpeg -y -hide_banner -loglevel error -framerate 30 -i "$WORK/frames/f%05d.jpg" -i "$WORK/music.wav" \
+ffmpeg -y -hide_banner -loglevel error -framerate 30 -i "$WORK/frames/f%05d.jpg" -i "$WORK/music-norm.wav" \
   -c:v libx264 -preset slow -crf ${CRF:-21} -pix_fmt yuv420p -profile:v high -movflags +faststart \
-  -af "loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000,alimiter=limit=0.7:level=false" -c:a aac -b:a 192k -ar 48000 -shortest "$OUT/$NAME.mp4"
+  -c:a aac -b:a ${ABR:-192k} -ar 48000 -shortest "$OUT/$NAME.mp4"
 
 node "$HERE/render.mjs" stills "$WORK/poster" "$POSTER_T"
 cp "$WORK/poster/t$POSTER_T.png" "$OUT/$NAME-poster.png"
