@@ -22,8 +22,9 @@ const base = () => ({
     show_in_dock: false, sounds: true, mute_while_dictating: false, pause_media_while_dictating: false,
     notify_before_meeting: 15, show_next_meeting: true, auto_detect_calls: true, max_recording_minutes: 120,
     stop_when_call_ends: true, meeting_shortcut: { label: '⌥ M' }, hide_from_screen_capture: false,
-    open_notepad_on_start: true, split_screen_on_join: false, show_live_transcript: true, capture_system_audio: true },
-  options: { dictation_language: [['auto', 'Arabic or English (auto)'], ['ar', 'Arabic'], ['en', 'English']],
+    open_notepad_on_start: true, split_screen_on_join: false, show_live_transcript: true, capture_system_audio: true,
+    ui_language: 'en' },
+  options: { ui_language: [['en', 'English'], ['ar', 'العربية']], dictation_language: [['auto', 'Arabic or English (auto)'], ['ar', 'Arabic'], ['en', 'English']],
     speech_model: [['small', 'Fast · built in'], ['turbo', 'Accurate · 1.6 GB download']],
     notify_before_meeting: [[-1, 'Off'], [15, '15 sec'], [60, '1 min']], max_recording_minutes: [[60, '1 hour'], [120, '2 hours']] },
   notes: [{ id: 'a1', title: 'Weekly sync', created: now - 900, meeting: true, duration: 754, recording: false, preview: 'Decisions' },
@@ -179,7 +180,7 @@ const check = (name, ok, detail = '') => { if (!ok) fails++; console.log(`${ok ?
 
   // ── Settings ──
   await p.click('.nb[data-p="settings"]'); await reset(p);
-  for (const t of ['tNotetaker', 'tExperimental', 'tVoice', 'tSystem']) {
+  for (const t of ['tNotetaker', 'tSystem']) {
     await p.click(`.tabs button[data-t="${t}"]`);
     check(`Settings tab ${t}`, await p.evaluate(id => document.getElementById(id).classList.contains('on'), t));
   }
@@ -221,31 +222,48 @@ const check = (name, ok, detail = '') => { if (!ok) fails++; console.log(`${ok ?
   m = await last(p);
   check('new shortcut is sent', m.type === 'setShortcut' && m.code === 'KeyN' && m.mods.includes('ctrl'), JSON.stringify(m));
 
-  // Voice test
-  await p.click('.tabs button[data-t="tVoice"]'); await reset(p);
-  await p.click('[data-vrec="msa-1"]');
+  await p.close();
+
+  // Arabic: choosing it in Settings sends the change; rendering with it flips the page right-to-left
+  p = await open();
+  await p.click('.nb[data-p="settings"]');
+  await p.selectOption('[data-set="ui_language"]', 'ar');
   m = await last(p);
-  check('Voice test: Record', m.type === 'voiceTestRecord' && m.id === 'msa-1', JSON.stringify(m));
-  await p.click('[data-vplay="gulf-1"]');
-  m = await last(p);
-  check('Voice test: Play', m.type === 'voiceTestPlay' && m.id === 'gulf-1', JSON.stringify(m));
-  await reset(p); await p.click('[data-vdel="msa-1"]');
-  check('Voice test: Remove asks first', (await sent(p)).length === 0);
-  await p.click('[data-vdel="msa-1"]');
-  m = await last(p);
-  check('Voice test: Remove on 2nd click', m.type === 'voiceTestRemove' && m.id === 'msa-1', JSON.stringify(m));
-  await p.fill('#vtIn', 'أبي قهوة'); await p.click('#vtAdd .ib');
-  m = await last(p);
-  check('Voice test: Add phrase', m.type === 'voiceTestAdd' && m.text === 'أبي قهوة', JSON.stringify(m));
-  await p.click('#vtRun');
-  check('Voice test: Run test', (await last(p)).type === 'voiceTestRun');
-  await p.click('#vtExport');
-  check('Voice test: Export', (await last(p)).type === 'voiceTestExport');
+  check('App language menu sends ui_language', m.type === 'saveSettings' && m.changes.ui_language === 'ar', JSON.stringify(m));
+  await p.close();
+  const ar = base(); ar.settings.ui_language = 'ar';
+  p = await open('main', ar);
+  check('Arabic: page is right-to-left', await p.evaluate(() => document.documentElement.dir === 'rtl' && document.documentElement.lang === 'ar'));
+  check('Arabic: top bar stays left-to-right', await p.evaluate(() => getComputedStyle(document.querySelector('header')).direction === 'ltr'));
+  const leftovers = [];
+  for (const id of ['home', 'notes', 'clip', 'dict', 'snip', 'settings']) {
+    await p.click(`.nb[data-p="${id}"]`);
+    const tabs = id === 'settings' ? await p.$$eval('#settings [data-t]', b => b.map(x => x.dataset.t)) : [null];
+    for (const t of tabs) {
+      if (t) await p.click(`#settings [data-t="${t}"]`);
+      leftovers.push(...await p.evaluate(pg => {
+        const user = /Weekly sync|Groceries|Decisions|Milk|First thing I said|Kalam|my email|sign off|Best,|a@b\.c|Whisper|⌥|GB|MB|wpm|English|FaceTime|Zoom|Teams|Meet|Slack|WhatsApp|Spotify|Music|Mac|macOS|Siri|Dock|Okay, let us start\.|No internet/g;
+        const out = [], w = document.createTreeWalker(document.getElementById(pg), NodeFilter.SHOW_TEXT);
+        while (w.nextNode()) {
+          const n = w.currentNode, el = n.parentElement;
+          if (!el || !el.offsetParent || el.closest('textarea, input, script, style, svg')) continue;
+          const txt = n.textContent.replace(user, '');
+          if (/[A-Za-z]{3,}/.test(txt)) out.push(pg + ': ' + n.textContent.trim().slice(0, 40));
+        }
+        return out;
+      }, id));
+    }
+  }
+  check('Arabic: no English left on any page', leftovers.length === 0, [...new Set(leftovers)].join(' | '));
+  await p.hover('.nb[data-p="notes"]');
+  check('Arabic: circle preview is in Arabic', (await p.textContent('#peek')).includes('الملاحظات'));
   await p.close();
 
   // Dark mode: every page renders without errors
   p = await open('main', base(), 'dark');
   for (const id of ['notes', 'clip', 'dict', 'snip', 'settings', 'home']) await p.click(`.nb[data-p="${id}"]`);
+  check('Voice test and Experimental tabs are gone', await p.evaluate(() => !document.querySelector('[data-t="tVoice"], [data-t="tExperimental"], #tVoice, #tExperimental')));
+  check('Pause music is in System settings', await p.evaluate(() => !!document.querySelector('#tSystem [data-set="pause_media_while_dictating"]')));
   check('dark mode: all pages open', await p.evaluate(() => document.getElementById('home').classList.contains('on')));
   await p.close();
 

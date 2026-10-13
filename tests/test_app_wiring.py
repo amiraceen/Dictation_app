@@ -506,7 +506,7 @@ class AppWiringTest(unittest.TestCase):
     def test_menu_bar_items(self):
         app = self.app
         items = {i.title: i for i in app.menu if getattr(i, "title", None)}
-        for title in ("Open Kalam", "New Note", "Copy Last Transcription", "Quit"):
+        for title in ("Open Kalam", "New Note", "Copy Last Transcription", "Quit Kalam"):
             self.assertIn(title, items)
         items["Open Kalam"].callback(None)
         self.assertEqual(app._window.shown, 2)
@@ -520,7 +520,12 @@ class AppWiringTest(unittest.TestCase):
         self.assertTrue(app.notetaker.active)
         app._notes_item.callback(None)                                   # Stop
         self.assertTrue(self.wait_until(lambda: not app.notetaker.active))
-        items["Quit"].callback(None)
+        app.handle_message({"type": "saveSettings", "changes": {"ui_language": "ar"}}, None)
+        self.assertEqual(app._open_item.title, "افتح كلام")                # menu follows the app language
+        self.assertEqual(app.settings["ui_language"], "ar")
+        app.handle_message({"type": "saveSettings", "changes": {"ui_language": "en"}}, None)
+        self.assertEqual(app._open_item.title, "Open Kalam")
+        items["Quit Kalam"].callback(None)
         self.assertTrue(rumps_stub.quits)
 
     def test_which_mic_users_count_as_calls(self):

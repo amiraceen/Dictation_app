@@ -106,10 +106,10 @@
   .peek.on { opacity: 1; transform: none; }
   .peek .ph { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; margin-bottom: 8px; }
   .peek .ph i { width: 9px; height: 9px; border-radius: 50%; background: var(--hue); }
-  .peek .ph span { margin-left: auto; color: var(--muted); font-weight: 400; font-size: 12px; }
+  .peek .ph span { margin-inline-start: auto; color: var(--muted); font-weight: 400; font-size: 12px; }
   .peek .pi { padding: 7px 10px; border-radius: 10px; background: var(--card); margin-top: 5px; font-size: 12.5px;
               white-space: nowrap; overflow: hidden; text-overflow: ellipsis; unicode-bidi: plaintext; }
-  .peek .pi small { color: var(--muted); margin-right: 6px; }
+  .peek .pi small { color: var(--muted); margin-inline-end: 6px; }
   .peek .pc { display: flex; flex-wrap: wrap; gap: 5px; }
   .peek .pc b { font-weight: 500; font-size: 12px; padding: 3px 9px; border-radius: 999px; background: var(--card); }
   .peek .pe { color: var(--muted); font-size: 12.5px; padding: 6px 2px 2px; }
@@ -211,7 +211,7 @@
 
   /* Notes */
   #notes.on { display: flex; padding: 0; max-width: none; height: 100%; }
-  .nlist { width: 270px; flex-shrink: 0; border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+  .nlist { width: 270px; flex-shrink: 0; border-inline-end: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
   .nlist .top { padding: 30px 16px 12px; display: flex; flex-direction: column; gap: 10px; }
   .nlist h1 { margin: 0 0 4px; font-size: 22px; }
   .nlist .acts { display: flex; gap: 8px; }
@@ -241,7 +241,7 @@
   .body:focus { border: 0; }
   .body::placeholder { color: var(--off); }
   .tools { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--line); }
-  .tools .right { margin-left: auto; }
+  .tools .right { margin-inline-start: auto; }
   .tx { margin-top: 26px; }
   .tx .seg { display: grid; grid-template-columns: 52px 1fr; gap: 10px; padding: 6px 0; font-size: 14px; }
   .tx .seg span:last-child { unicode-bidi: plaintext; }
@@ -271,10 +271,16 @@
   .tog { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
   .tog input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; z-index: 1; }
   .tog span { position: absolute; inset: 0; border-radius: 999px; background: var(--off); transition: background .15s; }
-  .tog span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
+  .tog span::after { content: ""; position: absolute; top: 3px; inset-inline-start: 3px; width: 20px; height: 20px;
                      border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .15s; }
   .tog input:checked + span { background: var(--grad); }
   .tog input:checked + span::after { transform: translateX(18px); }
+  [dir=rtl] .tog input:checked + span::after { transform: translateX(-18px); }
+  [dir=rtl] .set select { background-position: left 12px center; padding-right: 13px; padding-left: 34px; }
+  /* The top bar keeps the Mac's layout (window buttons on the left) in both languages. */
+  header { direction: ltr; }
+  .section, .tag { text-transform: uppercase; }
+  input, textarea { unicode-bidi: plaintext; }
   .tog input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
   .warn { display: none; margin-bottom: 12px; padding: 10px 16px; border-radius: 14px; font-size: 12.5px;
           background: rgba(255, 169, 40, 0.14); color: var(--ink); }
@@ -290,65 +296,45 @@
   body.notepad #pad { display: block; padding: 40px 22px 24px; }
   body.notepad .editor { padding: 0; overflow: visible; }
 
-  /* Voice test */
-  .vt-sum { display: flex; align-items: center; gap: 22px; padding: 18px 20px; margin-bottom: 14px; }
-  .vt-score .n { font: 600 28px/1 var(--sans); letter-spacing: -0.025em; font-variant-numeric: tabular-nums; }
-  .vt-score .l { color: var(--muted); font-size: 12px; margin-top: 5px; }
-  .vt-meta { flex: 1; color: var(--muted); font-size: 12.5px; line-height: 1.6; }
-  .vt-acts { display: flex; gap: 8px; align-items: center; }
-  .vt-help { color: var(--muted); font-size: 12.5px; margin: 4px 0 12px; }
-  .vt-help b { color: var(--ink); font-weight: 600; }
-  .vt-row { display: grid; grid-template-columns: 78px 1fr auto; gap: 14px; padding: 12px 16px;
-            border-top: 1px solid var(--line); align-items: center; }
-  .vt-row:first-child { border-top: 0; }
-  .vt-row .tag { justify-self: start; }
-  .vt-text { direction: rtl; text-align: right; font-size: 15.5px; line-height: 1.6; }
-  .vt-text.ltr { direction: ltr; text-align: left; }
-  .vt-heard { direction: rtl; text-align: right; font-size: 12.5px; color: var(--muted); margin-top: 3px; }
-  .vt-heard .pct { direction: ltr; display: inline-block; font-weight: 600; margin-left: 6px; }
-  .good { color: var(--good); } .ok { color: var(--ok); } .bad { color: var(--red); }
-  .vt-btns { display: flex; gap: 4px; align-items: center; }
-  .vt-btns .rec { min-width: 74px; justify-content: center; }
-  .vt-btns .rec.on { background: var(--red); color: #fff; }
 </style>
 </head>
 <body>
 <header>
   <div class="brand"><img class="logo" src="img/app-icon.webp" alt=""><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1257.56 324.01" fill="currentColor" class="wordmark" role="img" aria-label="Kalam"><path d="M362.16,86.12c-38.99,0-71.26,8.81-98.67,26.93l-3.03,2,15.44,29.17,3.71-2.59c21.72-15.16,48.02-22.53,80.39-22.53,53.34,0,76.1,20.83,76.1,69.64v12.96c-28.32-15.21-63.17-23.85-96.77-23.85-28.7,0-51.42,6.16-67.54,18.3-16.18,12.2-24.74,30.18-24.74,52.02,0,43.64,33.05,70.75,86.25,70.75,40.02,0,76.12-15.19,102.79-43.02v37.85h35.56v-128.02c0-67.95-34.79-99.6-109.5-99.6ZM436.11,233.18v7.56c-23.04,28.59-59.74,45.63-98.49,45.63-17.35,0-31.46-3.59-40.82-10.38-9.12-6.62-13.74-16.12-13.74-28.25,0-25.35,20.68-38.2,61.45-38.2,33.27,0,66.5,8.6,91.6,23.65Z"/><rect x="534.72" width="35.56" height="313.74"/><path d="M736.38,86.12c-38.99,0-71.26,8.81-98.67,26.93l-3.03,2,15.44,29.17,3.71-2.59c21.72-15.16,48.02-22.53,80.39-22.53,53.34,0,76.1,20.83,76.1,69.64v12.96c-28.32-15.21-63.17-23.85-96.77-23.85-28.7,0-51.42,6.16-67.54,18.3-16.18,12.2-24.74,30.18-24.74,52.02,0,43.64,33.05,70.75,86.25,70.75,40.02,0,76.12-15.19,102.79-43.02v37.85h35.56v-128.02c0-67.95-34.79-99.6-109.5-99.6ZM810.32,233.18v7.56c-23.04,28.59-59.74,45.63-98.49,45.63-17.35,0-31.46-3.59-40.82-10.38-9.12-6.62-13.74-16.12-13.74-28.25,0-25.35,20.68-38.2,61.46-38.2,33.27,0,66.5,8.6,91.6,23.65Z"/><path d="M1179.92,86.12c-33.29,0-62.36,15.07-86.48,44.81-11.38-28.97-35.46-44.81-68.54-44.81-31.18,0-58.18,13.82-80.4,41.13v-35.96h-35.56v222.45h35.56v-149.61c20.51-29.88,44.95-45.03,72.65-45.03,15.67,0,27.69,4.93,35.73,14.64,8.21,9.93,12.38,24.81,12.38,44.23v135.77h35.56v-140.08c0-5.19-.36-10.04-.75-14.72,20.82-26.81,44.42-39.84,72.11-39.84,16.63,0,29.22,4.94,37.42,14.67,8.23,9.77,12.41,24.64,12.41,44.2v135.77h35.56v-140.08c0-55.63-28.3-87.54-77.64-87.54Z"/><path d="M163.74,159.98c-14.3-8.34-30.25-12.51-47.82-12.51h-15.49l60.78-122.91-27.26-11.62L61.69,147.75V7.91H0v316.1h61.69v-141.68h54.24c11.62,0,21.9,2.23,30.84,6.7,8.94,4.47,16.01,10.95,21.23,19.44,5.21,8.49,7.82,18.25,7.82,29.27,0,9.24-2.16,17.81-6.48,25.7-4.32,7.9-10.28,14.15-17.88,18.77-7.6,4.62-16.17,6.93-25.7,6.93h-11.45v34.86h13.68c14.9,0,28.67-3.72,41.34-11.17,12.66-7.44,22.72-17.43,30.17-29.95,7.44-12.51,11.17-26.21,11.17-41.12,0-17.27-4.25-33.14-12.74-47.6-8.49-14.45-19.89-25.85-34.19-34.19Z"/></svg></div>
   <nav>
-    <button class="nb on" data-p="home" aria-label="Transcribe"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
-    <button class="nb" data-p="notes" aria-label="Notes"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg><span class="rec"></span></button>
-    <button class="nb" data-p="clip" aria-label="Clipboard"><svg viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M9.5 10h5M9.5 14h5"/></svg></button>
-    <button class="nb" data-p="dict" aria-label="Your words"><svg viewBox="0 0 24 24"><path d="M3 19 8 5l5 14M4.8 14h6.4"/><circle cx="17.5" cy="15.5" r="3"/><path d="M20.5 12.5V19"/></svg></button>
-    <button class="nb" data-p="snip" aria-label="Shortcuts"><svg viewBox="0 0 24 24"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/></svg></button>
+    <button class="nb on" data-p="home" data-i18n-aria="nav.home" aria-label="Transcribe"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+    <button class="nb" data-p="notes" data-i18n-aria="nav.notes" aria-label="Notes"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg><span class="rec"></span></button>
+    <button class="nb" data-p="clip" data-i18n-aria="nav.clip" aria-label="Clipboard"><svg viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M9.5 10h5M9.5 14h5"/></svg></button>
+    <button class="nb" data-p="dict" data-i18n-aria="nav.dict" aria-label="Your words"><svg viewBox="0 0 24 24"><path d="M3 19 8 5l5 14M4.8 14h6.4"/><circle cx="17.5" cy="15.5" r="3"/><path d="M20.5 12.5V19"/></svg></button>
+    <button class="nb" data-p="snip" data-i18n-aria="nav.snip" aria-label="Shortcuts"><svg viewBox="0 0 24 24"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/></svg></button>
   </nav>
-  <div class="hdr-r"><button class="nb" data-p="settings" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button></div>
+  <div class="hdr-r"><button class="nb" data-p="settings" data-i18n-aria="nav.settings" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button></div>
 </header>
 <div class="peek" id="peek"></div>
 
 <main>
   <section class="page on" id="home">
-    <div class="hero"><img id="heroImg" src="img/header-voice.webp" alt="Write less, speak more."></div>
-    <h1>Transcribe<span class="sub">Everything you've said, kept on this Mac only.</span></h1>
+    <div class="hero"><img id="heroImg" src="img/header-voice.webp" alt="Write less, speak more." data-i18n-alt="hero.alt"></div>
+    <h1><span data-i18n="nav.home">Transcribe</span><span class="sub" data-i18n="home.sub">Everything you've said, kept on this Mac only.</span></h1>
     <div class="pills">
-      <span class="pill"><i class="g-coral"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></i>Hold <kbd>Right ⌥</kbd> to talk</span>
-      <span class="pill"><i class="g-amber"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg></i><kbd id="hintKey">⌥ M</kbd> for meeting notes</span>
+      <span class="pill"><i class="g-coral"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></i><span data-i18n-html="home.holdTalk">Hold <kbd>Right ⌥</kbd> to talk</span></span>
+      <span class="pill"><i class="g-amber"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg></i><span data-i18n-html="home.meetingKey"><kbd id="hintKey">⌥ M</kbd> for meeting notes</span></span>
     </div>
     <div class="stats">
-      <div class="stat"><div class="bub g-coral"><svg viewBox="0 0 24 24"><path d="M5 7V5h14v2M12 5v14M9 19h6"/></svg></div><div><div class="n" id="sWords">0</div><div class="l">total words</div></div></div>
-      <div class="stat"><div class="bub g-violet"><svg viewBox="0 0 24 24"><path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-5"/></svg></div><div><div class="n" id="sWpm">0</div><div class="l">words per minute</div></div></div>
-      <div class="stat"><div class="bub g-amber"><svg viewBox="0 0 24 24"><path d="M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.3 2.4-5.4 3.8-7.6.5 1.7 1.5 2.8 2.7 3.2-.2-2.6.8-5.3 3-7.4.6 3.4 4.5 6 4.5 11.4 0 3.8-3 6.6-7.5 6.6z"/></svg></div><div><div class="n" id="sStreak">0</div><div class="l">day streak</div></div></div>
+      <div class="stat"><div class="bub g-coral"><svg viewBox="0 0 24 24"><path d="M5 7V5h14v2M12 5v14M9 19h6"/></svg></div><div><div class="n" id="sWords">0</div><div class="l" data-i18n="stat.words">total words</div></div></div>
+      <div class="stat"><div class="bub g-violet"><svg viewBox="0 0 24 24"><path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-5"/></svg></div><div><div class="n" id="sWpm">0</div><div class="l" data-i18n="stat.wpm">words per minute</div></div></div>
+      <div class="stat"><div class="bub g-amber"><svg viewBox="0 0 24 24"><path d="M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.3 2.4-5.4 3.8-7.6.5 1.7 1.5 2.8 2.7 3.2-.2-2.6.8-5.3 3-7.4.6 3.4 4.5 6 4.5 11.4 0 3.8-3 6.6-7.5 6.6z"/></svg></div><div><div class="n" id="sStreak">0</div><div class="l" data-i18n="stat.streak">day streak</div></div></div>
     </div>
-    <div class="section"><span id="dayLabel">TODAY</span><button class="ib" id="clear" aria-label="Clear history" title="Clear history"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>
+    <div class="section"><span id="dayLabel">TODAY</span><button class="ib" id="clear" aria-label="Clear history" title="Clear history" data-i18n-aria="home.clear"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>
     <div class="list" id="history"></div>
   </section>
 
   <section class="page" id="notes">
     <div class="nlist">
       <div class="top">
-        <h1>Notes</h1>
+        <h1 data-i18n="nav.notes">Notes</h1>
         <div class="acts">
-          <button class="btn soft" id="newNote"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New</button>
+          <button class="btn soft" id="newNote"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="notes.new">New</span></button>
           <button class="btn" id="ntToggle"><span class="dot"></span>Notetaker</button>
         </div>
       </div>
@@ -358,103 +344,82 @@
   </section>
 
   <section class="page" id="clip">
-    <h1>Clipboard<span class="sub">Everything you say is saved here first. If it didn't land in a text box, click it to copy.</span></h1>
+    <h1><span data-i18n="nav.clip">Clipboard</span><span class="sub" data-i18n="clip.sub">Everything you say is saved here first. If it didn't land in a text box, click it to copy.</span></h1>
     <div class="list" id="clips"></div>
   </section>
 
   <section class="page" id="dict">
-    <h1>Your words<span class="sub">Names, brands and terms Kalam should spell your way.</span></h1>
-    <form class="add" id="dForm"><input id="dIn" placeholder="Add a word, e.g. be'ah, Maal, 144 Arc"><button class="ib go" aria-label="Add" title="Add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></form>
+    <h1><span data-i18n="nav.dict">Your words</span><span class="sub" data-i18n="dict.sub">Names, brands and terms Kalam should spell your way.</span></h1>
+    <form class="add" id="dForm"><input id="dIn" placeholder="Add a word, e.g. be'ah, Maal, 144 Arc" data-i18n-ph="dict.ph"><button class="ib go" aria-label="Add" title="Add" data-i18n-aria="common.add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></form>
     <div class="chips" id="words"></div>
   </section>
 
   <section class="page" id="snip">
-    <h1>Shortcuts<span class="sub">Say the trigger on its own and the full text is typed instead.</span></h1>
-    <form class="add" id="sForm"><input id="sKey" placeholder="Trigger, e.g. my email" style="flex:.6"><input id="sVal" placeholder="Expands to…"><button class="ib go" aria-label="Add" title="Add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></form>
+    <h1><span data-i18n="nav.snip">Shortcuts</span><span class="sub" data-i18n="snip.sub">Say the trigger on its own and the full text is typed instead.</span></h1>
+    <form class="add" id="sForm"><input id="sKey" placeholder="Trigger, e.g. my email" data-i18n-ph="snip.keyPh" style="flex:.6"><input id="sVal" placeholder="Expands to…" data-i18n-ph="snip.valPh"><button class="ib go" aria-label="Add" title="Add" data-i18n-aria="common.add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></form>
     <div class="list" id="snips"></div>
   </section>
 
   <section class="page" id="settings">
-    <h1>Settings</h1>
+    <h1 data-i18n="nav.settings">Settings</h1>
     <div class="tabs">
-      <button data-t="tSystem" class="on"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 19h20"/></svg>System</button>
-      <button data-t="tNotetaker"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Notetaker</button>
-      <button data-t="tExperimental"><svg viewBox="0 0 24 24"><path d="M10 3v6L5 19a1.5 1.5 0 0 0 1.4 2h11.2A1.5 1.5 0 0 0 19 19l-5-10V3M9 3h6M7.5 14h9"/></svg>Experimental</button>
-      <button data-t="tVoice"><svg viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg>Voice test</button>
+      <button data-t="tSystem" class="on"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 19h20"/></svg><span data-i18n="tab.system">System</span></button>
+      <button data-t="tNotetaker"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span data-i18n="tab.notetaker">Notetaker</span></button>
     </div>
 
     <div class="tab on" id="tSystem">
-      <h2>Transcribe</h2>
+      <h2 data-i18n="h.transcribe">Transcribe</h2>
       <div class="card">
-        <div class="set"><div class="lbl"><b>Language</b><span>Pick the language you speak and text appears faster. "Arabic or English" works out which one each time, which takes a little longer.</span></div><select data-set="dictation_language"></select></div>
-        <div class="set"><div class="lbl"><b>Speech model</b><span id="modelNote"></span><div class="bar" id="modelBar" hidden><i></i></div></div><select data-set="speech_model"></select></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.lang">Language</b><span data-i18n="set.lang.d">Pick the language you speak and text appears faster. "Arabic or English" works out which one each time, which takes a little longer.</span></div><select data-set="dictation_language"></select></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.model">Speech model</b><span id="modelNote"></span><div class="bar" id="modelBar" hidden><i></i></div></div><select data-set="speech_model"></select></div>
       </div>
-      <h2>App settings</h2>
+      <h2 data-i18n="h.app">App settings</h2>
       <div class="card">
-        <div class="set"><div class="lbl"><b>Launch app at login</b></div><label class="tog"><input type="checkbox" data-set="launch_at_login"><span></span></label></div>
-        <div class="set"><div class="lbl"><b>Show the Kalam bar at all times</b><span>Keeps the bar at the bottom of the screen, even when you're not dictating.</span></div><label class="tog"><input type="checkbox" data-set="show_bar_always"><span></span></label></div>
-        <div class="set"><div class="lbl"><b>Show app in Dock</b></div><label class="tog"><input type="checkbox" data-set="show_in_dock"><span></span></label></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.uiLang">App language</b><span data-i18n="set.uiLang.d">The language of Kalam's screens and menus.</span></div><select data-set="ui_language"></select></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.login">Launch app at login</b></div><label class="tog"><input type="checkbox" data-set="launch_at_login"><span></span></label></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.bar">Show the Kalam bar at all times</b><span data-i18n="set.bar.d">Keeps the bar at the bottom of the screen, even when you're not dictating.</span></div><label class="tog"><input type="checkbox" data-set="show_bar_always"><span></span></label></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.dock">Show app in Dock</b></div><label class="tog"><input type="checkbox" data-set="show_in_dock"><span></span></label></div>
       </div>
-      <h2>Sound</h2>
+      <h2 data-i18n="h.sound">Sound</h2>
       <div class="card">
-        <div class="set"><div class="lbl"><b>Recording and notification sounds</b></div><label class="tog"><input type="checkbox" data-set="sounds"><span></span></label></div>
-        <div class="set"><div class="lbl"><b>Mute all audio while dictating</b><span>Mutes your Mac's sound while you hold the key, then turns it back on.</span></div><label class="tog"><input type="checkbox" data-set="mute_while_dictating"><span></span></label></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.sounds">Recording and notification sounds</b></div><label class="tog"><input type="checkbox" data-set="sounds"><span></span></label></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.mute">Mute all audio while dictating</b><span data-i18n="set.mute.d">Mutes your Mac's sound while you hold the key, then turns it back on.</span></div><label class="tog"><input type="checkbox" data-set="mute_while_dictating"><span></span></label></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.pause">Pause music while dictating</b><span data-i18n="set.pause.d">Pauses Music and Spotify while you talk instead of muting them, then plays them again.</span></div><label class="tog"><input type="checkbox" data-set="pause_media_while_dictating"><span></span></label></div>
       </div>
     </div>
 
     <div class="tab" id="tNotetaker">
-      <div class="warn" id="calWarn">Calendar access is off, so meeting heads-ups and the menu-bar countdown can't see your meetings. <a href="#" id="calOpen">Open Privacy settings</a></div>
-      <h2>Meeting detection</h2>
+      <div class="warn" id="calWarn"><span data-i18n="set.calWarn">Calendar access is off, so meeting heads-ups and the menu-bar countdown can't see your meetings.</span> <a href="#" id="calOpen" data-i18n="set.calOpen">Open Privacy settings</a></div>
+      <h2 data-i18n="h.detect">Meeting detection</h2>
       <div class="card">
-        <div class="set"><div class="lbl"><b>Notify before scheduled meetings start</b><span>Choose when to get a heads-up before a meeting on your calendar starts</span></div><select data-set="notify_before_meeting"></select></div>
-        <div class="set"><div class="lbl"><b>Show your next meeting in the menu bar</b><span>Shows the meeting name and a countdown next to the Kalam icon. Turning it off keeps the icon and its meeting menu.</span></div><label class="tog"><input type="checkbox" data-set="show_next_meeting"><span></span></label></div>
-        <div class="set"><div class="lbl"><b>Automatically detect any call</b><span>Notetaker asks if you want to start a note when you join a call</span></div><label class="tog"><input type="checkbox" data-set="auto_detect_calls"><span></span></label></div>
-        <div class="set"><div class="lbl"><b>Maximum recording length</b><span>Notetaker stops automatically at this length, with a warning shortly before</span></div><select data-set="max_recording_minutes"></select></div>
-        <div class="set"><div class="lbl"><b>Stop Notetaker when a call ends</b><span>Notetaker stops automatically so you don't have to</span></div><label class="tog"><input type="checkbox" data-set="stop_when_call_ends"><span></span></label></div>
-        <div class="set"><div class="lbl"><b>Keyboard shortcut</b><span id="scText">Press <b style="display:inline">⌥ M</b> to start or stop the Notetaker</span></div><button class="btn soft" id="scBtn">Change shortcut</button></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.notify">Notify before scheduled meetings start</b><span data-i18n="set.notify.d">Choose when to get a heads-up before a meeting on your calendar starts</span></div><select data-set="notify_before_meeting"></select></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.next">Show your next meeting in the menu bar</b><span data-i18n="set.next.d">Shows the meeting name and a countdown next to the Kalam icon. Turning it off keeps the icon and its meeting menu.</span></div><label class="tog"><input type="checkbox" data-set="show_next_meeting"><span></span></label></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.calls">Automatically detect any call</b><span data-i18n="set.calls.d">Notetaker asks if you want to start a note when you join a call</span></div><label class="tog"><input type="checkbox" data-set="auto_detect_calls"><span></span></label></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.maxLen">Maximum recording length</b><span data-i18n="set.maxLen.d">Notetaker stops automatically at this length, with a warning shortly before</span></div><select data-set="max_recording_minutes"></select></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.stopEnd">Stop Notetaker when a call ends</b><span data-i18n="set.stopEnd.d">Notetaker stops automatically so you don't have to</span></div><label class="tog"><input type="checkbox" data-set="stop_when_call_ends"><span></span></label></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.shortcut">Keyboard shortcut</b><span id="scText">Press <b style="display:inline">⌥ M</b> to start or stop the Notetaker</span></div><button class="btn soft" id="scBtn">Change shortcut</button></div>
       </div>
-      <h2>While Notetaker is active</h2>
+      <h2 data-i18n="h.active">While Notetaker is active</h2>
       <div class="card">
-        <div class="set"><div class="lbl"><b>Don't show Notepad and the Kalam bar in screen capture</b><span>Notepad and the bar won't appear in screenshots or when you share your screen. Always ask for consent before transcribing.</span></div><label class="tog"><input type="checkbox" data-set="hide_from_screen_capture"><span></span></label></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.hide">Don't show Notepad and the Kalam bar in screen capture</b><span data-i18n="set.hide.d">Notepad and the bar won't appear in screenshots or when you share your screen. Always ask for consent before transcribing.</span></div><label class="tog"><input type="checkbox" data-set="hide_from_screen_capture"><span></span></label></div>
       </div>
-      <h2>Notepad</h2>
+      <h2 data-i18n="pad.title">Notepad</h2>
       <div class="card">
-        <div class="set"><div class="lbl"><b>Open Notepad when starting Notetaker</b><span>Opens your notes when you start the Notetaker</span></div><label class="tog"><input type="checkbox" data-set="open_notepad_on_start"><span></span></label></div>
-        <div class="set"><div class="lbl"><b>Split the screen when joining</b><span>Puts your meeting on the left and your Notepad on the right, side by side</span></div><label class="tog"><input type="checkbox" data-set="split_screen_on_join"><span></span></label></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.openPad">Open Notepad when starting Notetaker</b><span data-i18n="set.openPad.d">Opens your notes when you start the Notetaker</span></div><label class="tog"><input type="checkbox" data-set="open_notepad_on_start"><span></span></label></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.split">Split the screen when joining</b><span data-i18n="set.split.d">Puts your meeting on the left and your Notepad on the right, side by side</span></div><label class="tog"><input type="checkbox" data-set="split_screen_on_join"><span></span></label></div>
       </div>
-      <h2>Transcript</h2>
+      <h2 data-i18n="notes.transcript">Transcript</h2>
       <div class="card">
-        <div class="set"><div class="lbl"><b>Show live transcript</b><span>See the words appear on screen when the Notetaker is on</span></div><label class="tog"><input type="checkbox" data-set="show_live_transcript"><span></span></label></div>
-        <div class="set"><div class="lbl"><b>Transcribe other participants</b><span>Records what your Mac plays as well as your mic, so everyone on the call is transcribed. macOS asks for Screen &amp; System Audio Recording permission the first time. <a href="#" id="scrOpen">Open settings</a></span></div><label class="tog"><input type="checkbox" data-set="capture_system_audio"><span></span></label></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.live">Show live transcript</b><span data-i18n="set.live.d">See the words appear on screen when the Notetaker is on</span></div><label class="tog"><input type="checkbox" data-set="show_live_transcript"><span></span></label></div>
+        <div class="set"><div class="lbl"><b data-i18n="set.others">Transcribe other participants</b><span><span data-i18n="set.others.d">Records what your Mac plays as well as your mic, so everyone on the call is transcribed. macOS asks for Screen &amp; System Audio Recording permission the first time.</span> <a href="#" id="scrOpen" data-i18n="set.openSettings">Open settings</a></span></div><label class="tog"><input type="checkbox" data-set="capture_system_audio"><span></span></label></div>
       </div>
-    </div>
-
-    <div class="tab" id="tExperimental">
-      <h2>Transcribe</h2>
-      <div class="card">
-        <div class="set"><div class="lbl"><b>Pause music while dictating</b><span>Pauses Music and Spotify instead of muting them, then resumes. This feature is experimental.</span></div><label class="tog"><input type="checkbox" data-set="pause_media_while_dictating"><span></span></label></div>
-      </div>
-    </div>
-
-    <div class="tab" id="tVoice">
-      <div class="card vt-sum">
-        <div class="vt-score"><div class="n" id="vtScore">—</div><div class="l" id="vtScoreLbl">Not tested yet</div></div>
-        <div class="vt-meta" id="vtMeta"></div>
-        <div class="vt-acts">
-          <button class="ib" id="vtExport" aria-label="Export" title="Export the recordings"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></button>
-          <button class="btn" id="vtRun">Run test</button>
-        </div>
-      </div>
-      <div class="warn" id="vtWarn">Language is set to English. For an Arabic test, choose Arabic, or Arabic or English, in System → Language.</div>
-      <p class="vt-help">Click <b>Record</b>, read the phrase the way you'd normally say it, then click <b>Stop</b>. Delete phrases you'd never say and add your own. <b>Run test</b> transcribes your recordings and shows how many words the app got right.</p>
-      <form class="add" id="vtAdd"><input id="vtIn" dir="auto" placeholder="Add your own phrase, e.g. أبي أحجز طاولة لشخصين"><button class="ib go" aria-label="Add" title="Add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></form>
-      <div class="list" id="vtList"></div>
     </div>
   </section>
 
   <section class="page" id="pad"><div class="editor" id="padEditor"></div></section>
 </main>
 
+<script src="strings.js"></script>
 <script>
   const I = {"mic": "<svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5 11a7 7 0 0 0 14 0M12 18v3\"/></svg>", "notes": "<svg viewBox=\"0 0 24 24\"><path d=\"M6 3h9l4 4v14H6z\"/><path d=\"M15 3v4h4M9 12h7M9 16h5\"/></svg>", "clip": "<svg viewBox=\"0 0 24 24\"><rect x=\"6\" y=\"4\" width=\"12\" height=\"17\" rx=\"2\"/><path d=\"M9 4.5V3h6v1.5M9.5 10h5M9.5 14h5\"/></svg>", "words": "<svg viewBox=\"0 0 24 24\"><path d=\"M3 19 8 5l5 14M4.8 14h6.4\"/><circle cx=\"17.5\" cy=\"15.5\" r=\"3\"/><path d=\"M20.5 12.5V19\"/></svg>", "bolt": "<svg viewBox=\"0 0 24 24\"><path d=\"M13 3 5 13.5h6L10 21l8-10.5h-6z\"/></svg>", "settings": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 7h10M18 7h2M4 17h4M12 17h8\"/><circle cx=\"16\" cy=\"7\" r=\"2\"/><circle cx=\"10\" cy=\"17\" r=\"2\"/></svg>", "copy": "<svg viewBox=\"0 0 24 24\"><rect x=\"8\" y=\"8\" width=\"12\" height=\"12\" rx=\"3\"/><path d=\"M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2\"/></svg>", "check": "<svg viewBox=\"0 0 24 24\"><path d=\"M5 12.5 10 17 19 7\"/></svg>", "trash": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3\"/></svg>", "x": "<svg viewBox=\"0 0 24 24\"><path d=\"M6 6l12 12M18 6 6 18\"/></svg>", "plus": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 5v14M5 12h14\"/></svg>", "export": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 4v11M7 10l5 5 5-5M5 20h14\"/></svg>", "side": "<svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"3\"/><path d=\"M14 4v16\"/></svg>", "window": "<svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"3\"/><path d=\"M3 9h18\"/></svg>", "play": "<svg viewBox=\"0 0 24 24\"><path d=\"M8 5.5v13l10-6.5z\"/></svg>", "type": "<svg viewBox=\"0 0 24 24\"><path d=\"M5 7V5h14v2M12 5v14M9 19h6\"/></svg>", "gauge": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 16a8 8 0 1 1 16 0\"/><path d=\"M12 16l4-5\"/></svg>", "flame": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.3 2.4-5.4 3.8-7.6.5 1.7 1.5 2.8 2.7 3.2-.2-2.6.8-5.3 3-7.4.6 3.4 4.5 6 4.5 11.4 0 3.8-3 6.6-7.5 6.6z\"/></svg>", "laptop": "<svg viewBox=\"0 0 24 24\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"11\" rx=\"2\"/><path d=\"M2 19h20\"/></svg>", "cal": "<svg viewBox=\"0 0 24 24\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"15\" rx=\"3\"/><path d=\"M4 10h16M9 3v4M15 3v4\"/></svg>", "flask": "<svg viewBox=\"0 0 24 24\"><path d=\"M10 3v6L5 19a1.5 1.5 0 0 0 1.4 2h11.2A1.5 1.5 0 0 0 19 19l-5-10V3M9 3h6M7.5 14h9\"/></svg>", "wave": "<svg viewBox=\"0 0 24 24\"><path d=\"M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2\"/></svg>"};
   // Header artwork: one of the Kalam banners, picked each time the window opens.
@@ -466,6 +431,31 @@
   let S = { history: [], dictionary: [], snippets: {}, stats: {}, settings: {}, options: {}, notes: [],
             note: null, notetaker: { active: false } };
   let MODE = 'main', lastMode = null;
+
+  // ── Language: every word on screen comes from strings.js (English and Arabic) ──
+  let LANG = null;
+  const t = (key, vars = {}, fallback) => {
+    const e = (window.STRINGS || {})[key];
+    let s = e ? (e[LANG] || e.en) : (fallback !== undefined ? fallback : key);
+    for (const k in vars) s = s.split(`{${k}}`).join(vars[k]);
+    return s;
+  };
+  const LOCALE = () => LANG === 'ar' ? 'ar-u-nu-latn' : [];      // Arabic months, Western digits
+  function applyLang(lang) {
+    LANG = lang === 'ar' ? 'ar' : 'en';
+    document.documentElement.lang = LANG;
+    document.documentElement.dir = LANG === 'ar' ? 'rtl' : 'ltr';
+    const key = esc(((S.settings || {}).meeting_shortcut || {}).label || '⌥ M');
+    document.querySelectorAll('[data-i18n]').forEach(e => e.textContent = t(e.dataset.i18n));
+    document.querySelectorAll('[data-i18n-html]').forEach(e => e.innerHTML = t(e.dataset.i18nHtml, { key }));
+    document.querySelectorAll('[data-i18n-ph]').forEach(e => e.placeholder = t(e.dataset.i18nPh));
+    document.querySelectorAll('[data-i18n-alt]').forEach(e => e.alt = t(e.dataset.i18nAlt));
+    document.querySelectorAll('[data-i18n-aria]').forEach(e => {
+      e.setAttribute('aria-label', t(e.dataset.i18nAria)); if (e.hasAttribute('title')) e.title = t(e.dataset.i18nAria); });
+    document.querySelectorAll('select[data-set]').forEach(e => e.innerHTML = '');   // refilled with the new labels
+    $('scBtn').textContent = t('set.shortcut.btn');
+    $('editor').dataset.note = ''; $('padEditor').dataset.note = '';               // rebuild the note tools
+  }
 
   const showPage = p => {
     document.querySelectorAll('.nb, .page').forEach(e => e.classList.remove('on'));
@@ -484,18 +474,19 @@
   const pe = text => `<div class="pe">${esc(text)}</div>`;
   const PEEK = {
     home: () => { const h = S.history.slice(-3).reverse();
-      return [`${fmt(S.stats.words || 0)} words`, h.map(e => pi(e.text, time(e.ts))).join('') || pe('Hold Right ⌥ and start talking.')]; },
-    notes: () => [S.notetaker.active ? '● Recording' : `${S.notes.length} notes`,
-      S.notes.slice(0, 3).map(n => pi(n.title || 'Untitled note', when(n.created))).join('') || pe('No notes yet.')],
+      return [t('home.peekCount', { n: fmt(S.stats.words || 0) }), h.map(e => pi(e.text, time(e.ts))).join('') || pe(t('home.peekEmpty'))]; },
+    notes: () => [S.notetaker.active ? t('notes.recordingNow') : t('notes.count', { n: S.notes.length }),
+      S.notes.slice(0, 3).map(n => pi(n.title || t('notes.untitled'), when(n.created))).join('') || pe(t('notes.empty'))],
     clip: () => { const h = S.history.slice(-3).reverse();
-      return [`${Math.min(S.history.length, 100)} items`, h.map(e => pi(e.text)).join('') || pe('Nothing copied yet.')]; },
-    dict: () => [`${S.dictionary.length} words`, S.dictionary.length
-      ? `<div class="pc">${S.dictionary.slice(0, 12).map(w => `<b>${esc(w)}</b>`).join('')}</div>` : pe('No words yet.')],
+      return [t('clip.count', { n: Math.min(S.history.length, 100) }), h.map(e => pi(e.text)).join('') || pe(t('clip.peekEmpty'))]; },
+    dict: () => [t('dict.count', { n: S.dictionary.length }), S.dictionary.length
+      ? `<div class="pc">${S.dictionary.slice(0, 12).map(w => `<b>${esc(w)}</b>`).join('')}</div>` : pe(t('dict.empty'))],
     snip: () => { const k = Object.keys(S.snippets);
-      return [`${k.length}`, k.slice(0, 3).map(t => pi(`${t} → ${S.snippets[t]}`)).join('') || pe('No shortcuts yet.')]; },
-    settings: () => { const lang = (S.options.dictation_language || []).find(([v]) => v === S.settings.dictation_language);
-      return ['', pi(lang ? lang[1] : 'Auto-detect', 'Language') + pi(S.settings.meeting_shortcut.label, 'Notetaker')
-        + pi(S.settings.launch_at_login ? 'On' : 'Off', 'Launch at login')]; },
+      return [`${k.length}`, k.slice(0, 3).map(w => pi(`${w} ${LANG === 'ar' ? '←' : '→'} ${S.snippets[w]}`)).join('') || pe(t('snip.empty'))]; },
+    settings: () => {
+      return ['', pi(t('opt.dictation_language.' + S.settings.dictation_language), t('peek.lang'))
+        + pi(S.settings.meeting_shortcut.label, t('peek.notetaker'))
+        + pi(t(S.settings.launch_at_login ? 'common.on' : 'common.off'), t('peek.login'))]; },
   };
   let peekTimer = null;
   function showPeek(btn) {
@@ -505,6 +496,7 @@
     el.innerHTML = `<div class="ph"><i></i>${esc(btn.getAttribute('aria-label'))}<span>${esc(count)}</span></div>${body}`;
     const r = btn.getBoundingClientRect();
     el.style.left = Math.max(10, Math.min(window.innerWidth - 300, r.left + r.width / 2 - 145)) + 'px';
+    el.dir = LANG === 'ar' ? 'rtl' : 'ltr';
     peekTimer = setTimeout(() => el.classList.add('on'), 120);
   }
   function hidePeek() { clearTimeout(peekTimer); $('peek').classList.remove('on'); }
@@ -514,18 +506,19 @@
   });
 
   const fmt = n => n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1) + 'K' : String(n);
-  const time = ts => new Date(ts * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase().replace(' ', '');
-  const day = ts => { const d = new Date(ts * 1000), t = new Date(); const y = new Date(); y.setDate(t.getDate() - 1);
-    if (d.toDateString() === t.toDateString()) return 'TODAY';
-    if (d.toDateString() === y.toDateString()) return 'YESTERDAY';
-    return d.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase(); };
+  const time = ts => { const s = new Date(ts * 1000).toLocaleTimeString(LOCALE(), { hour: 'numeric', minute: '2-digit' });
+    return LANG === 'ar' ? s : s.toLowerCase().replace(' ', ''); };
+  const dayKind = ts => { const d = new Date(ts * 1000), now = new Date(), y = new Date(); y.setDate(now.getDate() - 1);
+    return d.toDateString() === now.toDateString() ? 'today' : d.toDateString() === y.toDateString() ? 'yesterday' : ''; };
+  const day = ts => dayKind(ts) ? t('day.' + dayKind(ts))
+    : new Date(ts * 1000).toLocaleDateString(LOCALE(), { weekday: 'long', month: 'short', day: 'numeric' });
   const clock = secs => { secs = Math.max(0, Math.floor(secs)); const h = Math.floor(secs / 3600),
     m = Math.floor(secs / 60) % 60, s = secs % 60, p = n => String(n).padStart(2, '0');
     return h ? `${h}:${p(m)}:${p(s)}` : `${m}:${p(s)}`; };
-  const dur = secs => secs >= 3600 ? `${Math.floor(secs / 3600)}h ${Math.round(secs / 60) % 60}m`
-                                   : secs >= 60 ? `${Math.round(secs / 60)} min` : `${Math.round(secs)} sec`;
-  const when = ts => { const d = day(ts); return (d === 'TODAY' || d === 'YESTERDAY' ? d[0] + d.slice(1).toLowerCase()
-    : new Date(ts * 1000).toLocaleDateString([], { month: 'short', day: 'numeric' })) + ', ' + time(ts); };
+  const dur = secs => secs >= 3600 ? t('dur.hm', { h: Math.floor(secs / 3600), m: Math.round(secs / 60) % 60 })
+                                   : secs >= 60 ? t('dur.min', { n: Math.round(secs / 60) }) : t('dur.sec', { n: Math.round(secs) });
+  const when = ts => (dayKind(ts) ? t('day.' + dayKind(ts))
+    : new Date(ts * 1000).toLocaleDateString(LOCALE(), { month: 'short', day: 'numeric' })) + (LANG === 'ar' ? '، ' : ', ') + time(ts);
 
   // ── Notes editor (shared by the Notes page and the Notepad window) ──
   const pending = {};          // note id → {title, body} waiting to be saved
@@ -546,25 +539,25 @@
     if (!note) {
       root.dataset.note = '';
       root.innerHTML = MODE === 'notepad'
-        ? `<div class="empty"><p style="margin-bottom:14px">No meeting in progress.</p><button class="btn" data-act="start"><span class="dot"></span>Start Notetaker</button></div>`
-        : `<div class="empty">Select a note, or start a new one.</div>`;
+        ? `<div class="empty"><p style="margin-bottom:14px">${t('notes.noMeeting')}</p><button class="btn" data-act="start"><span class="dot"></span>${t('notes.startNotetaker')}</button></div>`
+        : `<div class="empty">${t('notes.select')}</div>`;
       return;
     }
     if (shown !== note.id) {
       root.dataset.note = note.id;
       root.innerHTML = `
-        <input class="ttl" placeholder="Untitled note" maxlength="300">
+        <input class="ttl" placeholder="${t('notes.untitled')}" maxlength="300">
         <div class="meta-line"></div>
-        <div class="recbar" hidden><span class="live"></span><span class="clock">0:00</span><span class="grow">Notetaker is recording</span>
-          <button class="btn stop" data-act="stop"><span class="dot"></span>Stop</button></div>
-        <textarea class="body" placeholder="Write notes here, or hold Right ⌥ to dictate into them."></textarea>
+        <div class="recbar" hidden><span class="live"></span><span class="clock">0:00</span><span class="grow">${t('notes.recording')}</span>
+          <button class="btn stop" data-act="stop"><span class="dot"></span>${t('notes.stop')}</button></div>
+        <textarea class="body" placeholder="${t('notes.bodyPh')}"></textarea>
         <div class="tx"></div>
         <div class="tools">
-          <button class="ib" data-act="copy" title="Copy as Markdown">${I.copy}</button>
-          <button class="ib" data-act="export" title="Export…">${I.export}</button>
-          ${MODE === 'notepad' ? `<button class="ib" data-act="main" title="Open in Kalam">${I.window}</button>`
-                               : `<button class="ib" data-act="pad" title="Open Notepad">${I.side}</button>`}
-          <button class="ib right" data-act="delete" title="Delete">${I.trash}</button>
+          <button class="ib" data-act="copy" title="${t('notes.copyMd')}">${I.copy}</button>
+          <button class="ib" data-act="export" title="${t('notes.export')}">${I.export}</button>
+          ${MODE === 'notepad' ? `<button class="ib" data-act="main" title="${t('notes.openKalam')}">${I.window}</button>`
+                               : `<button class="ib" data-act="pad" title="${t('notes.openPad')}">${I.side}</button>`}
+          <button class="ib right" data-act="delete" title="${t('notes.delete')}">${I.trash}</button>
         </div>`;
       const ttl = root.querySelector('.ttl'), body = root.querySelector('.body');
       ttl.value = note.title; body.value = note.body;
@@ -579,7 +572,7 @@
         body.value = note.body; autosize(body); }
     }
     const meta = [when(note.created)];
-    if (note.meeting) meta.push('Meeting');
+    if (note.meeting) meta.push(t('notes.meeting'));
     if (note.duration && !rec) meta.push(dur(note.duration));
     root.querySelector('.meta-line').innerHTML = meta.map(esc).join(' · ');
     root.querySelector('.recbar').hidden = !rec;
@@ -591,10 +584,10 @@
     const atBottom = MODE === 'notepad' && scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 40;
     if (!note.meeting && !note.transcript.length) tx.innerHTML = '';
     else if (rec && !S.settings.show_live_transcript)
-      tx.innerHTML = `<div class="section">TRANSCRIPT</div><div class="wait">The transcript will appear here when the Notetaker stops.</div>`;
-    else tx.innerHTML = `<div class="section">TRANSCRIPT</div>` + (note.transcript.map(s =>
+      tx.innerHTML = `<div class="section">${t('notes.transcript')}</div><div class="wait">${t('notes.txLater')}</div>`;
+    else tx.innerHTML = `<div class="section">${t('notes.transcript')}</div>` + (note.transcript.map(s =>
         `<div class="seg"><span class="ts">${clock(s.t)}</span><span>${esc(s.text)}</span></div>`).join('') ||
-        `<div class="wait">${rec ? 'Listening… words appear every few seconds.' : 'Nothing was transcribed.'}</div>`);
+        `<div class="wait">${rec ? t('notes.listening') : t('notes.nothing')}</div>`);
     if (rec && atBottom) scroller.scrollTop = scroller.scrollHeight;
   }
 
@@ -619,7 +612,7 @@
       case 'export': post({ type: 'exportNote', id }); break;
       case 'pad': post({ type: 'openNotepad', id }); break;
       case 'main': post({ type: 'openMain', id }); break;
-      case 'delete': armed(b, 'Click again to delete', () => post({ type: 'deleteNote', id })); break;
+      case 'delete': armed(b, t('notes.deleteConfirm'), () => post({ type: 'deleteNote', id })); break;
     }
   }
   $('editor').onclick = editorClick;
@@ -628,14 +621,14 @@
   function renderNotes() {
     const nt = S.notetaker;
     $('nitems').innerHTML = S.notes.map(n => `<div class="nitem ${S.note && S.note.id === n.id ? 'on' : ''}" data-note="${n.id}">
-        <div class="nt">${n.recording ? '<span class="live"></span>' : ''}${esc(n.title || 'Untitled note')}</div>
-        <div class="nm">${esc(when(n.created))}${n.meeting ? ' · <span class="tag">MEETING</span>' : ''}${n.preview ? ' · ' + esc(n.preview) : ''}</div>
-      </div>`).join('') || '<div class="empty" style="padding:24px 8px">No notes yet.</div>';
-    document.querySelectorAll('[data-note]').forEach(r => r.onclick = () => { flushSaves(); post({ type: 'openNote', id: r.dataset.note }); });
-    const t = $('ntToggle');
-    t.className = nt.active ? 'btn stop' : 'btn';
-    t.innerHTML = `<span class="dot"></span>${nt.active ? 'Stop' : 'Notetaker'}`;
-    t.title = nt.active ? 'Stop the Notetaker' : `Start the Notetaker (${S.settings.meeting_shortcut.label})`;
+        <div class="nt">${n.recording ? '<span class="live"></span>' : ''}${esc(n.title || t('notes.untitled'))}</div>
+        <div class="nm">${esc(when(n.created))}${n.meeting ? ` · <span class="tag">${t('notes.meeting')}</span>` : ''}${n.preview ? ' · ' + esc(n.preview) : ''}</div>
+      </div>`).join('') || `<div class="empty" style="padding:24px 8px">${t('notes.empty')}</div>`;
+    $('nitems').querySelectorAll('[data-note]').forEach(r => r.onclick = () => { flushSaves(); post({ type: 'openNote', id: r.dataset.note }); });
+    const tg = $('ntToggle');
+    tg.className = nt.active ? 'btn stop' : 'btn';
+    tg.innerHTML = `<span class="dot"></span>${nt.active ? t('notes.stop') : t('notes.notetaker')}`;
+    tg.title = nt.active ? t('notes.stopTitle') : t('notes.startTitle', { key: S.settings.meeting_shortcut.label });
     renderEditor($('editor'), S.note);
   }
   $('newNote').onclick = () => { flushSaves(); post({ type: 'newNote' }); };
@@ -647,60 +640,20 @@
     document.querySelectorAll('.recbar .clock').forEach(e => e.textContent = c);
   }, 1000);
 
-  // ── Voice test ──
-  const pctClass = a => a >= 0.9 ? 'good' : a >= 0.7 ? 'ok' : 'bad';
-  function renderVoice() {
-    const v = S.voicetest; if (!v) return;
-    const r = v.results, recorded = v.phrases.filter(p => p.recorded).length;
-    $('vtScore').textContent = r ? Math.round(r.accuracy * 100) + '%' : '—';
-    $('vtScore').className = 'n ' + (r ? pctClass(r.accuracy) : '');
-    $('vtScoreLbl').textContent = v.running ? `Testing ${v.running.done} of ${v.running.total}…`
-      : r ? 'of words right' : 'Not tested yet';
-    const langs = { auto: 'Arabic or English', en: 'English', ar: 'Arabic' };
-    $('vtMeta').innerHTML = `${recorded} of ${v.phrases.length} phrases recorded<br>${esc(v.model)} · Language: ${esc(langs[v.language] || v.language)}` +
-      (r ? `<br>Last run: ${esc(r.model)}, ${esc(langs[r.language] || r.language)}, ${when(r.when)}` : '');
-    $('vtRun').textContent = v.running ? 'Testing…' : 'Run test';
-    $('vtWarn').classList.toggle('on', v.language === 'en');
-    $('vtList').innerHTML = v.phrases.map(p => {
-      const res = r && r.per[p.id], rec = v.recording === p.id;
-      const isLatin = !/[\u0600-\u06FF]/.test(p.text);
-      return `<div class="vt-row">
-        <span class="tag">${esc(p.dialect.toUpperCase())}</span>
-        <div><div class="vt-text ${isLatin ? 'ltr' : ''}">${esc(p.text)}</div>
-          ${res ? `<div class="vt-heard">سمع: ${esc(res.heard || '—')}<span class="pct ${pctClass(1 - res.errors / Math.max(res.words, 1))}">${Math.max(0, Math.round((1 - res.errors / Math.max(res.words, 1)) * 100))}%</span></div>` : ''}</div>
-        <div class="vt-btns">
-          ${p.recorded && !rec ? `<button class="ib" data-vplay="${p.id}" title="Play">${I.play}</button>` : ''}
-          <button class="btn ${rec ? 'rec on' : 'soft rec'}" data-vrec="${p.id}">${rec ? '■ <span class="vt-timer">0:00</span>' : p.recorded ? 'Re-record' : 'Record'}</button>
-          <button class="ib" data-vdel="${p.id}" title="Remove">${I.x}</button>
-        </div></div>`;
-    }).join('') || '<div class="empty">No phrases. Add your own above.</div>';
-    document.querySelectorAll('[data-vrec]').forEach(b => b.onclick = () => post({ type: 'voiceTestRecord', id: b.dataset.vrec }));
-    document.querySelectorAll('[data-vplay]').forEach(b => b.onclick = () => post({ type: 'voiceTestPlay', id: b.dataset.vplay }));
-    document.querySelectorAll('[data-vdel]').forEach(b => b.onclick = () => armed(b, 'Remove?', () => post({ type: 'voiceTestRemove', id: b.dataset.vdel })));
-  }
-  $('vtRun').onclick = () => { if (!S.voicetest.running) post({ type: 'voiceTestRun' }); };
-  $('vtExport').onclick = () => post({ type: 'voiceTestExport' });
-  $('vtAdd').onsubmit = e => { e.preventDefault(); const t = $('vtIn').value.trim(); if (!t) return;
-    post({ type: 'voiceTestAdd', text: t }); $('vtIn').value = ''; };
-  setInterval(() => {
-    const v = S.voicetest; if (!v || !v.recording) return;
-    const t = clock(Date.now() / 1000 - v.rec_started);
-    document.querySelectorAll('.vt-timer').forEach(e => e.textContent = t);
-  }, 250);
-
   // ── Settings ──
   function renderSettings() {
     const st = S.settings;
     document.querySelectorAll('[data-set]').forEach(el => {
       const k = el.dataset.set;
       if (el.tagName === 'SELECT') {
-        if (!el.options.length) el.innerHTML = (S.options[k] || []).map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join('');
+        if (!el.options.length) el.innerHTML = (S.options[k] || []).map(([v, l]) =>
+          `<option value="${v}">${esc(t(`opt.${k}.${v}`, {}, l))}</option>`).join('');
         el.value = String(st[k]);
       } else el.checked = !!st[k];
     });
     const label = st.meeting_shortcut.label;
     $('hintKey').textContent = label;
-    if (!capturing) $('scText').innerHTML = `Press <b style="display:inline">${esc(label)}</b> to start or stop the Notetaker`;
+    if (!capturing) $('scText').innerHTML = t('set.shortcut.d', { key: esc(label) }).replace('<b>', '<b style="display:inline">');
     $('calWarn').classList.toggle('on', S.calendar === 'denied');
     renderModel();
   }
@@ -711,11 +664,11 @@
     if (m.downloading) {
       const pct = Math.round((m.progress || 0) * 100);
       bar.firstChild.style.width = pct + '%';
-      note.textContent = `Downloading the accurate model… ${pct}%. Kalam keeps using ${m.active} until it's ready.`;
-    } else if (m.loading) note.textContent = 'Loading the model…';
-    else if (m.error && !m.ready) note.innerHTML = `Download failed: ${esc(m.error)}. <a href="#" id="modelRetry">Try again</a>`;
-    else if (m.choice === 'turbo') note.textContent = 'Much better with Arabic and dialects. Runs on your Mac\'s graphics chip. Downloaded once (1.6 GB), then works offline.';
-    else note.textContent = 'Built in and fastest. Great for English; weaker with Arabic dialects.';
+      note.textContent = t('model.downloading', { pct, active: m.active });
+    } else if (m.loading) note.textContent = t('model.loading');
+    else if (m.error && !m.ready) note.innerHTML = `${esc(t('model.failed', { error: m.error }))} <a href="#" id="modelRetry">${t('model.retry')}</a>`;
+    else if (m.choice === 'turbo') note.textContent = t('model.turbo');
+    else note.textContent = t('model.small');
     const r = $('modelRetry'); if (r) r.onclick = e => { e.preventDefault(); post({ type: 'retryModel' }); };
   }
   document.querySelectorAll('[data-set]').forEach(el => el.onchange = () => {
@@ -730,11 +683,11 @@
   let capturing = false;
   const MODS = ['Control', 'Alt', 'Shift', 'Meta'];
   const endCapture = () => { capturing = false; $('scBtn').classList.remove('capturing');
-    $('scBtn').textContent = 'Change shortcut'; post({ type: 'captureShortcut', on: false }); renderSettings(); };
+    $('scBtn').textContent = t('set.shortcut.btn'); post({ type: 'captureShortcut', on: false }); renderSettings(); };
   $('scBtn').onclick = () => {
     if (capturing) return endCapture();
-    capturing = true; $('scBtn').classList.add('capturing'); $('scBtn').textContent = 'Cancel';
-    $('scText').textContent = 'Press the new shortcut, e.g. ⌥ M or ⌃⌘ N. Esc cancels.';
+    capturing = true; $('scBtn').classList.add('capturing'); $('scBtn').textContent = t('set.shortcut.cancel');
+    $('scText').textContent = t('set.shortcut.press');
     post({ type: 'captureShortcut', on: true });
   };
   window.addEventListener('keydown', e => {
@@ -743,8 +696,8 @@
     if (e.key === 'Escape') return endCapture();
     if (MODS.includes(e.key)) return;
     const mods = [e.ctrlKey && 'ctrl', e.altKey && 'alt', e.shiftKey && 'shift', e.metaKey && 'cmd'].filter(Boolean);
-    if (!mods.some(m => m !== 'shift')) { $('scText').textContent = 'Use ⌃, ⌥ or ⌘ together with a letter, number or F-key.'; return; }
-    capturing = false; $('scBtn').classList.remove('capturing'); $('scBtn').textContent = 'Change shortcut';
+    if (!mods.some(m => m !== 'shift')) { $('scText').textContent = t('set.shortcut.needMod'); return; }
+    capturing = false; $('scBtn').classList.remove('capturing'); $('scBtn').textContent = t('set.shortcut.btn');
     post({ type: 'setShortcut', code: e.code, mods });
   }, true);
 
@@ -752,12 +705,14 @@
   window.render = (state, mode) => {
     S = state;
     MODE = mode || 'main';
+    const lang = (S.settings || {}).ui_language === 'ar' ? 'ar' : 'en';
+    if (lang !== LANG) applyLang(lang);
     document.body.classList.toggle('notepad', MODE === 'notepad');
     document.body.classList.toggle('recording', !!S.notetaker.active);
     document.body.classList.toggle('noglass', !S.glass);
     if (MODE !== lastMode) { lastMode = MODE; requestAnimationFrame(reportDragRegion); }
     if (MODE === 'notepad') {
-      document.title = 'Notepad';
+      document.title = t('pad.title');
       renderEditor($('padEditor'), S.note);
       return;
     }
@@ -773,17 +728,17 @@
       if (d !== last && i > 0) html += `</div><div class="section" style="margin-top:28px"><span>${d}</span></div><div class="list">`;
       last = d;
       html += `<div class="row"><div class="t">${time(e.ts)}</div><div class="x">${esc(e.text)}</div>
-               <button class="ib c" data-copy="${i}" title="Copy">${I.copy}</button></div>`;
+               <button class="ib c" data-copy="${i}" title="${t('common.copy')}">${I.copy}</button></div>`;
     });
-    $('dayLabel').textContent = h.length ? day(h[0].ts) : 'TODAY';
-    $('history').outerHTML = `<div class="list" id="history">${html || '<div class="empty">Nothing yet. Hold Right ⌥ and start talking.</div>'}</div>`;
+    $('dayLabel').textContent = h.length ? day(h[0].ts) : t('day.today');
+    $('history').outerHTML = `<div class="list" id="history">${html || `<div class="empty">${t('home.empty')}</div>`}</div>`;
     document.querySelectorAll('[data-copy]').forEach(b => b.onclick = () => {
       post({ type: 'copy', text: h[+b.dataset.copy].text }); b.innerHTML = I.check; b.classList.add('done'); });
 
     $('clips').innerHTML = h.slice(0, 100).map((e, i) => `<div class="row clip" data-clip="${i}">
-        <div><div class="x">${esc(e.text)}</div><div class="meta">${day(e.ts).toLowerCase()} · ${time(e.ts)} · ${e.words} words</div></div>
-        <button class="ib" title="Copy">${I.copy}</button></div>`).join('') ||
-      '<div class="empty">Nothing yet. What you say will appear here.</div>';
+        <div><div class="x">${esc(e.text)}</div><div class="meta">${esc(t('clip.meta', { day: day(e.ts), time: time(e.ts), n: e.words }))}</div></div>
+        <button class="ib" title="${t('common.copy')}">${I.copy}</button></div>`).join('') ||
+      `<div class="empty">${t('clip.empty')}</div>`;
     document.querySelectorAll('[data-clip]').forEach(r => r.onclick = () => {
       post({ type: 'copy', text: h[+r.dataset.clip].text });
       document.querySelectorAll('.clip.done').forEach(x => { x.classList.remove('done');
@@ -791,22 +746,21 @@
       const i = r.querySelector('.ib'); r.classList.add('done'); i.innerHTML = I.check; i.classList.add('done'); });
 
     $('words').innerHTML = S.dictionary.map((w, i) =>
-      `<span class="chip">${esc(w)}<button class="ib" data-del="${i}" title="Remove">${I.x}</button></span>`).join('') ||
-      '<div class="empty" style="width:100%">No words yet.</div>';
+      `<span class="chip">${esc(w)}<button class="ib" data-del="${i}" title="${t('common.remove')}">${I.x}</button></span>`).join('') ||
+      `<div class="empty" style="width:100%">${t('dict.empty')}</div>`;
     document.querySelectorAll('[data-del]').forEach(b => b.onclick = () =>
       post({ type: 'saveDictionary', words: S.dictionary.filter((_, i) => i !== +b.dataset.del) }));
 
     const keys = Object.keys(S.snippets);
     $('snips').innerHTML = keys.map(k => `<div class="row snip" style="grid-template-columns:1fr auto">
-        <div class="x"><b>${esc(k)}</b><span class="arrow">→</span><span class="exp">${esc(S.snippets[k])}</span></div>
-        <button class="ib" data-sdel="${esc(k)}" title="Remove">${I.x}</button></div>`).join('') ||
-      '<div class="empty">No shortcuts yet.</div>';
+        <div class="x"><b>${esc(k)}</b><span class="arrow">${LANG === 'ar' ? '←' : '→'}</span><span class="exp">${esc(S.snippets[k])}</span></div>
+        <button class="ib" data-sdel="${esc(k)}" title="${t('common.remove')}">${I.x}</button></div>`).join('') ||
+      `<div class="empty">${t('snip.empty')}</div>`;
     document.querySelectorAll('[data-sdel]').forEach(b => b.onclick = () => {
       const s = { ...S.snippets }; delete s[b.dataset.sdel]; post({ type: 'saveSnippets', snippets: s }); });
 
     renderNotes();
     renderSettings();
-    renderVoice();
   };
 
   $('dForm').onsubmit = e => { e.preventDefault(); const v = $('dIn').value.trim(); if (!v) return;
@@ -826,7 +780,7 @@
   window.addEventListener('resize', reportDragRegion);
   window.addEventListener('beforeunload', flushSaves);
   post({ type: 'ready' });   // ask the app for state once the page has loaded
-  $('clear').onclick = () => armed($('clear'), 'Clear all?', () => post({ type: 'clearHistory' }));
+  $('clear').onclick = () => armed($('clear'), t('home.clearConfirm'), () => post({ type: 'clearHistory' }));
 </script>
 </body>
 </html>

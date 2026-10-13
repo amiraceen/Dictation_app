@@ -20,6 +20,7 @@ import arabic
 from notetaker import clean_transcript
 from speed import DECODE, pick_language, whisper_language
 import models
+import i18n
 
 try:
     import rumps
@@ -75,6 +76,7 @@ NOTES_DIR     = os.path.join(APP_DIR, "notes")
 VOICE_TEST_DIR = os.path.join(APP_DIR, "voice_test")
 MODELS_DIR    = os.path.join(APP_DIR, "models")
 WEB_HTML      = os.path.join(RES_DIR, "web", "index.html")
+STRINGS_JS    = os.path.join(RES_DIR, "web", "strings.js")
 
 # ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -505,6 +507,10 @@ if HAS_RUMPS:
         def __init__(self):
             super().__init__("Kalam", title=None, quit_button=None)
             self.settings = Settings(SETTINGS_FILE)
+            try:
+                i18n.load(STRINGS_JS)
+            except OSError:
+                pass                              # menus fall back to their English keys
             self.notes = NotesStore(NOTES_DIR)
             self.voicetest = voicetest.VoiceTestStore(VOICE_TEST_DIR)
             self.phrase_rec = voicetest.PhraseRecorder(device=_best_input_device)
@@ -513,18 +519,24 @@ if HAS_RUMPS:
             self._status = rumps.MenuItem("Loading model…")
             self._notes_item = rumps.MenuItem("Start Notetaker", callback=lambda _: self.toggle_notetaker())
             self._meeting_item = rumps.MenuItem("No upcoming meetings")
+            # Items keep their English names as menu keys; _apply_language sets what's shown.
+            self._open_item = rumps.MenuItem("Open Kalam", callback=lambda _: self._open_window())
+            self._new_item = rumps.MenuItem("New Note", callback=lambda _: self._new_note())
+            self._copy_item = rumps.MenuItem("Copy Last Transcription", callback=lambda _: self._copy_last())
+            self._quit_item = rumps.MenuItem("Quit", callback=lambda _: self._quit())
             self.menu = [
-                rumps.MenuItem("Open Kalam", callback=lambda _: self._open_window()),
-                rumps.MenuItem("New Note", callback=lambda _: self._new_note()),
+                self._open_item,
+                self._new_item,
                 self._notes_item,
-                rumps.MenuItem("Copy Last Transcription", callback=lambda _: self._copy_last()),
+                self._copy_item,
                 None,
                 self._meeting_item,
                 None,
                 self._status,
                 None,
-                rumps.MenuItem("Quit", callback=lambda _: self._quit()),
+                self._quit_item,
             ]
+            self._ax_item = None
             self._pill = self._window = self._notepad = self._toast = None
             self._error_mark = None
             self._title_text = None
@@ -563,6 +575,7 @@ if HAS_RUMPS:
             self.hotkey.start()
             ui.on_main(self._startup)
             self._ax_item = rumps.MenuItem("⚠️ Allow Accessibility…", callback=lambda _: self._open_ax())
+            self._apply_language()
             self._ax_ok = None
             self._ax_timer = rumps.Timer(self._check_ax, 2)
             self._ax_timer.start()
@@ -621,6 +634,31 @@ if HAS_RUMPS:
             ICON_ERROR:        ("busy.png", True, "!"),
         }
 
+        def _t(self, name, **values):
+            return i18n.tr(name, self.settings["ui_language"], **values)
+
+        _STATUS_KEYS = {"Loading model…": "app.loading", "Loading model… (first run may take a minute)": "app.loading",
+                        "Ready — hold ⌥ Right to dictate": "app.ready", "Recording…": "app.recording",
+                        "Transcribing…": "app.transcribing"}
+
+        def _apply_language(self):
+            """Menu bar menu in the chosen language (the window follows the same setting)."""
+            self._open_item.title = self._t("app.open")
+            self._new_item.title = self._t("app.newNote")
+            self._copy_item.title = self._t("app.copyLast")
+            self._quit_item.title = self._t("app.quit")
+            if self._ax_item is not None:
+                self._ax_item.title = self._t("app.allowAx")
+            if getattr(self, "_last_status", None):
+                self._status.title = self._status_text(self._last_status)
+            if getattr(self, "notetaker", None) is not None:
+                self._update_menu()
+                self._update_meeting_item(time.time())
+
+        def _status_text(self, msg):
+            key = self._STATUS_KEYS.get(msg)
+            return self._t(key) if key else msg
+
         def _set_status(self, icon, msg):
             # Called from worker threads; AppKit must be touched on the main thread.
             ui.on_main(self._apply_status, icon, msg)
@@ -631,7 +669,8 @@ if HAS_RUMPS:
             self.icon = os.path.join(RES_DIR, "menubar", png)
             self._error_mark = mark
             self._refresh_title()
-            self._status.title = msg
+            self._last_status = msg
+            self._status.title = self._status_text(msg)
             if icon in (ICON_RECORDING, ICON_TRANSCRIBING):
                 self._ensure_pill().show_("record" if icon == ICON_RECORDING else "busy")
             elif self._pill is not None:
@@ -742,8 +781,8 @@ if HAS_RUMPS:
                 self._open_notepad(self.notetaker.note_id)
                 return
             if self.core.model is None:
-                self._show_toast("Notetaker isn't ready yet", "The speech model is still loading. Try again in a moment.",
-                                 [("OK", None)], timeout=8)
+                self._show_toast(self._t("toast.notReady"), self._t("toast.notReadyBody"),
+                                 [(self._t("toast.ok"), None)], timeout=8)
                 return
             now = time.time()
             if not title:
@@ -786,33 +825,33 @@ if HAS_RUMPS:
                 rumps.quit_application()
                 return
             note = self.notes.get(note_id) or {}
-            why = {"max_length": "Stopped at the maximum recording length. ",
-                   "call_ended": "Stopped because the call ended. ",
-                   "error": "Stopped because the microphone failed. "}.get(reason, "")
-            self._show_toast("Meeting notes saved", f"{why}{note.get('title') or 'Untitled'} · {_clock(duration)}",
-                             [("Open", lambda: self._open_window(page="notes", note_id=note_id)),
-                              ("Dismiss", None)], timeout=15, sound=False)
+            why = {"max_length": "toast.why.max", "call_ended": "toast.why.call", "error": "toast.why.error"}.get(reason)
+            why = self._t(why) + " " if why else ""
+            self._show_toast(self._t("toast.saved"),
+                             f"{why}{note.get('title') or self._t('notes.untitled')} · {_clock(duration)}",
+                             [(self._t("toast.open"), lambda: self._open_window(page="notes", note_id=note_id)),
+                              (self._t("toast.dismiss"), None)], timeout=15, sound=False)
             if self.settings["sounds"]:
                 macos.play_sound("Pop")
 
         def _notetaker_warning(self, secs_left):
             mins = max(1, round(secs_left / 60))
-            limit = dict(setting_options()["max_recording_minutes"]).get(
-                self.settings["max_recording_minutes"], "")
-            self._show_toast(f"Notetaker stops in {mins} minute{'s' if mins != 1 else ''}",
-                             f"Recordings are limited to {limit}. You can change this in Settings → Notetaker.",
-                             [("OK", None)], timeout=20)
+            m = self.settings["max_recording_minutes"]
+            limit = self._t(f"opt.max_recording_minutes.{m}")
+            self._show_toast(self._t("toast.stopsSoon", n=mins), self._t("toast.limitBody", limit=limit),
+                             [(self._t("toast.ok"), None)], timeout=20)
 
         def _notetaker_error(self, msg):
             print(msg, flush=True)
             if msg in self._shown_errors:
                 return
             self._shown_errors.add(msg)
-            self._show_toast("Notetaker", msg, [("OK", None)], timeout=20)
+            self._show_toast(self._t("notes.notetaker"), msg, [(self._t("toast.ok"), None)], timeout=20)
 
         def _update_menu(self):
             label = self.settings["meeting_shortcut"]["label"]
-            self._notes_item.title = "Stop Notetaker" if self.notetaker.active else f"Start Notetaker ({label})"
+            self._notes_item.title = (self._t("app.stopNotetaker") if self.notetaker.active
+                                      else self._t("app.startNotetaker", key=label))
 
         # ── Once a second: calendar, heads-up, call detection, menu-bar text ──
 
@@ -840,11 +879,15 @@ if HAS_RUMPS:
                 if self.notetaker.active:
                     continue
                 left = e["start"] - now
-                when = "is starting" if left <= 1 else f"starts {meetings.format_countdown(left)}"
                 title = e["title"]
-                self._show_toast(f"{title} {when}", "Start the Notetaker to transcribe it. Always ask for consent first.",
-                                 [("Take notes", lambda t=title: self.start_notetaker(title=t)), ("Dismiss", None)],
-                                 timeout=30)
+                if self.settings["ui_language"] == "en":
+                    when = "is starting" if left <= 1 else f"starts {meetings.format_countdown(left)}"
+                    heading = f"{title} {when}"
+                else:
+                    heading = self._t("toast.meetingNow" if left <= 1 else "toast.meetingSoon", title=title)
+                self._show_toast(heading, self._t("toast.meetingBody"),
+                                 [(self._t("toast.takeNotes"), lambda t=title: self.start_notetaker(title=t)),
+                                  (self._t("toast.dismiss"), None)], timeout=30)
 
             if self._ticks % 2 == 0 and (s["auto_detect_calls"] or
                                           (self.notetaker.active and s["stop_when_call_ends"])):
@@ -852,10 +895,11 @@ if HAS_RUMPS:
                 if r is not None:
                     event = self.calls.update(r[0], now, r[1])
                     if event == "started" and s["auto_detect_calls"] and not self.notetaker.active:
-                        where = f" in {self.calls.app}" if self.calls.app else ""
-                        self._show_toast(f"Call detected{where}", "Take notes for this call? Always ask for consent first.",
-                                         [("Take notes", lambda: self.start_notetaker(from_call=True)),
-                                          ("Not now", None)], timeout=25)
+                        heading = (self._t("toast.call", app=self.calls.app) if self.calls.app
+                                   else self._t("toast.callAny"))
+                        self._show_toast(heading, self._t("toast.callBody"),
+                                         [(self._t("toast.takeNotes"), lambda: self.start_notetaker(from_call=True)),
+                                          (self._t("toast.notNow"), None)], timeout=25)
                     elif event == "ended" and self.notetaker.active and self._notes_from_call \
                             and s["stop_when_call_ends"]:
                         self.stop_notetaker("call_ended")
@@ -864,13 +908,12 @@ if HAS_RUMPS:
         def _update_meeting_item(self, now):
             e = self._next
             if e is None:
-                text = ("Allow Calendar access for meetings…" if self.calendar.status == "denied"
-                        else "No upcoming meetings")
+                text = self._t("app.allowCal") if self.calendar.status == "denied" else self._t("app.noMeetings")
                 cb = (lambda _: os.system('open "x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars"')) \
                     if self.calendar.status == "denied" else None
             else:
                 at = time.strftime("%I:%M %p", time.localtime(e["start"])).lstrip("0").lower()
-                text = f"{e['title']} · {at} — Take notes"
+                text = self._t("app.meetingItem", title=e["title"], at=at)
                 cb = lambda _, t=e["title"]: self.start_notetaker(title=t)
             if self._meeting_item.title != text:
                 self._meeting_item.title = text
@@ -897,6 +940,8 @@ if HAS_RUMPS:
                     self._events_at = 0
                 elif k == "meeting_shortcut":
                     self._update_menu()
+                elif k == "ui_language":
+                    self._apply_language()
                 elif k == "speech_model" and not startup:
                     self._load_chosen_model()
 
@@ -923,9 +968,8 @@ if HAS_RUMPS:
                 ok = self.core.load_model(self.models.path(choice), self.models.label(choice),
                                           self.models.engine(choice))
                 if not ok and choice != "small":
-                    ui.on_main(self._show_toast, "The accurate model didn't start",
-                               "Kalam is using the fast model instead. Details are in the log.",
-                               [("OK", None)], 15)
+                    ui.on_main(self._show_toast, self._t("toast.mlxFailed"), self._t("toast.mlxFailedBody"),
+                               [(self._t("toast.ok"), None)], 15)
                     if self.core.model is None:
                         self.core.load_model(self.models.path("small"), self.models.label("small"))
             finally:
@@ -937,9 +981,8 @@ if HAS_RUMPS:
                 self._model_loading = choice
                 self._load_model_worker(choice)          # already on the download thread
             elif not ok:
-                ui.on_main(self._show_toast, "Couldn't download the accurate model",
-                           f"{self.models.error}. Check your internet connection, then choose "
-                           "it again in Settings → System.", [("OK", None)], 20)
+                ui.on_main(self._show_toast, self._t("toast.dlFailed"),
+                           self._t("toast.dlFailedBody", error=self.models.error), [(self._t("toast.ok"), None)], 20)
             ui.on_main(self._refresh_windows)
 
         def _model_state(self):
@@ -978,7 +1021,7 @@ if HAS_RUMPS:
             except Exception as e:
                 import traceback
                 traceback.print_exc()
-                self._show_toast("That didn't work", f"{msg.get('type')}: {e}", [("OK", None)], timeout=15)
+                self._show_toast(self._t("toast.failed"), f"{msg.get('type')}: {e}", [("OK", None)], timeout=15)
                 return False
 
         def _handle_message(self, msg, bridge):
@@ -1158,7 +1201,7 @@ if HAS_RUMPS:
                 path = str(panel.URL().path())
                 with open(path, "w") as f:
                     f.write(self.notes.to_markdown(note_id))
-                self._show_toast("Note exported", path, [("OK", None)], timeout=6, sound=False)
+                self._show_toast(self._t("toast.exported"), path, [(self._t("toast.ok"), None)], timeout=6, sound=False)
 
         def _quit(self):
             if self.notetaker.active:

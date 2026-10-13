@@ -33,7 +33,7 @@ STATE = {
                  "auto_detect_calls": True, "max_recording_minutes": 120, "stop_when_call_ends": True,
                  "meeting_shortcut": {"label": "⌥ M"}, "hide_from_screen_capture": False,
                  "open_notepad_on_start": True, "split_screen_on_join": False, "show_live_transcript": True,
-                 "capture_system_audio": True},
+                 "capture_system_audio": True, "ui_language": "en"},
     "options": {"dictation_language": [["auto", "Arabic or English (auto)"], ["ar", "Arabic"], ["en", "English"]],
                 "speech_model": [["small", "Fast"], ["turbo", "Accurate"]],
                 "notify_before_meeting": [[15, "15 sec"]], "max_recording_minutes": [[120, "2 hours"]]},
