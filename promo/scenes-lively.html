@@ -21,7 +21,9 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--cream); }
   body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
-  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; perspective: 2200px; perspective-origin: 50% 50%;
+           background: radial-gradient(80% 50% at 20% 85%, rgba(238,122,74,.35), transparent 70%), linear-gradient(180deg, #C9D7E6, #F6DDD3); }
+  .scene { box-shadow: 0 40px 120px -20px rgba(15, 29, 51, 0.4); }
   [lang="ar"] { direction: rtl; unicode-bidi: isolate; }
 
   .scene { position: absolute; inset: 0; overflow: hidden; display: none; }
@@ -34,9 +36,9 @@
   .cap { left: 50px; right: 50px; top: 250px; text-align: center; }
   .cap .en, .cap .ar { opacity: 0; }
   .cap .en { font-size: 70px; font-weight: 600; letter-spacing: -0.028em; line-height: 1.1; }
-  .cap .ar { font-size: 60px; font-weight: 500; color: var(--navy); line-height: 1.45; margin-top: 12px; }
+  .cap .ar { font-size: 64px; font-weight: 600; color: var(--ink); line-height: 1.45; margin-top: 12px; }
   .cap.light .en { color: #fff; text-shadow: 0 2px 24px rgba(15, 29, 51, 0.25); }
-  .cap.light .ar { color: rgba(255, 255, 255, 0.94); text-shadow: 0 2px 24px rgba(15, 29, 51, 0.25); }
+  .cap.light .ar { color: #fff; text-shadow: 0 2px 24px rgba(15, 29, 51, 0.25); }
   kbd { font-family: var(--sans); font-weight: 600; font-size: 0.8em; padding: 0.02em 0.34em; border-radius: 0.28em;
         background: #fff; color: var(--ink); box-shadow: 0 4px 0 rgba(20, 33, 46, 0.12); display: inline-block; line-height: 1.25; }
   kbd .opt { font-family: Inter, sans-serif; font-weight: 500; }
@@ -111,7 +113,7 @@
   .label { left: 0; right: 0; top: 1500px; text-align: center; opacity: 0; }
   .label span { display: inline-flex; gap: 20px; align-items: baseline; padding: 16px 34px; border-radius: 999px; background: rgba(255, 255, 255, 0.94); font-size: 40px; font-weight: 500;
                 box-shadow: 0 20px 40px -18px rgba(20, 33, 46, 0.35); }
-  .label .ar { color: var(--navy); }
+  .label .ar { color: inherit; }
   #lang .to { color: #fff; background: var(--navy); padding: 4px 22px; border-radius: 999px; }
 
   #mac { left: 140px; top: 660px; width: 800px; transform-style: preserve-3d; opacity: 0; }
@@ -129,7 +131,7 @@
                box-shadow: 0 20px 40px -18px rgba(0, 0, 0, 0.45); }
   .no .x { width: 54px; height: 54px; border-radius: 50%; background: var(--coral); display: grid; place-items: center; }
   .no .x svg { width: 26px; height: 26px; stroke: #fff; stroke-width: 3.4; fill: none; stroke-linecap: round; }
-  .no .ar { color: var(--navy); }
+  .no .ar { color: inherit; }
 
   #endicon { left: 440px; top: 1040px; width: 200px; height: 200px; opacity: 0; filter: drop-shadow(0 24px 40px rgba(15, 29, 51, 0.35)); }
   #wordmark { left: 0; right: 0; top: 1280px; margin: 0 auto; height: 104px; width: 376px; fill: #fff; opacity: 0; }
@@ -340,7 +342,7 @@ const tf = (el, s) => { el.style.transform = s; };
 
 const DURATION = 42;
 const SC = [["s1", 0, 8], ["s2", 8, 14], ["s3", 14, 20], ["s4", 20, 28], ["s5", 28, 34], ["s6", 34, 37.5], ["s7", 37.5, 42]];
-const XF = 0.4;     // half-length of a crossfade between scenes
+const XF = 0.45;    // half-length of a 3D swing between scenes
 
 // The one motion used everywhere: fade in while rising a little and settling out of a slight 3D tilt.
 // Optional fade-out at b. Returns the entrance progress.
@@ -372,7 +374,7 @@ function cap(id, t, a, b) {
   const el = $(id);
   el.querySelectorAll(".en, .ar").forEach((line, li) => {
     op(line, 1);
-    units(line).forEach((u, i) => enter(u, t, a + li * 0.2 + i * 0.06, { b, d: 0.7, rise: 34, tilt: 40, rz: i % 2 ? 4 : -4, s0: 0.8, out: 0.3 }));
+    units(line).forEach((u, i) => enter(u, t, a + li * 0.2 + i * 0.06, { b, d: 0.75, rise: 40, tilt: 75, z: -160, rz: i % 2 ? 3 : -3, s0: 0.85, out: 0.3 }));
   });
 }
 function words(el) {
@@ -419,16 +421,27 @@ function rec(el, t, on, busy, off) {
 }
 
 // ── Scenes: soft crossfade, incoming settles from slightly larger, background slowly drifts ──
+// 3D swing: the old scene turns away into depth while the new one swings in from the other side.
+// Direction per cut: [dx, dy] — sideways (rotateY) or up/down (rotateX).
+const SWING = { 8: [1, 0], 14: [0, 1], 20: [-1, 0], 28: [0, 1], 34: [1, 0], 37.5: [0, 1] };
+function swing(el, k, [dx, dy], incoming) {
+  const e = incoming ? 1 - k : -k;                      // +1 … 0 coming in, 0 … -1 going out
+  op(el, incoming ? clamp(k * 1.8) : clamp(1 - k * 1.4));
+  tf(el, `translate(${e * 52 * dx}%, ${e * 40 * dy}%) translateZ(${-Math.abs(e) * 520}px) rotateY(${e * 42 * dx}deg) rotateX(${-e * 36 * dy}deg)`);
+}
 function scenes(t) {
   for (const [id, a, b] of SC) {
     const s = $(id);
     if (t < a - XF || t > b + XF) { s.style.display = "none"; continue; }
     s.style.display = "block";
-    const fin = a === 0 ? eo(prog(t, 0, 0.8)) : eio(prog(t, a - XF, a + XF));
-    const fout = b === DURATION ? 1 : 1 - eio(prog(t, b - XF, b + XF));
-    op(s, Math.min(fin, fout));
     s.style.zIndex = t >= a ? 2 : 1;
-    tf(s, `scale(${1 + (1 - fin) * 0.08 - (1 - fout) * 0.05}) rotate(${(1 - fin) * -1.2}deg)`);
+    if (a === 0 && t < a + XF) { op(s, eo(prog(t, 0, 0.8))); tf(s, `translateZ(${-(1 - eo(prog(t, 0, 1.2))) * 300}px)`); }
+    else if (a > 0 && t < a + XF) swing(s, eio(prog(t, a - XF, a + XF)), SWING[a], true);
+    else if (b < DURATION && t > b - XF) swing(s, eio(prog(t, b - XF, b + XF)), SWING[b], false);
+    else { op(s, 1); tf(s, "none"); }
+    // A gentle camera orbit around the scene's content.
+    const sp = s.querySelector(".space");
+    if (sp) tf(sp, `rotateY(${Math.sin(REAL * 0.3 + a) * 3}deg) rotateX(${Math.cos(REAL * 0.24 + a) * 2}deg)`);
     // Background: a slow push-in with a little lateral drift.
     const u = prog(t, a - XF, b + XF);
     tf(s.querySelector(".bg"), `scale(${1.04 + 0.1 * u + 0.006 * pulse(REAL)}) translate(${Math.sin(REAL * 0.35) * 22}px, ${-u * 40 + Math.cos(REAL * 0.28) * 14}px)`);
@@ -473,8 +486,8 @@ function seeded(seed) { let x = seed; return () => (x = (x * 16807) % 2147483647
 function buildFx() {
   $$(".fx").forEach((layer, si) => {
     const id = layer.closest(".scene").id, cols = FX[id], r = seeded(97 + si * 31);
-    for (let i = 0; i < 14; i++) {
-      const kind = ["pill", "ring", "dot", "spark", "bars", "dot", "spark"][Math.floor(r() * 7)];
+    for (let i = 0; i < 7; i++) {
+      const kind = i % 2 ? "spark" : "bars";
       const depth = r();                                   // 0 far … 1 near
       const size = (kind === "dot" ? 14 + r() * 30 : kind === "spark" ? 26 + r() * 40 : 50 + r() * 90) * (0.7 + depth * 0.7);
       const el = document.createElement("i"), c = cols[i % cols.length];
@@ -551,7 +564,7 @@ function renderAt(T) {
   // 1 · Hook
   if (t < 8.5) {
     cap("c1a", t, 0.3, 3.95); cap("c1b", t, 4.1, 6.45); cap("c1c", t, 6.6, 8.3);
-    enter($("mail"), t, 0.15, { d: 1.2, rise: 60, tilt: 12, extra: sway(0, 2.2) });
+    enter($("mail"), t, 0.15, { d: 1.3, rise: 80, tilt: 34, z: -320, extra: sway(0, 2.2) });
     let s = ""; for (const [tt, v] of SLOW) if (t >= tt) s = v; $("typed").textContent = s;
     typeIn($("dict"), t, 6.55, 0.9);
     const typing = SLOW.some(([tt]) => t >= tt && t < tt + 0.15) || (t > 6.55 && t < 7.5);
@@ -569,7 +582,7 @@ function renderAt(T) {
     cap("c2", t, 8.2, 14.3);
     $$("#s2 .card").forEach((c, i) => {
       const a = CARDS[i];
-      enter(c, t, a, { d: 1.0, rise: 46, tilt: 16, z: -60, extra: sway(i * 1.3, 1.6) });
+      enter(c, t, a, { d: 1.0, rise: 60, tilt: 55, ry: i % 2 ? -14 : 14, z: -380, extra: sway(i * 1.3, 1.6) });
       typeIn(c.querySelector("[data-text]"), t, a + 0.65, 0.55);
       rec(c._rec, t, a + 0.1, a + 0.55, a + 0.65);
     });
@@ -578,42 +591,45 @@ function renderAt(T) {
   // 3 · Arabic + English
   if (t > 13.5 && t < 20.5) {
     cap("c3", t, 14.2, 20.3);
-    enter($("toggle"), t, 14.45, { d: 0.9, rise: 30, tilt: 14 });
+    enter($("toggle"), t, 14.45, { d: 0.9, rise: 40, tilt: 55, z: -250 });
     // Knob: fades in under العربية at 15.0, glides to English at 16.9.
     const g = eio(prog(t, 16.9, 17.45));
     $("knob").style.left = (400 - 390 * g) + "px";
     op($("knob"), eo(prog(t, 15.0, 15.4)));
     $("optAr").style.color = t >= 15.1 && t < 17.1 ? "var(--navy)" : "#fff";
     $("optEn").style.color = t >= 17.1 ? "var(--navy)" : "#fff";
-    enter($("r1"), t, 15.6, { d: 0.9, rise: 40, tilt: 0, ry: -14 });
-    enter($("r2"), t, 17.3, { d: 0.9, rise: 40, tilt: 0, ry: -14 });
+    enter($("r1"), t, 15.6, { d: 0.9, rise: 40, tilt: 0, ry: -55, z: -220 });
+    enter($("r2"), t, 17.3, { d: 0.9, rise: 40, tilt: 0, ry: -55, z: -220 });
     if (t < 16.1) rec($("rec3"), t, 14.6, 15.5, 15.6); else rec($("rec3"), t, 16.3, 17.2, 17.3);
-    $$("#s3 .chip").forEach((c, i) => enter(c, t, 18.0 + i * 0.14, { d: 0.8, rise: 30, tilt: 20 }));
+    $$("#s3 .chip").forEach((c, i) => enter(c, t, 18.0 + i * 0.14, { d: 0.8, rise: 30, tilt: 0, ry: i % 2 ? -75 : 75, z: -160 }));
   }
 
   // 4 · Smart touches: three beats that crossfade
   if (t > 19.5 && t < 28.5) {
-    const beat = (id, a, b) => {
-      const el = $(id), fin = a === 20 ? 1 : eio(prog(t, a - 0.3, a + 0.3)), fout = b === 28 ? 1 : 1 - eio(prog(t, b - 0.3, b + 0.3));
-      op(el, Math.min(fin, fout)); el.style.display = t > a - 0.35 && t < b + 0.35 ? "block" : "none";
+    const beat = (id, a, b, dir) => {
+      const el = $(id);
+      el.style.display = t > a - 0.36 && t < b + 0.36 ? "block" : "none";
+      if (a > 20 && t < a + 0.35) swing(el, eio(prog(t, a - 0.35, a + 0.35)), dir, true);
+      else if (b < 28 && t > b - 0.35) swing(el, eio(prog(t, b - 0.35, b + 0.35)), [-1, 0], false);
+      else { op(el, 1); tf(el, "none"); }
     };
-    beat("b4a", 20, 22.75); beat("b4b", 22.75, 25.35); beat("b4c", 25.35, 28);
+    beat("b4a", 20, 22.75, [1, 0]); beat("b4b", 22.75, 25.35, [1, 0]); beat("b4c", 25.35, 28, [1, 0]);
     // a) "Meet at 3, no wait, 4" → "Meet at 4."
     cap("c4a", t, 20.2, 23.2);
     $$("#b4a .big .u").forEach((u, i) => enter(u, t, [20.5, 21.0, 21.5][i], { d: 0.8, rise: 36, tilt: 22 }));
     $("st1").style.setProperty("--k", eio(prog(t, 21.75, 22.1)));
     op($("st1"), 1 - 0.55 * prog(t, 22.0, 22.3));
-    enter($("ra"), t, 22.05, { d: 1.0, rise: 50, tilt: 16, extra: sway(0.5, 1.5) });
+    enter($("ra"), t, 22.05, { d: 1.0, rise: 50, tilt: 80, z: -220, extra: sway(0.5, 1.5) });
     // b) the real Shortcuts screen, a slow push towards the "sign off" row
     cap("c4b", t, 22.9, 25.8);
     const z = eio(prog(t, 23.1, 24.0)), sc = 940 / 1933;
     const w = $("sbwrap");
     w.style.transformOrigin = `${970 * sc}px ${512 * sc}px`;
-    enter(w, t, 22.95, { d: 1.1, rise: 50, tilt: 14, ry: -8, extra: `scale(${1 + 0.32 * z})` });
+    enter(w, t, 22.95, { d: 1.1, rise: 60, tilt: 35, ry: -28, z: -300, extra: `scale(${1 + 0.32 * z})` });
     const hl = $("hl"); hl.style.left = (130 * sc) + "px"; hl.style.top = (455 * sc) + "px"; hl.style.width = (1680 * sc) + "px"; hl.style.height = (115 * sc) + "px";
     op(hl, eo(prog(t, 23.5, 23.9)));
     enter($("sbsay"), t, 23.6, { b: 24.15, d: 0.6, rise: 30, tilt: 0, out: 0.3 });
-    enter($("rb"), t, 24.1, { d: 0.9, rise: 40, tilt: 16 });
+    enter($("rb"), t, 24.1, { d: 0.9, rise: 40, tilt: 80, z: -220 });
     // c) the filler words fade and close up
     cap("c4c", t, 25.5, 28.3);
     $$("#b4c .big > .u").forEach((u, i) => enter(u, t, 25.75 + i * 0.12, { d: 0.8, rise: 30, tilt: 18 }));
@@ -623,7 +639,7 @@ function renderAt(T) {
       op(el, 1 - f); el.style.maxWidth = t < a ? "none" : (el._w * (1 - k)) + "px";
       el.style.paddingLeft = el.style.paddingRight = (14 * (1 - k)) + "px";
     });
-    enter($("rc"), t, 26.9, { d: 1.0, rise: 50, tilt: 16 });
+    enter($("rc"), t, 26.9, { d: 1.0, rise: 50, tilt: 80, z: -220 });
   }
 
   // 5 · Bilingual app
@@ -640,19 +656,19 @@ function renderAt(T) {
     });
     $$("#s5 .deck img.d").forEach((im, i) => {
       const dim = eio(prog(t, home, home + 0.5));
-      const k = enter(im, t, deal[i], { d: 0.9, rise: 60, tilt: 0, ry: -24, z: -120 });
+      const k = enter(im, t, deal[i], { d: 0.9, rise: 60, tilt: 12, ry: -60, z: -360 });
       op(im, parseFloat(im.style.opacity) * (1 - 0.9 * dim));
     });
     $$("#s5 .label").forEach((l, i) => { if (i < 4) enter(l, t, deal[i] + 0.05, { b: i < 3 ? deal[i + 1] + 0.05 : home, d: 0.5, rise: 16, tilt: 0, out: 0.2 }); });
     enter($("lang"), t, 30.45, { b: 33.9, d: 0.7, rise: 20, tilt: 0 });
     const rot = 180 * eio(prog(t, 30.95, 31.95));
-    enter($("flip"), t, home, { d: 1.0, rise: 70, tilt: 10, z: -80, extra: `rotateY(${rot}deg)` });
+    enter($("flip"), t, home, { d: 1.1, rise: 80, tilt: 30, z: -360, extra: `rotateY(${rot}deg)` });
   }
 
   // 6 · Privacy
   if (t > 33.5 && t < 38) {
     cap("c6", t, 34.2, 37.8);
-    enter($("mac"), t, 34.1, { d: 1.2, rise: 60, tilt: 18, extra: sway(1, 1.6) });
+    enter($("mac"), t, 34.1, { d: 1.2, rise: 70, tilt: 45, z: -380, extra: sway(1, 1.6) });
     const lk = eq(prog(t, 34.55, 35.3));
     op($("lock"), lk); tf($("lock"), `scale(${1.12 - 0.12 * lk})`);
     $$("#s6 .halo").forEach((h, i) => {
@@ -660,12 +676,12 @@ function renderAt(T) {
       h.style.width = h.style.height = s + "px"; h.style.marginLeft = h.style.marginTop = (-s / 2) + "px";
       op(h, t > 34.6 ? (1 - ph) * 0.7 : 0);
     });
-    $$("#s6 .no").forEach((c, i) => enter(c, t, 35.0 + i * 0.4, { d: 0.9, rise: 34, tilt: 20 }));
+    $$("#s6 .no").forEach((c, i) => enter(c, t, 35.0 + i * 0.4, { d: 0.9, rise: 30, tilt: 0, ry: 80, z: -200 }));
   }
 
   // 7 · End card
   if (t > 37) {
-    enter($("endicon"), t, 38.0, { d: 1.2, rise: 30, tilt: 0, ry: 18 });
+    enter($("endicon"), t, 38.0, { d: 1.4, rise: 30, tilt: 0, ry: 180, z: -300 });
     enter($("wordmark"), t, 38.45, { d: 1.0, rise: 24, tilt: 0 });
     enter($("tagen"), t, 38.95, { d: 1.0, rise: 24, tilt: 0 });
     enter($("tagar"), t, 39.35, { d: 1.0, rise: 24, tilt: 0 });
