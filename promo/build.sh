@@ -2,6 +2,7 @@
 # Builds the Kalam promo into brag-output/.
 #   promo/build.sh            → kalam-promo.mp4 + kalam-promo-poster.png            (16:9, 1920×1080)
 #   promo/build.sh vertical   → kalam-promo-vertical.mp4 + kalam-promo-vertical-poster.png (9:16, 1080×1920)
+#   promo/build.sh calm       → kalam-promo-vertical-calm.mp4 + poster (9:16, calm 3D cut)
 # Needs node + Playwright (Chromium), python3 + numpy + Pillow, and ffmpeg.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -10,7 +11,10 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 mkdir -p "$OUT"
 
-if [ "${1:-}" = "vertical" ]; then
+if [ "${1:-}" = "calm" ]; then
+  export PAGE=scenes-calm.html SIZE=1080x1920
+  MUSIC=music_calm.py NAME=kalam-promo-vertical-calm POSTER_T=41
+elif [ "${1:-}" = "vertical" ]; then
   export PAGE=scenes-vertical.html SIZE=1080x1920
   MUSIC=music_vertical.py NAME=kalam-promo-vertical POSTER_T=40
 else
