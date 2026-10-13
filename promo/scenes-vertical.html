@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kalam promo · vertical</title>
+<style>
+  @font-face { font-family: "Readex Pro"; font-weight: 160 700; src: url(assets/readex-pro-arabic-wght-normal.woff2) format("woff2");
+    unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0898-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+  @font-face { font-family: "Readex Pro"; font-weight: 160 700; src: url(assets/readex-pro-latin-ext-wght-normal.woff2) format("woff2");
+    unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  @font-face { font-family: "Readex Pro"; font-weight: 160 700; src: url(assets/readex-pro-latin-wght-normal.woff2) format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+  :root {
+    --sky: #3E95D1; --deep: #1C5E9B; --orange: #FD6D39; --sun: #F0A623; --teal: #1E7F86; --ink: #10222B;
+    --muted: #5E6E78; --accent: #E85A27; --cream: #FAF7F2; --line: rgba(16, 34, 43, 0.08);
+    --sans: "Readex Pro", Inter, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); }
+  body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+  .abs { position: absolute; }
+  [lang="ar"] { direction: rtl; unicode-bidi: isolate; }
+
+  .scene { position: absolute; inset: 0; overflow: hidden; display: none; }
+  .bgl { position: absolute; inset: 0; }
+  .cam { position: absolute; inset: 0; transform-origin: 50% 45%; }
+  .blob { position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.75; }
+  #grain { position: absolute; inset: 0; opacity: 0.08; pointer-events: none; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  #flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+
+  /* Bilingual kinetic caption. Words are split into .u units and pop in one by one. */
+  .cap { position: absolute; left: 40px; right: 40px; top: 250px; text-align: center; }
+  .cap .en { font-size: 74px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.08; }
+  .cap .ar { font-size: 62px; font-weight: 600; color: var(--deep); line-height: 1.45; margin-top: 12px; }
+  .cap.light .en { color: #fff; }
+  .cap.light .ar { color: rgba(255, 255, 255, 0.92); }
+  .u { display: inline-block; white-space: pre; opacity: 0; }
+  kbd { font-family: var(--sans); font-weight: 700; font-size: 0.8em; padding: 0.02em 0.34em; border-radius: 0.28em;
+        background: #fff; color: var(--ink); box-shadow: 0 5px 0 rgba(16, 34, 43, 0.18); display: inline-block; line-height: 1.25; }
+  kbd .opt { font-family: Inter, sans-serif; font-weight: 600; }
+
+  .win { position: absolute; background: rgba(255, 255, 255, 0.95); border-radius: 36px; overflow: hidden;
+         box-shadow: 0 50px 90px -30px rgba(16, 34, 43, 0.5), 0 0 0 1px rgba(16, 34, 43, 0.06); }
+  .tb { height: 76px; display: flex; align-items: center; gap: 14px; padding: 0 30px; border-bottom: 1px solid var(--line);
+        font-size: 28px; font-weight: 600; color: var(--muted); background: rgba(250, 247, 242, 0.9); }
+  .tl { width: 20px; height: 20px; border-radius: 50%; display: inline-block; }
+  .tl.r { background: #FF5F57; } .tl.y { background: #FEBC2E; } .tl.g { background: #28C840; }
+  .tb .ttl { margin-left: 14px; }
+  .field { padding: 22px 38px; border-bottom: 1px solid var(--line); font-size: 32px; color: var(--muted); }
+  .field b { color: var(--ink); font-weight: 500; margin-right: 12px; }
+  .caret { display: inline-block; width: 4px; height: 1.05em; background: var(--accent); vertical-align: -0.15em; margin-left: 3px; border-radius: 2px; }
+  .w { display: inline-block; white-space: pre; opacity: 0; }
+
+  /* Real Kalam recording bar (ui.py): HUD capsule, 11 brand-gradient bars. */
+  .pill { position: absolute; width: 288px; height: 86px; border-radius: 43px; opacity: 0;
+          background: rgba(36, 40, 46, 0.66); backdrop-filter: blur(18px) saturate(1.4);
+          box-shadow: 0 18px 40px -12px rgba(16, 34, 43, 0.55), inset 0 0 0 2px rgba(255, 255, 255, 0.45), inset 0 0 0 999px rgba(255, 255, 255, 0.10);
+          display: flex; align-items: center; justify-content: center; gap: 8.6px; }
+  .pill i { display: block; width: 6.7px; border-radius: 4px; height: 7px; }
+
+  #key { position: absolute; left: 390px; top: 1450px; width: 300px; height: 260px; border-radius: 40px;
+         background: linear-gradient(180deg, #ffffff, #f1ede7); opacity: 0;
+         box-shadow: 0 18px 0 #d9d2c8, 0 40px 60px -10px rgba(16, 34, 43, 0.45), inset 0 0 0 3px rgba(255, 255, 255, 0.9); }
+  #key .sym { position: absolute; right: 38px; top: 26px; font: 500 96px Inter, sans-serif; color: var(--ink); }
+  #key .lbl { position: absolute; left: 38px; bottom: 32px; font: 500 44px var(--sans); color: var(--muted); }
+  #key .side { position: absolute; left: 38px; top: 38px; font: 700 30px var(--sans); color: var(--accent); letter-spacing: 0.05em; }
+  .ring { position: absolute; border-radius: 50%; border: 6px solid #fff; opacity: 0; }
+
+  .dot { position: absolute; border-radius: 50%; opacity: 0; }
+
+  /* S2 */
+  .card { position: absolute; left: 60px; width: 960px; height: 240px; background: rgba(255, 255, 255, 0.96); border-radius: 34px; overflow: hidden;
+          box-shadow: 0 30px 60px -26px rgba(16, 34, 43, 0.45), 0 0 0 1px rgba(16, 34, 43, 0.05); opacity: 0; }
+  .card .hd { height: 72px; display: flex; align-items: center; gap: 16px; padding: 0 28px; font-size: 30px; font-weight: 600; border-bottom: 1px solid var(--line); }
+  .card .ico { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; }
+  .card .ico svg { width: 26px; height: 26px; stroke: #fff; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .card .hd small { margin-left: auto; font-size: 24px; color: var(--muted); font-weight: 400; }
+  .card .bd { padding: 24px 30px; font-size: 36px; line-height: 1.4; }
+  .bub { display: inline-block; padding: 16px 26px; border-radius: 28px; font-size: 36px; line-height: 1.35; }
+
+  /* S3 */
+  #toggle { position: absolute; left: 140px; top: 630px; width: 800px; height: 130px; border-radius: 65px; background: rgba(255, 255, 255, 0.14);
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25); }
+  #knob { position: absolute; top: 10px; width: 390px; height: 110px; border-radius: 55px; background: #fff; box-shadow: 0 14px 30px -10px rgba(0, 0, 0, 0.4); }
+  #toggle .opt { position: absolute; top: 0; width: 400px; height: 130px; display: grid; place-items: center; font-size: 52px; font-weight: 600; }
+  .row { position: absolute; right: 70px; display: flex; flex-direction: column; align-items: flex-end; opacity: 0; }
+  .row .tag { font-size: 26px; color: rgba(255, 255, 255, 0.75); margin-bottom: 10px; }
+  .out { background: linear-gradient(140deg, #FF9A5C, var(--orange)); color: #fff; border-bottom-right-radius: 10px; font-size: 46px; padding: 20px 32px; }
+  .chips { position: absolute; left: 40px; right: 40px; top: 1290px; display: flex; flex-wrap: wrap; justify-content: center; gap: 22px; }
+  .chip { padding: 18px 32px; border-radius: 999px; background: #fff; font-size: 40px; opacity: 0; display: inline-flex; gap: 16px; align-items: baseline; color: var(--ink); }
+  .chip .a { font-weight: 700; }
+  .chip .e { color: var(--muted); font-size: 32px; }
+  .chip.hot { background: linear-gradient(140deg, #FF9A5C, var(--orange)); color: #fff; font-size: 50px; padding: 22px 40px; }
+  .chip.hot .e { color: rgba(255, 255, 255, 0.88); font-size: 36px; }
+
+  /* S4 */
+  .beat { position: absolute; inset: 0; }
+  .big { position: absolute; left: 40px; right: 40px; text-align: center; font-size: 124px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.12; }
+  .big .u { position: relative; }
+  .strike { position: relative; display: inline-block; white-space: pre; }
+  .strike::after { content: ""; position: absolute; left: -6px; right: -6px; top: 52%; height: 14px; border-radius: 7px; background: var(--orange);
+                   transform-origin: left; transform: scaleX(var(--k, 0)) rotate(-3deg); }
+  .res { position: absolute; left: 70px; width: 940px; display: flex; align-items: center; gap: 28px; padding: 40px 46px; border-radius: 36px;
+         background: #fff; box-shadow: 0 34px 60px -24px rgba(16, 34, 43, 0.45); opacity: 0; }
+  .res .ok { width: 84px; height: 84px; border-radius: 50%; background: linear-gradient(140deg, #3FB0B0, var(--teal)); display: grid; place-items: center; flex-shrink: 0; }
+  .res .ok svg { width: 44px; height: 44px; stroke: #fff; stroke-width: 3.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .res .t { font-size: 76px; font-weight: 700; letter-spacing: -0.02em; }
+  .say { position: absolute; left: 0; right: 0; text-align: center; }
+  .say span { display: inline-block; padding: 26px 48px; border-radius: 60px; background: var(--ink); color: #fff; font-size: 70px; font-weight: 600; }
+  .say small { display: block; font-size: 30px; color: var(--muted); font-weight: 500; margin-bottom: 14px; letter-spacing: 0.06em; }
+  .shot { position: absolute; display: block; }
+  .pop { display: inline-block; white-space: pre; padding: 0 18px; border-radius: 30px; background: var(--sun); color: var(--ink); }
+
+  /* S5 */
+  .deck { position: absolute; left: 50px; top: 720px; width: 980px; height: 700px; perspective: 2600px; }
+  .deck img.d { position: absolute; left: 0; top: 0; width: 980px; filter: drop-shadow(0 30px 40px rgba(16, 34, 43, 0.35)); opacity: 0; }
+  #flip { position: absolute; left: 0; top: 0; width: 980px; height: 700px; transform-style: preserve-3d; opacity: 0; }
+  #flip img { position: absolute; left: 0; top: 0; width: 980px; backface-visibility: hidden; filter: drop-shadow(0 34px 44px rgba(16, 34, 43, 0.4)); }
+  #flip img.back { transform: rotateY(180deg); }
+  .label { position: absolute; left: 0; right: 0; top: 1500px; text-align: center; opacity: 0; }
+  .label span { display: inline-flex; gap: 20px; align-items: baseline; padding: 18px 36px; border-radius: 999px; background: #fff; font-size: 44px; font-weight: 600;
+                box-shadow: 0 20px 40px -16px rgba(16, 34, 43, 0.4); }
+  .label span .ar { color: var(--deep); }
+  #lang span .to { color: #fff; background: linear-gradient(140deg, #4C8CC9, var(--deep)); padding: 4px 22px; border-radius: 999px; }
+
+  /* S6 */
+  #mac { position: absolute; left: 140px; top: 640px; width: 800px; }
+  #mac .scr { width: 800px; height: 500px; border-radius: 34px 34px 10px 10px; background: #0b161c; padding: 20px; box-shadow: 0 0 0 2px rgba(255,255,255,0.12); }
+  #mac .scr .in { width: 100%; height: 100%; border-radius: 18px; overflow: hidden; position: relative;
+                  background: radial-gradient(80% 90% at 20% 110%, rgba(253, 109, 57, 0.95), transparent 60%),
+                              radial-gradient(70% 80% at 95% 100%, rgba(62, 149, 209, 0.95), transparent 60%), #14232c; }
+  #mac .base { width: 960px; height: 38px; margin-left: -80px; border-radius: 4px 4px 28px 28px; background: linear-gradient(180deg, #d9dde1, #9da4ab); }
+  #mac .notch { width: 160px; height: 12px; margin: 0 auto; border-radius: 0 0 12px 12px; background: #8c939a; }
+  #lock { position: absolute; left: 50%; top: 50%; width: 180px; height: 180px; margin: -100px 0 0 -90px; }
+  #lock svg { width: 180px; height: 180px; stroke: #fff; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .orbit { position: absolute; left: 50%; top: 50%; border-radius: 50%; border: 3px solid rgba(255, 255, 255, 0.45); }
+  .no { position: absolute; left: 0; right: 0; text-align: center; opacity: 0; }
+  .no > span { display: inline-flex; align-items: center; gap: 22px; padding: 22px 40px; border-radius: 999px; background: #fff; font-size: 48px; font-weight: 600;
+               box-shadow: 0 20px 40px -16px rgba(0, 0, 0, 0.5); }
+  .no .x { width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(140deg, #FF9A5C, var(--orange)); display: grid; place-items: center; }
+  .no .x svg { width: 28px; height: 28px; stroke: #fff; stroke-width: 3.6; fill: none; stroke-linecap: round; }
+  .no .ar { color: var(--deep); }
+
+  /* S7 */
+  #banner { position: absolute; left: 40px; top: 300px; width: 1000px; height: 213px; border-radius: 30px; overflow: hidden;
+            box-shadow: 0 34px 60px -24px rgba(16, 34, 43, 0.5); opacity: 0; }
+  #banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  #icon { position: absolute; left: 410px; top: 640px; width: 260px; height: 260px; opacity: 0; }
+  #wordmark { position: absolute; left: 0; right: 0; top: 960px; margin: 0 auto; height: 120px; width: 433px; fill: var(--ink); opacity: 0; }
+  #tagen { position: absolute; left: 30px; right: 30px; top: 1160px; text-align: center; font-size: 80px; font-weight: 700; letter-spacing: -0.03em; }
+  #tagar { position: absolute; left: 30px; right: 30px; top: 1270px; text-align: center; font-size: 76px; font-weight: 600; color: var(--deep); }
+  #by { position: absolute; left: 0; right: 0; top: 1470px; text-align: center; font-size: 36px; color: var(--muted); letter-spacing: 0.03em; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 1 · Hook -->
+  <section class="scene" id="s1">
+    <div class="bgl" style="background:linear-gradient(180deg,#FAF7F2,#FCE3D2)"></div>
+    <div class="blob" data-b="-120,1500,620,#FD6D39"></div><div class="blob" data-b="700,120,560,#7CC0EA"></div>
+    <div class="bgl" id="wipe1" style="background:radial-gradient(60% 40% at 80% 10%, #FFB84D, transparent 70%), radial-gradient(70% 45% at 10% 95%, #E85A27, transparent 70%), linear-gradient(170deg,#FF8E45,#FD6D39)"></div>
+    <div class="cam" id="cam1">
+      <div class="cap" id="c1a"><div class="en">Still typing?</div><div class="ar" lang="ar">لين الحين تكتب؟</div></div>
+      <div class="cap light" id="c1b"><div class="en">Hold <kbd>Right <span class="opt">⌥</span></kbd> and talk.</div>
+        <div class="ar" lang="ar">اضغط مطوّل على <kbd>اليمين <span class="opt">⌥</span></kbd> وتكلّم</div></div>
+      <div class="cap light" id="c1c"><div class="en">Let go. It's typed.</div><div class="ar" lang="ar">تفكّه، وينكتب على طول</div></div>
+      <div class="win" id="mail" style="left:60px; top:640px; width:960px; height:600px">
+        <div class="tb"><i class="tl r"></i><i class="tl y"></i><i class="tl g"></i><span class="ttl">New Message</span></div>
+        <div class="field"><b>To:</b>Sara</div>
+        <div class="field"><b>Subject:</b>Campaign brief</div>
+        <div style="padding:30px 38px; font-size:46px; line-height:1.45;"><span id="typed"></span><br><span id="dict"></span><i class="caret" id="caret1"></i></div>
+      </div>
+      <div class="ring" id="ring1"></div><div class="ring" id="ring2"></div>
+      <div id="key"><div class="side">RIGHT</div><div class="sym">⌥</div><div class="lbl">option</div></div>
+      <div class="pill" id="pill1" style="left:396px; top:1300px"></div>
+    </div>
+  </section>
+
+  <!-- 2 · Any app -->
+  <section class="scene" id="s2">
+    <div class="bgl" style="background:linear-gradient(180deg,#DCEEFB,#FAF7F2 55%,#FFE6D2)"></div>
+    <div class="blob" data-b="760,1500,560,#FFB84D"></div><div class="blob" data-b="-200,300,600,#7CC0EA"></div>
+    <div class="cam" id="cam2">
+      <div class="cap" id="c2"><div class="en">Works in any app.</div><div class="ar" lang="ar">يشتغل في أي تطبيق</div></div>
+      <div class="card" style="top:600px">
+        <div class="hd"><span class="ico" style="background:linear-gradient(140deg,#7CC0EA,#3E95D1)"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>Email<small>Re: Final brief</small></div>
+        <div class="bd" data-text="Attached is the final brief. Let me know what you think!"></div>
+      </div>
+      <div class="card" style="top:866px">
+        <div class="hd"><span class="ico" style="background:linear-gradient(140deg,#5BD27A,#1E9E6A)"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-5.1A8 8 0 1 1 21 12z"/></svg></span>WhatsApp Web<small>Mum</small></div>
+        <div class="bd" style="display:flex; justify-content:flex-end; padding-top:30px"><span class="bub" lang="ar" style="background:#DFF6E2" data-text="واصل بعد 10 دقايق، جهّزي القهوة"></span></div>
+      </div>
+      <div class="card" style="top:1132px">
+        <div class="hd"><span class="ico" style="background:linear-gradient(140deg,#B07CD8,#6B3FA0)"><svg viewBox="0 0 24 24"><path d="M9 4 7 20M17 4l-2 16M4 9h17M3 15h17"/></svg></span>Slack<small>#marketing</small></div>
+        <div class="bd" data-text="New captions are up in the shared folder."></div>
+      </div>
+      <div class="card" style="top:1398px">
+        <div class="hd"><span class="ico" style="background:linear-gradient(140deg,#FFD66B,#F0A623)"><svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg></span>Notes<small>Friday shoot</small></div>
+        <div class="bd" data-text="Ideas: launch reel, client brief, behind the scenes."></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · Arabic + English -->
+  <section class="scene" id="s3">
+    <div class="bgl" style="background:linear-gradient(170deg,#2470B3,#1C5E9B 40%,#10222B)"></div>
+    <div class="blob" data-b="-200,1550,620,#FD6D39"></div><div class="blob" data-b="760,200,520,#3E95D1"></div>
+    <div class="cam" id="cam3">
+      <div class="cap light" id="c3"><div class="en">Arabic or English. It just knows.</div><div class="ar" lang="ar">عربي أو إنجليزي، يعرف بروحه</div></div>
+      <div id="toggle"><div id="knob"></div>
+        <div class="opt" id="optEn" style="left:0">English</div><div class="opt" id="optAr" lang="ar" style="right:0">العربية</div></div>
+      <div class="row" id="r1" style="top:830px"><span class="tag">Arabic · عربي</span><span class="bub out" lang="ar">شحالج؟ نتلاقى الساعة 4 في الكوفي؟</span></div>
+      <div class="row" id="r2" style="top:1010px"><span class="tag">English · إنجليزي</span><span class="bub out">Perfect, see you at 4!</span></div>
+      <div class="pill" id="pill3" style="left:396px; top:1180px"></div>
+      <div class="chips">
+        <span class="chip hot"><span class="a" lang="ar">خليجي</span><span class="e">Gulf</span></span>
+        <span class="chip hot"><span class="a" lang="ar">عُماني</span><span class="e">Omani</span></span>
+        <span class="chip"><span class="a" lang="ar">فصحى</span><span class="e">MSA</span></span>
+        <span class="chip"><span class="a" lang="ar">مصري</span><span class="e">Egyptian</span></span>
+        <span class="chip"><span class="a" lang="ar">شامي</span><span class="e">Levantine</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · Smart touches -->
+  <section class="scene" id="s4">
+    <div class="bgl" style="background:linear-gradient(180deg,#FFF3DA,#FFE2C6)"></div>
+    <div class="blob" data-b="700,1450,600,#FD6D39"></div><div class="blob" data-b="-220,250,560,#FFD66B"></div>
+    <div class="cam" id="cam4">
+      <div class="beat" id="b4a">
+        <div class="cap" id="c4a"><div class="en">Changed your mind?</div><div class="ar" lang="ar">غيّرت رأيك؟</div></div>
+        <div class="big" style="top:640px"><span class="u" id="wa1">“Meet at</span><br><span class="u"><span class="strike" id="st1">3, no wait,</span></span><br><span class="u" id="wa3">4”</span></div>
+        <div class="res" id="ra" style="top:1240px"><span class="ok"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="t">Meet at 4.</span></div>
+      </div>
+      <div class="beat" id="b4b">
+        <div class="cap" id="c4b"><div class="en">Say a shortcut.</div><div class="ar" lang="ar">قول الاختصار</div></div>
+        <div class="abs" id="sbwrap" style="left:50px; top:600px; width:980px; height:646px; transform-origin: 50% 40%">
+          <img class="shot" src="assets/screens/shortcuts.png" style="left:0; top:0; width:980px; filter:drop-shadow(0 30px 40px rgba(16,34,43,.35))">
+          <div class="abs" id="hl" style="border:6px solid var(--orange); border-radius:20px; opacity:0"></div>
+        </div>
+        <div class="say" id="sbsay" style="top:1290px"><small>YOU SAY · تقول</small><span>“sign off”</span></div>
+        <div class="res" id="rb" style="top:1290px"><span class="ok"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="t">Best regards,</span></div>
+      </div>
+      <div class="beat" id="b4c">
+        <div class="cap" id="c4c"><div class="en">No ums. No uhs.</div><div class="ar" lang="ar">بلا «إمم» ولا «آه»</div></div>
+        <div class="big" style="top:660px; font-size:112px"><span class="u"><span class="pop" id="um">Um,</span></span> <span class="u">the</span> <span class="u">brief</span> <span class="u">is,</span> <span class="u"><span class="pop" id="uh">uh,</span></span> <span class="u">ready</span></div>
+        <div class="res" id="rc" style="top:1240px"><span class="ok"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="t">The brief is ready.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · Bilingual app -->
+  <section class="scene" id="s5">
+    <div class="bgl" style="background:linear-gradient(180deg,#CFE6F7,#FAF7F2 60%,#FFE9D8)"></div>
+    <div class="blob" data-b="-200,1500,600,#FD6D39"></div><div class="blob" data-b="760,400,520,#3E95D1"></div>
+    <div class="cam" id="cam5">
+      <div class="cap" id="c5a"><div class="en">Every screen, both languages.</div><div class="ar" lang="ar">كل شاشة، بالعربي والإنجليزي</div></div>
+      <div class="cap" id="c5b"><div class="en">Arabic flips it right to left.</div><div class="ar" lang="ar">بالعربي، كل شي من اليمين لليسار</div></div>
+      <div class="deck">
+        <img class="d" src="assets/screens/notes.png">
+        <img class="d" src="assets/screens/clipboard.png">
+        <img class="d" src="assets/screens/your-words.png">
+        <img class="d" src="assets/screens/shortcuts.png">
+        <div id="flip"><img class="front" src="assets/screens/home-en.png"><img class="back" src="assets/screens/home-ar.png"></div>
+      </div>
+      <div class="label"><span>Notes<span class="ar" lang="ar">الملاحظات</span></span></div>
+      <div class="label"><span>Clipboard<span class="ar" lang="ar">الحافظة</span></span></div>
+      <div class="label"><span>Your words<span class="ar" lang="ar">كلماتك</span></span></div>
+      <div class="label"><span>Shortcuts<span class="ar" lang="ar">الاختصارات</span></span></div>
+      <div class="label" id="lang"><span>App language <span style="color:var(--muted)">English</span> → <span class="to" lang="ar">العربية</span></span></div>
+    </div>
+  </section>
+
+  <!-- 6 · Privacy -->
+  <section class="scene" id="s6">
+    <div class="bgl" style="background:radial-gradient(70% 40% at 10% 100%, rgba(253,109,57,.55), transparent 70%), radial-gradient(70% 40% at 100% 0%, rgba(62,149,209,.5), transparent 70%), #10222B"></div>
+    <div class="cam" id="cam6">
+      <div class="cap light" id="c6"><div class="en">Everything stays on your Mac.</div><div class="ar" lang="ar">كل شي يبقى على جهازك</div></div>
+      <div id="mac">
+        <div class="scr"><div class="in">
+          <div class="orbit"></div><div class="orbit"></div><div class="orbit"></div>
+          <div id="lock"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/><path d="M12 15v2.2"/></svg></div>
+        </div></div>
+        <div class="base"><div class="notch"></div></div>
+      </div>
+      <div class="no" style="top:1300px"><span><span class="x"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span>No account<span class="ar" lang="ar">بدون حساب</span></span></div>
+      <div class="no" style="top:1430px"><span><span class="x"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span>No subscription<span class="ar" lang="ar">بدون اشتراك</span></span></div>
+      <div class="no" style="top:1560px"><span><span class="x"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span>No cloud<span class="ar" lang="ar">بدون سحابة</span></span></div>
+    </div>
+  </section>
+
+  <!-- 7 · End card -->
+  <section class="scene" id="s7">
+    <div class="bgl" style="background:linear-gradient(180deg,#FAF7F2,#FDE6D4)"></div>
+    <div class="blob" data-b="-200,1500,640,#FD6D39"></div><div class="blob" data-b="760,150,520,#7CC0EA"></div><div class="blob" data-b="760,1600,420,#FFB84D"></div>
+    <div class="cam" id="cam7">
+      <div id="banner"><img src="assets/header-megaphone.webp"><img id="banar" src="assets/header-megaphone-ar.webp" style="opacity:0"></div>
+      <img id="icon" src="assets/kalam-icon.png">
+      <svg id="wordmark" viewBox="0 0 1242.07 343.95"></svg>
+      <div id="tagen">Write less, speak more.</div>
+      <div id="tagar" lang="ar">اشرح بلا حدود</div>
+      <div id="by">Powered by Amira Hamood</div>
+    </div>
+  </section>
+
+  <div id="flash"></div>
+  <div id="grain"></div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const eo = (x) => 1 - Math.pow(1 - x, 3);
+const eio = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const back = (x) => { const c1 = 2.2, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+// Damped spring 0→1 (overshoots and settles).
+const spring = (x) => x <= 0 ? 0 : 1 - Math.exp(-6 * x) * Math.cos(13 * x);
+const tf = (el, s) => { el.style.transform = s; };
+const op = (el, o) => { el.style.opacity = o; };
+
+const DURATION = 42, DROP = 4.0, BEAT = 0.5;
+// Kick pulse on every beat after the drop.
+const pulse = (t) => (t < DROP || t > 41.5) ? 0 : Math.exp(-((t - DROP) % BEAT) * 9);
+
+// ── Scenes and whip transitions ─────────────────────────────────────────────
+const SC = [["s1", 0, 8], ["s2", 8, 14], ["s3", 14, 20], ["s4", 20, 28], ["s5", 28, 34], ["s6", 34, 37.5], ["s7", 37.5, 42]];
+// Direction the incoming scene travels in from, per cut.
+const DIR = { 8: [1, 0], 14: [0, 1], 20: [-1, 0], 28: [0, 1], 34: [1, 0], 37.5: [0, 1] };
+const WH = 0.16;   // half-length of a whip, seconds
+
+function scenes(t) {
+  for (const [id, a, b] of SC) {
+    const s = $(id);
+    if (t < a - WH || t > b + WH) { s.style.display = "none"; continue; }
+    s.style.display = "block";
+    let x = 0, y = 0, blur = 0;
+    if (a > 0 && t < a + WH) {
+      const k = eio(prog(t, a - WH, a + WH)), [dx, dy] = DIR[a];
+      x = (1 - k) * 1080 * dx; y = (1 - k) * 1920 * dy; blur = Math.sin(Math.PI * k) * 26;
+    }
+    if (b < DURATION && t > b - WH) {
+      const k = eio(prog(t, b - WH, b + WH)), [dx, dy] = DIR[b];
+      x = -k * 1080 * dx; y = -k * 1920 * dy; blur = Math.sin(Math.PI * k) * 26;
+    }
+    s.style.transform = `translate(${x}px, ${y}px)`;
+    s.style.filter = blur > 0.5 ? `blur(${blur}px)` : "none";
+    s.style.zIndex = t >= a ? 2 : 1;
+  }
+}
+
+function blobs(t) {
+  $$(".blob").forEach((b, i) => {
+    const [x, y, r] = b._b;
+    const p = pulse(t);
+    b.style.left = (x + Math.sin(t * 0.7 + i) * 70) + "px";
+    b.style.top = (y + Math.cos(t * 0.55 + i * 2) * 60) + "px";
+    b.style.width = b.style.height = r + "px";
+    tf(b, `scale(${1 + 0.08 * p})`);
+  });
+}
+
+// ── Kinetic text ────────────────────────────────────────────────────────────
+// Split an element's text into word units (.u); <kbd> stays one unit.
+function units(el) {
+  if (el._u) return el._u;
+  const out = [];
+  [...el.childNodes].forEach((n) => {
+    if (n.nodeType === 3) {
+      n.textContent.split(/(\s+)/).forEach((part) => {
+        if (!part) return;
+        if (/^\s+$/.test(part)) { el.insertBefore(document.createTextNode(part), n); return; }
+        const s = document.createElement("span"); s.className = "u"; s.textContent = part;
+        el.insertBefore(s, n); out.push(s);
+      });
+      el.removeChild(n);
+    } else {
+      const s = document.createElement("span"); s.className = "u";
+      el.insertBefore(s, n); s.appendChild(n); out.push(s);
+    }
+  });
+  el._u = out;
+  return out;
+}
+function kin(el, t, a, stag = 0.07) {
+  units(el).forEach((u, i) => {
+    const s = a + i * stag, k = spring(Math.max(0, t - s));
+    const o = clamp((t - s) / 0.12);
+    op(u, o);
+    tf(u, `translateY(${(1 - k) * 60}px) scale(${0.4 + 0.6 * k}) rotate(${(1 - k) * (i % 2 ? 8 : -8)}deg)`);
+  });
+}
+// Caption: kinetic in at a, quick lift-out at b.
+function cap(id, t, a, b) {
+  const el = $(id);
+  if (t < a || t > b + 0.01) { op(el, 0); return; }
+  const out = eio(prog(t, b - 0.22, b));
+  op(el, 1 - out);
+  tf(el, `translateY(${-out * 60}px) scale(${1 + 0.012 * pulse(t)})`);
+  el.querySelectorAll(".en, .ar").forEach((line, li) => kin(line, t, a + li * 0.18, line.classList.contains("ar") ? 0.09 : 0.07));
+}
+// Words of [data-text] for typed text.
+function words(el) {
+  if (!el._w) {
+    el.innerHTML = "";
+    el.dataset.text.split(" ").forEach((w, i, arr) => {
+      const s = document.createElement("span"); s.className = "w"; s.textContent = w + (i < arr.length - 1 ? " " : "");
+      el.appendChild(s);
+    });
+    el._w = [...el.children];
+  }
+  return el._w;
+}
+function typeIn(el, t, a, d) {
+  const ws = words(el), n = ws.length;
+  ws.forEach((w, i) => {
+    const s = a + (i / n) * d, k = spring(Math.max(0, t - s));
+    op(w, clamp((t - s) / 0.08));
+    tf(w, `translateY(${(1 - k) * 22}px) scale(${0.7 + 0.3 * k})`);
+  });
+}
+// Pop an element in with a spring at time a (and optional exit at b).
+function popIn(el, t, a, opts = {}) {
+  const { b = 1e9, dy = 80, s0 = 0.5, rot = 0 } = opts;
+  const k = spring(Math.max(0, t - a)), out = eio(prog(t, b - 0.2, b));
+  op(el, clamp((t - a) / 0.1) * (1 - out));
+  tf(el, `translateY(${(1 - k) * dy - out * 40}px) scale(${s0 + (1 - s0) * k}) rotate(${(1 - k) * rot}deg) ${opts.extra || ""}`);
+}
+
+// ── Recording bar, same maths as ui.py ─────────────────────────────────────
+const BARS = 11, STOPS = [[253, 110, 56], [255, 194, 84], [92, 161, 209]];
+function brand(x) {
+  x = clamp(x) * (STOPS.length - 1);
+  const i = Math.min(Math.floor(x), STOPS.length - 2), f = x - i, a = STOPS[i], b = STOPS[i + 1];
+  return `rgb(${a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(",")})`;
+}
+function buildPill(el) {
+  for (let i = 0; i < BARS; i++) { const b = document.createElement("i"); b.style.background = brand(i / (BARS - 1)); el.appendChild(b); }
+}
+function speech(t) {
+  const syl = Math.pow(Math.abs(Math.sin(t * 6.1)), 0.8) * 0.65 + Math.abs(Math.sin(t * 2.3 + 1.1)) * 0.35;
+  return clamp(syl * (0.55 + 0.45 * Math.sin(t * 1.3 + 0.4)) * 1.15);
+}
+function pill(el, t, rec, busy, hide, scale = 1.5) {
+  const c = (BARS - 1) / 2, mode = t < busy ? "rec" : "busy";
+  [...el.children].forEach((b, i) => {
+    let v;
+    if (mode === "busy") v = 0.25 + 0.25 * (1 + Math.sin(t * 6 - i * 0.7)) / 2;
+    else v = speech(t) * (1 - Math.pow(Math.abs(i - c) / (c + 1), 1.6)) * (0.75 + 0.25 * Math.sin(t * 13 + i * 1.9));
+    b.style.height = (7.2 + 45.6 * v) + "px";
+  });
+  const k = spring(Math.max(0, t - rec)), out = eio(prog(t, hide, hide + 0.2));
+  op(el, (t >= rec ? 1 : 0) * (1 - out));
+  tf(el, `translateY(${(1 - k) * 50}px) scale(${scale * (0.6 + 0.4 * k) * (1 - 0.3 * out)})`);
+}
+
+// ── Particle bursts ────────────────────────────────────────────────────────
+const BURSTS = [
+  ["cam1", 540, 960, 6.55, ["#fff", "#FFD66B", "#FD6D39"]],
+  ["cam3", 760, 900, 15.65, ["#FFB84D", "#fff"]], ["cam3", 760, 1080, 17.35, ["#7CC0EA", "#fff"]],
+  ["cam4", 540, 1330, 22.0, ["#FD6D39", "#3FB0B0", "#FFD66B"]], ["cam4", 540, 1380, 24.1, ["#FD6D39", "#3FB0B0"]],
+  ["cam4", 280, 730, 26.3, ["#F0A623", "#FD6D39"]], ["cam4", 760, 860, 26.45, ["#F0A623", "#FD6D39"]],
+  ["cam4", 540, 1330, 26.85, ["#3FB0B0", "#FFD66B"]],
+  ["cam6", 540, 870, 34.55, ["#fff", "#FFB84D", "#7CC0EA"]],
+  ["cam7", 540, 770, 38.05, ["#FD6D39", "#FFD66B", "#3E95D1"]],
+];
+function buildBursts() {
+  BURSTS.forEach((bu, j) => {
+    const [cam, x, y, t0, cols] = bu, dots = [];
+    for (let i = 0; i < 18; i++) {
+      const d = document.createElement("div"); d.className = "dot";
+      const r = 10 + ((i * 37 + j * 11) % 14);
+      d.style.width = d.style.height = r + "px"; d.style.background = cols[i % cols.length];
+      d.style.left = (x - r / 2) + "px"; d.style.top = (y - r / 2) + "px";
+      d._a = (i / 18) * Math.PI * 2 + ((i * 53 + j) % 10) / 20; d._R = 180 + ((i * 71 + j * 29) % 160);
+      $(cam).appendChild(d); dots.push(d);
+    }
+    bu.push(dots);
+  });
+}
+function bursts(t) {
+  for (const [, , , t0, , dots] of BURSTS) {
+    const p = prog(t, t0, t0 + 0.75);
+    dots.forEach((d) => {
+      if (t < t0 || p >= 1) { op(d, 0); return; }
+      const r = eo(p) * d._R;
+      op(d, 1 - p);
+      tf(d, `translate(${Math.cos(d._a) * r}px, ${Math.sin(d._a) * r + p * p * 120}px) scale(${1 - 0.6 * p})`);
+    });
+  }
+}
+
+const SLOW = [[0.7, "H"], [1.0, "Hi"], [1.35, "Hi "], [1.85, "Hi S"], [2.2, "Hi Sr"], [2.75, "Hi S"], [3.1, "Hi Sa"], [3.35, "Hi Sar"], [3.55, "Hi Sara"], [3.8, "Hi Sara,"]];
+const CARDS = [8.35, 9.6, 10.85, 12.1];   // arrival times, scene 2
+
+function init() {
+  $$(".blob").forEach((b) => { const v = b.dataset.b.split(","); b._b = v.slice(0, 3).map(Number); b.style.background = v[3]; });
+  buildPill($("pill1")); buildPill($("pill3"));
+  $$("#s2 .card").forEach((c) => {
+    const p = document.createElement("div"); p.className = "pill"; buildPill(p);
+    p.style.left = "640px"; p.style.top = "130px"; c.appendChild(p); c._pill = p;
+  });
+  $("dict").dataset.text = "Thanks for the update! Let's review the brief tomorrow at 10.";
+  buildBursts();
+  fetch("assets/logo-full.svg").then((r) => r.text()).then((s) => {
+    $("wordmark").innerHTML = s.replace(/^[\s\S]*?<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "");
+    window.__ready = true;
+  });
+}
+
+function renderAt(t) {
+  scenes(t); blobs(t); bursts(t);
+  // White flash on the drop and on the end card.
+  op($("flash"), 0.55 * Math.exp(-Math.max(0, t - 4.0) * 9) * (t >= 4.0 ? 1 : 0) + 0.35 * Math.exp(-Math.max(0, t - 37.5) * 9) * (t >= 37.5 ? 1 : 0));
+
+  // 1 · Hook
+  if (t < 8.3) {
+    const shake = t >= 4 ? Math.exp(-(t - 4) * 7) * 18 : 0;
+    const push = 1 + 0.06 * eio(prog(t, 0, 4)) - 0.06 * eio(prog(t, 4, 4.4)) + 0.04 * eio(prog(t, 6.4, 8));
+    tf($("cam1"), `translate(${Math.sin(t * 95) * shake}px, ${Math.cos(t * 83) * shake}px) scale(${push})`);
+    $("wipe1").style.clipPath = `circle(${eo(prog(t, 4.0, 4.45)) * 2300}px at 540px 1580px)`;
+    cap("c1a", t, 0.2, 3.95); cap("c1b", t, 4.05, 6.5); cap("c1c", t, 6.5, 8.2);
+    popIn($("mail"), t, 0.05, { dy: 160, s0: 0.85 });
+    let s = ""; for (const [tt, v] of SLOW) if (t >= tt) s = v; $("typed").textContent = s;
+    typeIn($("dict"), t, 6.5, 0.8);
+    const typing = SLOW.some(([tt]) => t >= tt && t < tt + 0.15) || (t > 6.5 && t < 7.4);
+    op($("caret1"), typing || Math.floor(t * 2.2) % 2 === 0 ? 1 : 0);
+    // Key drops in, slams at 4.0, released 6.2, leaves at 6.9.
+    const kd = spring(Math.max(0, t - 3.3)), pressed = t >= 4.0 && t < 6.2, kout = eio(prog(t, 6.9, 7.2));
+    op($("key"), (t >= 3.3 ? 1 : 0) * (1 - kout));
+    tf($("key"), `translateY(${(1 - kd) * -900 + (pressed ? 18 : 0) + kout * 300}px) rotate(${(1 - kd) * -14}deg) scale(${pressed ? 0.97 : 1})`);
+    $("key").style.boxShadow = pressed ? "0 2px 0 #d9d2c8, 0 14px 30px -8px rgba(16,34,43,0.4), inset 0 0 0 3px rgba(255,255,255,0.9)" : "";
+    [["ring1", 4.0], ["ring2", 4.15]].forEach(([id, a]) => {
+      const p = prog(t, a, a + 0.7), r = 160 + eo(p) * 700, el = $(id);
+      el.style.width = el.style.height = r + "px"; el.style.left = (540 - r / 2) + "px"; el.style.top = (1580 - r / 2) + "px";
+      op(el, t >= a && p < 1 ? (1 - p) * 0.9 : 0);
+    });
+    pill($("pill1"), t, 4.05, 6.2, 6.5, 1.5);
+  }
+
+  // 2 · Any app
+  if (t > 7.8 && t < 14.3) {
+    tf($("cam2"), `translateY(${-eio(prog(t, 8, 14)) * 40}px) scale(${1 + 0.01 * pulse(t)})`);
+    cap("c2", t, 8.1, 14.2);
+    $$("#s2 .card").forEach((c, i) => {
+      const a = CARDS[i], side = i % 2 ? -1 : 1, k = spring(Math.max(0, t - a));
+      op(c, t >= a ? 1 : 0);
+      tf(c, `translateX(${(1 - k) * 1100 * side}px) rotate(${(1 - k) * 10 * side}deg)`);
+      typeIn(c.querySelector("[data-text]"), t, a + 0.6, 0.45);
+      pill(c._pill, t, a + 0.12, a + 0.55, a + 0.6, 0.62);
+      const act = clamp(prog(t, a, a + 0.1)) * (1 - prog(t, a + 1.0, a + 1.3));
+      c.style.boxShadow = `0 30px 60px -26px rgba(16,34,43,.45), 0 0 0 ${2 + act * 4}px rgba(253,109,57,${act * 0.8})`;
+    });
+  }
+
+  // 3 · Arabic + English
+  if (t > 13.8 && t < 20.3) {
+    tf($("cam3"), `scale(${1.04 - 0.04 * eo(prog(t, 14, 16)) + 0.01 * pulse(t)})`);
+    cap("c3", t, 14.15, 20.2);
+    popIn($("toggle"), t, 14.4, { dy: 60, s0: 0.7 });
+    // Knob: appears under العربية at 15.0, slides to English at 16.9.
+    const toEn = spring(Math.max(0, t - 16.9));
+    const kx = 400 - 390 * toEn;   // 400 = right half, 10 = left half
+    $("knob").style.left = kx + "px";
+    const squash = Math.exp(-Math.max(0, t - 16.9) * 10) * (t > 16.9 ? 0.25 : 0);
+    op($("knob"), t >= 15.0 ? 1 : 0);
+    tf($("knob"), `scale(${(t >= 15.0 ? 0.6 + 0.4 * spring(t - 15.0) : 0) * (1 + squash)}, ${1 - squash * 0.6})`);
+    $("optAr").style.color = t >= 15.0 && t < 17.0 ? "var(--deep)" : "#fff";
+    $("optEn").style.color = t >= 17.0 ? "var(--deep)" : "#fff";
+    popIn($("r1"), t, 15.6, { dy: 70, s0: 0.6, rot: 6 });
+    popIn($("r2"), t, 17.3, { dy: 70, s0: 0.6, rot: -6 });
+    const p3 = $("pill3");
+    if (t < 16.0) pill(p3, t, 14.6, 15.5, 15.6, 1.3); else pill(p3, t, 16.3, 17.2, 17.3, 1.3);
+    $$("#s3 .chip").forEach((c, i) => popIn(c, t, 18.0 + i * 0.15, { dy: 120, s0: 0.3, rot: i % 2 ? 12 : -12 }));
+  }
+
+  // 4 · Smart touches: three beats, vertical whips between them
+  if (t > 19.8 && t < 28.3) {
+    tf($("cam4"), `scale(${1 + 0.012 * pulse(t)})`);
+    const sub = (id, a, b) => {
+      const el = $(id), vis = t >= a - WH && t <= b + WH;
+      el.style.display = vis ? "block" : "none";
+      let y = 0, blur = 0;
+      if (a > 20 && t < a + WH) { const k = eio(prog(t, a - WH, a + WH)); y = (1 - k) * 1920; blur = Math.sin(Math.PI * k) * 24; }
+      if (b < 28 && t > b - WH) { const k = eio(prog(t, b - WH, b + WH)); y = -k * 1920; blur = Math.sin(Math.PI * k) * 24; }
+      tf(el, `translateY(${y}px)`); el.style.filter = blur > 0.5 ? `blur(${blur}px)` : "none";
+    };
+    sub("b4a", 20, 22.75); sub("b4b", 22.75, 25.35); sub("b4c", 25.35, 28);
+    // a) "Meet at 3, no wait, 4" → "Meet at 4."
+    cap("c4a", t, 20.15, 22.9);
+    const big = $$("#b4a .big .u");
+    [20.5, 21.0, 21.5].forEach((a, i) => popIn(big[i], t, a, { dy: 90, s0: 0.3, rot: i % 2 ? 8 : -8 }));
+    $("st1").style.setProperty("--k", eo(prog(t, 21.75, 21.95)));
+    op($("st1"), 1 - 0.6 * prog(t, 21.95, 22.15));
+    popIn($("ra"), t, 22.0, { dy: 140, s0: 0.5 });
+    // b) shortcut on the real Shortcuts screen
+    cap("c4b", t, 22.9, 25.5);
+    popIn($("sbwrap"), t, 22.95, { dy: 120, s0: 0.85, rot: -4 });
+    const z = eio(prog(t, 23.2, 23.6));
+    const sc = 980 / 1933, rowCx = 970 * sc, rowCy = 512 * sc;
+    $("sbwrap").style.transformOrigin = `${rowCx}px ${rowCy}px`;
+    $("sbwrap").style.transform += ` scale(${1 + 0.55 * z})`;
+    const hl = $("hl"); hl.style.left = (130 * sc) + "px"; hl.style.top = (455 * sc) + "px"; hl.style.width = (1680 * sc) + "px"; hl.style.height = (115 * sc) + "px";
+    popIn(hl, t, 23.45, { dy: 0, s0: 1.3 });
+    popIn($("sbsay"), t, 23.6, { dy: 90, s0: 0.5, b: 24.1 });
+    popIn($("rb"), t, 24.1, { dy: 60, s0: 0.5 });
+    // c) filler words pop
+    cap("c4c", t, 25.5, 28.1);
+    const wc = $$("#b4c .big > .u");
+    wc.forEach((u, i) => popIn(u, t, 25.75 + i * 0.08, { dy: 80, s0: 0.3, rot: i % 2 ? 6 : -6 }));
+    [["um", 26.3], ["uh", 26.45]].forEach(([id, a]) => {
+      const p = prog(t, a, a + 0.18), el = $(id);
+      tf(el, `scale(${1 + 0.6 * eo(p)})`); op(el, 1 - p);
+      el.parentElement.style.display = t >= a + 0.18 ? "none" : "inline-block";
+    });
+    popIn($("rc"), t, 26.85, { dy: 140, s0: 0.5 });
+  }
+
+  // 5 · Bilingual app
+  if (t > 27.8 && t < 34.3) {
+    tf($("cam5"), `scale(${1 + 0.012 * pulse(t)})`);
+    cap("c5a", t, 28.15, 31.0); cap("c5b", t, 31.0, 34.2);
+    const deal = [28.35, 28.725, 29.1, 29.475];
+    $$("#s5 .deck img.d").forEach((im, i) => {
+      const a = deal[i], k = spring(Math.max(0, t - a)), dim = prog(t, 29.85, 30.1);
+      op(im, (t >= a ? 1 : 0) * (1 - 0.85 * dim));
+      tf(im, `translate(${(i - 1.5) * 14}px, ${(1 - k) * 1300 + i * 6}px) rotate(${(1 - k) * (i % 2 ? 18 : -18) + (i - 1.5) * 2.5}deg)`);
+    });
+    $$("#s5 .label").forEach((l, i) => {
+      if (i < 4) popIn(l, t, deal[i] + 0.05, { dy: 40, s0: 0.6, b: i < 3 ? deal[i + 1] + 0.05 : 29.85 });
+    });
+    popIn($("lang"), t, 30.45, { dy: 60, s0: 0.5, b: 33.9 });
+    const f = $("flip"), fk = spring(Math.max(0, t - 29.85)), rot = 180 * eio(prog(t, 31.0, 31.5));
+    op(f, t >= 29.85 ? 1 : 0);
+    tf(f, `translateY(${(1 - fk) * 200}px) scale(${1.25 - 0.25 * fk}) rotateY(${rot}deg)`);
+  }
+
+  // 6 · Privacy
+  if (t > 33.8 && t < 37.8) {
+    const shake = t >= 34.55 ? Math.exp(-(t - 34.55) * 8) * 12 : 0;
+    tf($("cam6"), `translate(${Math.sin(t * 90) * shake}px, ${Math.cos(t * 77) * shake}px) scale(${1 + 0.012 * pulse(t)})`);
+    cap("c6", t, 34.15, 37.7);
+    popIn($("mac"), t, 34.1, { dy: 200, s0: 0.8 });
+    popIn($("lock"), t, 34.55, { dy: -300, s0: 2.2 });
+    $$("#s6 .orbit").forEach((o, i) => {
+      const ph = ((t - 34.55 + i * 0.4) % 1.2) / 1.2, s = 160 + ph * 520;
+      o.style.width = o.style.height = s + "px"; o.style.marginLeft = o.style.marginTop = (-s / 2) + "px";
+      op(o, t > 34.55 ? (1 - ph) * 0.9 : 0);
+    });
+    $$("#s6 .no").forEach((c, i) => {
+      const a = 35.0 + i * 0.4, k = spring(Math.max(0, t - a));
+      op(c, t >= a ? 1 : 0);
+      tf(c, `scale(${2.2 - 1.2 * k}) rotate(${(1 - k) * (i % 2 ? 10 : -10) + (i - 1) * 1.5}deg)`);
+    });
+  }
+
+  // 7 · End card
+  if (t > 37.3) {
+    tf($("cam7"), `scale(${1.03 - 0.03 * eo(prog(t, 37.5, 39))})`);
+    popIn($("banner"), t, 37.6, { dy: -160, s0: 0.85 });
+    op($("banar"), eio(prog(t, 40.3, 40.8)));
+    popIn($("icon"), t, 38.0, { dy: 0, s0: 0.2, rot: -20, extra: `scale(${1 + 0.05 * pulse(t)})` });
+    popIn($("wordmark"), t, 38.4, { dy: 60, s0: 0.6 });
+    const ten = $("tagen"), tar = $("tagar");
+    kin(ten, t, 38.8, 0.08); kin(tar, t, 39.3, 0.12);
+    popIn($("by"), t, 39.9, { dy: 40, s0: 0.8 });
+  }
+}
+
+window.renderAt = renderAt;
+window.DURATION = DURATION;
+init();
+</script>
+</body>
+</html>

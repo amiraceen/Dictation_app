@@ -1,6 +1,8 @@
 // Renders promo/scenes.html frame by frame with Playwright.
 //   node render.mjs frames <outDir> [fps]      → every frame as JPEG
 //   node render.mjs stills <outDir> t1 t2 …    → PNG stills at given seconds (previews, poster)
+// PAGE (default scenes.html) and SIZE (default 1920x1080) pick the cut, e.g.
+//   PAGE=scenes-vertical.html SIZE=1080x1920 node render.mjs frames out
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
@@ -24,11 +26,13 @@ await new Promise((r) => server.listen(0, r));
 const port = server.address().port;
 
 const [mode, outDir, ...rest] = process.argv.slice(2);
+const PAGE = process.env.PAGE || "scenes.html";
+const [W, H] = (process.env.SIZE || "1920x1080").split("x").map(Number);
 fs.mkdirSync(outDir, { recursive: true });
 
 const browser = await playwright.chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
-const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
-await page.goto(`http://127.0.0.1:${port}/scenes.html`);
+const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
+await page.goto(`http://127.0.0.1:${port}/${PAGE}`);
 await page.waitForFunction(() => window.__ready === true);
 await page.evaluate(() => document.fonts.ready);
 // Make sure every image has decoded before the first frame.
