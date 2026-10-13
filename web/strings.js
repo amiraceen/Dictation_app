@@ -150,7 +150,7 @@ window.STRINGS = {
   "app.startNotetaker": {"en": "Start Notetaker ({key})", "ar": "شغّل المدوّن ({key})"},
   "app.stopNotetaker": {"en": "Stop Notetaker", "ar": "وقّف المدوّن"},
   "app.copyLast": {"en": "Copy Last Transcription", "ar": "انسخ آخر نص"},
-  "app.quit": {"en": "Quit Kalam", "ar": "اقفل كلام"},
+  "app.quit": {"en": "Quit Kalam", "ar": "اغلق كلام"},
   "app.noMeetings": {"en": "No upcoming meetings", "ar": "ما فيه اجتماعات جاية"},
   "app.allowAx": {"en": "⚠️ Allow Accessibility…", "ar": "⚠️ اسمح لكلام بالتحكم…"},
   "app.loading": {"en": "Loading model…", "ar": "جاري تحميل المحرّك…"},
