@@ -13,7 +13,7 @@ mkdir -p "$OUT"
 
 if [ "${1:-}" = "calm" ]; then
   export PAGE=scenes-calm.html SIZE=1080x1920
-  MUSIC=music_calm.py NAME=kalam-promo-vertical-calm POSTER_T=41
+  MUSIC=music_calm.py NAME=kalam-promo-vertical-calm POSTER_T=58
 elif [ "${1:-}" = "vertical" ]; then
   export PAGE=scenes-vertical.html SIZE=1080x1920
   MUSIC=music_vertical.py NAME=kalam-promo-vertical POSTER_T=40

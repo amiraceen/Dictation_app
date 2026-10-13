@@ -1,5 +1,5 @@
 """Soundtrack for the calm vertical promo (scenes-calm.html): an upbeat but soft
-120 BPM groove (round kick, shaker, rim, echoing plucks, warm pad) with quiet UI
+120 BPM, 60 s groove (round kick, shaker, rim, echoing plucks, warm pad) with quiet UI
 sound effects. Pure numpy, no samples.
 
     python3 music_calm.py out.wav
@@ -11,11 +11,22 @@ import numpy as np
 SR = 48000
 BEAT = 0.5
 BAR = 4 * BEAT
-DUR = 42.0
-DROP = 4.0            # groove starts when Right ⌥ is pressed
-OUTRO = 37.5
-END_DRUMS = 40.0
-CUTS = [8.0, 14.0, 20.0, 28.0, 34.0, 37.5]
+DUR = 60.0
+# Scenes are authored on a 42 s timeline and stretched to 60 s (same map as scenes-calm.html),
+# so every scene cut lands on a 2 s bar.
+OLD_CUTS = [0, 8, 14, 20, 28, 34, 37.5, 42]
+NEW_CUTS = [0, 10, 18, 26, 38, 46, 52, 60]
+
+
+def M(t):
+    """Authored scene time → video time."""
+    return float(np.interp(t, OLD_CUTS, NEW_CUTS))
+
+
+DROP = M(4.0)         # 5.0 s: groove starts when Right ⌥ is pressed
+OUTRO = M(37.5)       # 52 s: end card
+END_DRUMS = 56.0
+CUTS = NEW_CUTS[1:-1]
 
 rng = np.random.default_rng(5)
 N = int(DUR * SR)
@@ -176,9 +187,9 @@ add(swell(1.5), DROP - 1.5, 0.6)
 for c in CUTS:
     add(swell(0.9), c - 0.9, 0.35)
 # Final chord.
-add(pad([65, 69, 72, 76, 81], 4.5), OUTRO + 0.5, 0.22)
+add(pad([65, 69, 72, 76, 81], 7.5), OUTRO + 0.5, 0.22)
 for k, m in enumerate([77, 81, 84, 88]):
-    add(bell(m, 2.6), 38.0 + k * 0.12, 0.07, pan=-0.3 + 0.2 * k)
+    add(bell(m, 2.6), M(38.0) + k * 0.12, 0.07, pan=-0.3 + 0.2 * k)
 
 # Gentle sidechain so the groove breathes.
 duck = np.ones(N)
@@ -189,34 +200,34 @@ for b in np.arange(DROP, END_DRUMS, BEAT):
 L *= duck
 R *= duck
 
-# ── SFX cues (match scenes-calm.html) ────────────────────────────────────────
+# ── SFX cues (authored times, mapped to the 60 s video with M) ──────────────
 for t in (0.6, 0.85, 1.1, 1.5, 1.8, 2.25, 2.5, 2.95, 3.15, 3.35, 3.55, 3.75):
-    add(click(), t, 0.9, pan=-0.1)
-add(soft_thud(), 4.0, 0.7)
-add(bloop(), 4.3, 0.7)
-add(click(0.35), 6.2, 1.0)
-add(chime(), 6.55, 0.9)
+    add(click(), M(t), 0.9, pan=-0.1)
+add(soft_thud(), M(4.0), 0.7)
+add(bloop(), M(4.3), 0.7)
+add(click(0.35), M(6.2), 1.0)
+add(chime(), M(6.55), 0.9)
 for c in CUTS:
     add(air(), c - 0.4, 0.5)
 for a in (8.35, 9.6, 10.85, 12.1):
-    add(bloop(), a + 0.1, 0.45)
-    add(chime(), a + 0.65, 0.5)
-add(bloop(), 14.6, 0.5); add(click(0.3), 15.0, 1.0); add(chime(), 15.6, 0.7)
-add(bloop(), 16.3, 0.5); add(click(0.3), 16.9, 1.0); add(chime(), 17.3, 0.7)
-add(air(0.4), 21.75, 0.5); add(chime(), 22.05, 0.7)
-add(air(0.9), 23.1, 0.35); add(chime(), 24.1, 0.7)
-add(air(0.4), 26.25, 0.45); add(chime(), 26.9, 0.7)
-add(air(1.0), 30.95, 0.45)
-add(soft_thud(), 34.55, 0.5)
+    add(bloop(), M(a + 0.1), 0.45)
+    add(chime(), M(a + 0.65), 0.5)
+add(bloop(), M(14.6), 0.5); add(click(0.3), M(15.0), 1.0); add(chime(), M(15.6), 0.7)
+add(bloop(), M(16.3), 0.5); add(click(0.3), M(16.9), 1.0); add(chime(), M(17.3), 0.7)
+add(air(0.4), M(21.75), 0.5); add(chime(), M(22.05), 0.7)
+add(air(0.9), M(23.1), 0.35); add(chime(), M(24.1), 0.7)
+add(air(0.4), M(26.25), 0.45); add(chime(), M(26.9), 0.7)
+add(air(1.0), M(30.95), 0.45)
+add(soft_thud(), M(34.55), 0.5)
 for i in range(3):
-    add(click(0.3), 35.0 + i * 0.4, 1.0)
-add(chime(), 38.0, 0.8)
+    add(click(0.3), M(35.0 + i * 0.4), 1.0)
+add(chime(), M(38.0), 0.8)
 
 # ── Master ───────────────────────────────────────────────────────────────────
 mix = np.stack([L, R])
 fade = np.ones(N)
 fade[: int(0.05 * SR)] = np.linspace(0, 1, int(0.05 * SR))
-fo = int(2.0 * SR)
+fo = int(2.5 * SR)
 fade[-fo:] = np.linspace(1, 0, fo) ** 1.5
 mix *= fade
 mix /= np.max(np.abs(mix)) + 1e-9

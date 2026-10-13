@@ -137,6 +137,13 @@
   #tagen { top: 1440px; font-size: 72px; font-weight: 600; letter-spacing: -0.028em; }
   #tagar { top: 1540px; font-size: 66px; font-weight: 500; }
 
+  /* Ambient depth: soft light that drifts behind the content. */
+  .amb { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .amb .glow { position: absolute; border-radius: 50%; mix-blend-mode: soft-light;
+               background: radial-gradient(circle, rgba(255,255,255,.9), rgba(255,255,255,0) 68%); }
+  .amb .sweep { position: absolute; left: -60%; top: -20%; width: 70%; height: 140%; mix-blend-mode: screen;
+                background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.13), rgba(255,255,255,0)); }
+  .amb .orbbg { position: absolute; filter: blur(34px); }
   #grain { position: absolute; inset: 0; opacity: 0.06; pointer-events: none; mix-blend-mode: multiply;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 </style>
@@ -147,6 +154,7 @@
   <!-- 1 · Hook -->
   <section class="scene" id="s1">
     <div class="bg" style="background-image:url(assets/bg/person-writing.webp)"></div>
+    <div class="amb"><i class="glow"></i><i class="glow"></i><i class="glow"></i><i class="sweep"></i></div>
     <div class="wash" style="background:linear-gradient(180deg, rgba(247,240,235,.55), rgba(247,240,235,0) 38%)"></div>
     <div class="wash" id="bloom" style="opacity:0; background:radial-gradient(70% 45% at 50% 70%, rgba(238,122,74,.85), transparent 72%), linear-gradient(180deg, rgba(238,122,74,.25), rgba(238,122,74,.55))"></div>
     <div class="space">
@@ -160,15 +168,15 @@
         <div class="field"><b>Subject:</b>Campaign brief</div>
         <div style="padding:28px 36px; font-size:44px; line-height:1.45;"><span id="typed"></span><br><span id="dict"></span><i class="caret" id="caret1"></i></div>
       </div>
-      <img id="orb" src="assets/ui/voice-orb.webp" style="left:280px; top:960px; width:520px; height:520px; opacity:0">
       <div id="key" style="left:410px; top:1240px"><div class="side">RIGHT</div><div class="sym">⌥</div><div class="lbl">option</div></div>
-      <div class="rec" id="rec1" style="left:378px; top:1440px"></div>
+      <div class="rec" id="rec1" style="left:378px; top:1275px"></div>
     </div>
   </section>
 
   <!-- 2 · Any app -->
   <section class="scene" id="s2">
     <div class="bg" style="background-image:url(assets/bg/sky.webp)"></div>
+    <div class="amb"><i class="glow"></i><i class="glow"></i><i class="glow"></i><i class="sweep"></i><img class="orbbg" src="assets/ui/voice-orb.webp" data-o="-160,1380,640,0.26"></div>
     <div class="space">
       <div class="cap" id="c2"><div class="en">Works in any app.</div><div class="ar" lang="ar">يشتغل في أي تطبيق</div></div>
       <div class="card glass" style="top:580px">
@@ -193,6 +201,7 @@
   <!-- 3 · Arabic + English -->
   <section class="scene" id="s3">
     <div class="bg" style="background-image:url(assets/bg/banner-blue.webp)"></div>
+    <div class="amb"><i class="glow"></i><i class="glow"></i><i class="glow"></i><i class="sweep"></i><img class="orbbg" src="assets/ui/voice-orb.webp" data-o="620,1420,600,0.22"></div>
     <div class="space">
       <div class="cap light" id="c3"><div class="en">Arabic or English. It just knows.</div><div class="ar" lang="ar">عربي أو إنجليزي، يعرف بروحه</div></div>
       <div id="toggle"><div id="knob"></div>
@@ -213,6 +222,7 @@
   <!-- 4 · Smart touches -->
   <section class="scene" id="s4">
     <div class="bg" style="background-image:url(assets/bg/cream.webp)"></div>
+    <div class="amb"><i class="glow"></i><i class="glow"></i><i class="glow"></i><i class="sweep"></i><img class="orbbg" src="assets/ui/voice-orb.webp" data-o="700,120,560,0.2"></div>
     <div class="beat" id="b4a">
       <div class="cap" id="c4a"><div class="en">Changed your mind mid speaking?</div><div class="ar" lang="ar">غيّرت رأيك وانت تتكلم؟</div></div>
       <div class="big" style="top:680px"><span class="u">“Meet at</span><br><span class="u"><span class="strike" id="st1">3, no wait,</span></span><br><span class="u">4”</span></div>
@@ -237,6 +247,7 @@
   <!-- 5 · Bilingual app -->
   <section class="scene" id="s5">
     <div class="bg" style="background-image:url(assets/bg/sky-soft.webp)"></div>
+    <div class="amb"><i class="glow"></i><i class="glow"></i><i class="glow"></i><i class="sweep"></i></div>
     <div class="space">
       <div class="cap" id="c5a"><div class="en">Every screen, both languages.</div><div class="ar" lang="ar">كل شاشة، بالعربي والإنجليزي</div></div>
       <div class="cap" id="c5b"><div class="en">Arabic flips it right to left.</div><div class="ar" lang="ar">بالعربي، كل شي من اليمين لليسار</div></div>
@@ -261,6 +272,7 @@
   <!-- 6 · Privacy -->
   <section class="scene" id="s6">
     <div class="bg" style="background-image:url(assets/bg/blue-glow.webp)"></div>
+    <div class="amb"><i class="glow"></i><i class="glow"></i><i class="glow"></i><i class="sweep"></i><img class="orbbg" src="assets/ui/voice-orb.webp" data-o="190,560,700,0.16"></div>
     <div class="wash" style="background:linear-gradient(180deg, rgba(15,29,51,.88), rgba(15,29,51,.62) 55%, rgba(15,29,51,.35))"></div>
     <div class="space">
       <div class="cap light" id="c6"><div class="en">Everything stays on your Mac.</div><div class="ar" lang="ar">كل شي يبقى على جهازك</div></div>
@@ -280,6 +292,7 @@
   <!-- 7 · End card -->
   <section class="scene" id="s7">
     <div class="bg" style="background-image:url(assets/bg/megaphone.webp)"></div>
+    <div class="amb"><i class="glow"></i><i class="glow"></i><i class="glow"></i><i class="sweep"></i></div>
     <div class="wash" style="background:linear-gradient(180deg, rgba(15,29,51,0) 50%, rgba(15,29,51,.28))"></div>
     <div class="space">
       <img id="endicon" src="assets/kalam-icon.png">
@@ -357,8 +370,8 @@ function speech(t) {
 function rec(el, t, on, busy, off) {
   el._r.forEach((r, i) => {
     let h;
-    if (t >= busy) h = 12 + 16 * (1 + Math.sin(t * 6 - i * 0.7)) / 2;
-    else h = 9 + (RB_H[i] - 9) * speech(t) * (0.75 + 0.25 * Math.sin(t * 13 + i * 1.9));
+    if (t >= busy) h = 12 + 16 * (1 + Math.sin(REAL * 6 - i * 0.7)) / 2;
+    else h = 9 + (RB_H[i] - 9) * speech(REAL) * (0.75 + 0.25 * Math.sin(REAL * 13 + i * 1.9));
     r.setAttribute("height", h); r.setAttribute("y", 42 - h / 2);
   });
   enter(el, t, on, { b: off + 0.35, d: 0.6, rise: 24, tilt: 0, out: 0.35 });
@@ -394,9 +407,43 @@ function init() {
   });
 }
 
-function renderAt(t) {
+// The choreography is authored on a 42 s timeline; the video runs 60 s. Each scene is
+// stretched so its cut lands on a bar of the music (bars are 2 s).
+const OLD_CUTS = [0, 8, 14, 20, 28, 34, 37.5, 42], NEW_CUTS = [0, 10, 18, 26, 38, 46, 52, 60];
+function toAuthored(T) {
+  for (let i = 1; i < NEW_CUTS.length; i++)
+    if (T <= NEW_CUTS[i]) return OLD_CUTS[i - 1] + (T - NEW_CUTS[i - 1]) * (OLD_CUTS[i] - OLD_CUTS[i - 1]) / (NEW_CUTS[i] - NEW_CUTS[i - 1]);
+  return OLD_CUTS[OLD_CUTS.length - 1];
+}
+let REAL = 0;   // real seconds, for motion that should keep its natural speed (voice bars, sway, ambient light)
+
+function ambient(T) {
+  $$(".amb").forEach((a, si) => {
+    a.querySelectorAll(".glow").forEach((g, i) => {
+      const r = 620 + i * 160, ph = si * 1.7 + i * 2.1;
+      g.style.width = g.style.height = r + "px";
+      g.style.left = (540 - r / 2 + Math.sin(T * 0.11 + ph) * 330) + "px";
+      g.style.top = (300 + i * 560 - r / 2 + Math.cos(T * 0.09 + ph) * 160) + "px";
+      op(g, 0.45 + 0.15 * Math.sin(T * 0.3 + ph));
+    });
+    const sw = ((T * 0.055 + si * 0.37) % 1.4);
+    tf(a.querySelector(".sweep"), `translateX(${sw * 1080 * 1.6}px) rotate(14deg)`);
+    const o = a.querySelector(".orbbg");
+    if (o) {
+      const [x, y, size, alpha] = o.dataset.o.split(",").map(Number);
+      o.style.left = (x + Math.sin(T * 0.12 + si) * 40) + "px"; o.style.top = (y + Math.cos(T * 0.1 + si) * 50) + "px";
+      o.style.width = o.style.height = size + "px";
+      op(o, alpha); tf(o, `rotate(${T * 4 + si * 40}deg)`);
+    }
+  });
+}
+
+function renderAt(T) {
+  REAL = T;
+  const t = toAuthored(T);
+  ambient(T);
   scenes(t);
-  const sway = (ph, amp = 2) => `rotateY(${Math.sin(t * 0.45 + ph) * amp}deg) rotateX(${Math.cos(t * 0.38 + ph) * amp * 0.6}deg)`;
+  const sway = (ph, amp = 2) => `rotateY(${Math.sin(REAL * 0.4 + ph) * amp}deg) rotateX(${Math.cos(REAL * 0.33 + ph) * amp * 0.6}deg)`;
 
   // 1 · Hook
   if (t < 8.5) {
@@ -406,13 +453,11 @@ function renderAt(t) {
     typeIn($("dict"), t, 6.55, 0.9);
     const typing = SLOW.some(([tt]) => t >= tt && t < tt + 0.15) || (t > 6.55 && t < 7.5);
     op($("caret1"), typing || Math.floor(t * 2) % 2 === 0 ? 1 : 0);
-    // Key glides in, presses at 4.0, then gives way to the orb and the recording bar.
+    // Key glides in, presses at 4.0, then gives way to the recording bar in the same spot.
     const pressed = t >= 4.0 && t < 6.2 ? eo(prog(t, 4.0, 4.12)) : 0;
     enter($("key"), t, 3.25, { b: 4.6, d: 0.7, rise: 50, tilt: 18, out: 0.45, extra: `translateY(${pressed * 12}px)` });
     $("key").style.boxShadow = `0 ${16 - 12 * pressed}px 0 #ddd5cb, 0 ${40 - 20 * pressed}px 60px -16px rgba(20,33,46,0.35), inset 0 0 0 2px rgba(255,255,255,0.9)`;
     op($("bloom"), eo(prog(t, 4.0, 5.0)) * (1 - 0.35 * eio(prog(t, 6.6, 8))));
-    const ob = enter($("orb"), t, 4.15, { b: 7.3, d: 1.2, rise: 0, tilt: 0, out: 0.8,
-      extra: `rotate(${(t - 4) * 6}deg) scale(${0.9 + 0.1 * eq(prog(t, 4.15, 5.3)) + 0.025 * speech(t) * (t < 6.2 ? 1 : 0)})` });
     rec($("rec1"), t, 4.3, 6.2, 6.9);
   }
 
@@ -470,9 +515,9 @@ function renderAt(t) {
     cap("c4c", t, 25.5, 28.3);
     $$("#b4c .big > .u").forEach((u, i) => enter(u, t, 25.75 + i * 0.12, { d: 0.8, rise: 30, tilt: 18 }));
     [["um", 26.25], ["uh", 26.45]].forEach(([id, a]) => {
-      const el = $(id), k = eio(prog(t, a, a + 0.45));
+      const el = $(id), f = eo(prog(t, a, a + 0.25)), k = eio(prog(t, a + 0.2, a + 0.6));   // fade first, then close the gap
       if (!el._w && t >= a) el._w = el.offsetWidth;   // measured once the beat is on screen
-      op(el, 1 - k); el.style.maxWidth = t < a ? "none" : (el._w * (1 - k)) + "px";
+      op(el, 1 - f); el.style.maxWidth = t < a ? "none" : (el._w * (1 - k)) + "px";
       el.style.paddingLeft = el.style.paddingRight = (14 * (1 - k)) + "px";
     });
     enter($("rc"), t, 26.9, { d: 1.0, rise: 50, tilt: 16 });
@@ -525,7 +570,7 @@ function renderAt(t) {
 }
 
 window.renderAt = renderAt;
-window.DURATION = DURATION;
+window.DURATION = 60;
 init();
 </script>
 </body>
