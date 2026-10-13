@@ -16,3 +16,7 @@ settings.json
 notes/
 voice_test/
 models/
+
+# Promo video renders
+brag-output*/
+promo/assets/screens/

@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kalam promo</title>
+<style>
+  @font-face { font-family: "Readex Pro"; font-weight: 160 700; src: url(assets/readex-pro-arabic-wght-normal.woff2) format("woff2");
+    unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0898-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+  @font-face { font-family: "Readex Pro"; font-weight: 160 700; src: url(assets/readex-pro-latin-ext-wght-normal.woff2) format("woff2");
+    unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  @font-face { font-family: "Readex Pro"; font-weight: 160 700; src: url(assets/readex-pro-latin-wght-normal.woff2) format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+  :root {
+    --sky: #3E95D1; --deep: #1C5E9B; --orange: #FD6D39; --sun: #F0A623; --teal: #1E7F86; --ink: #10222B;
+    --muted: #5E6E78; --accent: #E85A27; --cream: #FAF7F2; --line: rgba(16, 34, 43, 0.08);
+    --sans: "Readex Pro", Inter, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--cream); }
+  body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--cream); }
+  .abs { position: absolute; }
+  [lang="ar"] { direction: rtl; unicode-bidi: isolate; }
+
+  /* Warm brand backdrop: sky aura on top, coral and sun glows at the bottom, film grain. */
+  #aura { position: absolute; inset: -200px; will-change: transform;
+    background:
+      radial-gradient(45% 50% at 50% 0%, rgba(93, 161, 208, 0.55), transparent 72%),
+      radial-gradient(40% 45% at 8% 95%, rgba(253, 109, 57, 0.40), transparent 70%),
+      radial-gradient(38% 40% at 92% 92%, rgba(255, 184, 77, 0.38), transparent 70%),
+      radial-gradient(30% 35% at 95% 20%, rgba(62, 149, 209, 0.22), transparent 70%),
+      var(--cream); }
+  #grain { position: absolute; inset: 0; opacity: 0.07; pointer-events: none; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  .scene { position: absolute; inset: 0; opacity: 0; }
+
+  /* Bilingual caption: English on top, Arabic (RTL) below. */
+  .cap { position: absolute; left: 0; right: 0; top: 70px; text-align: center; opacity: 0; }
+  .cap .en { font-size: 60px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.15; }
+  .cap .ar { font-size: 50px; font-weight: 500; color: var(--deep); line-height: 1.5; margin-top: 4px; }
+  kbd { font-family: var(--sans); font-weight: 600; font-size: 0.78em; padding: 0.04em 0.36em; border-radius: 0.3em;
+        background: #fff; box-shadow: 0 2px 0 rgba(16, 34, 43, 0.14), inset 0 0 0 1.5px rgba(16, 34, 43, 0.08);
+        display: inline-block; line-height: 1.25; vertical-align: 0.06em; color: var(--ink); }
+  kbd .opt { font-family: Inter, sans-serif; font-weight: 500; }
+
+  /* Window chrome shared by the mock app windows. */
+  .win { position: absolute; background: rgba(255, 255, 255, 0.92); border-radius: 26px; overflow: hidden;
+         box-shadow: 0 40px 80px -30px rgba(16, 34, 43, 0.45), 0 0 0 1px rgba(16, 34, 43, 0.06); }
+  .tb { height: 62px; display: flex; align-items: center; gap: 12px; padding: 0 24px; border-bottom: 1px solid var(--line);
+        font-size: 22px; font-weight: 600; color: var(--muted); background: rgba(250, 247, 242, 0.85); }
+  .tl { width: 16px; height: 16px; border-radius: 50%; display: inline-block; }
+  .tl.r { background: #FF5F57; } .tl.y { background: #FEBC2E; } .tl.g { background: #28C840; }
+  .tb .ttl { margin-left: 14px; }
+  .field { padding: 18px 34px; border-bottom: 1px solid var(--line); font-size: 26px; color: var(--muted); }
+  .field b { color: var(--ink); font-weight: 500; margin-right: 10px; }
+  .caret { display: inline-block; width: 3px; height: 1.05em; background: var(--accent); vertical-align: -0.15em; margin-left: 2px; border-radius: 2px; }
+
+  /* The real Kalam recording bar (ui.py): frosted HUD capsule with 11 brand-gradient bars. */
+  .pill { position: absolute; width: 288px; height: 86px; border-radius: 43px; opacity: 0;
+          background: rgba(36, 40, 46, 0.62); backdrop-filter: blur(18px) saturate(1.4);
+          box-shadow: 0 18px 40px -12px rgba(16, 34, 43, 0.55), inset 0 0 0 2px rgba(255, 255, 255, 0.45), inset 0 0 0 999px rgba(255, 255, 255, 0.10);
+          display: flex; align-items: center; justify-content: center; gap: 8.6px; }
+  .pill i { display: block; width: 6.7px; border-radius: 4px; height: 7px; }
+
+  /* Keycap for Right Option. */
+  #key { position: absolute; width: 230px; height: 200px; border-radius: 30px; background: linear-gradient(180deg, #ffffff, #f1ede7);
+         box-shadow: 0 14px 0 #d9d2c8, 0 30px 50px -10px rgba(16, 34, 43, 0.4), inset 0 0 0 2px rgba(255, 255, 255, 0.9); opacity: 0; }
+  #key .sym { position: absolute; right: 30px; top: 22px; font: 500 70px Inter, sans-serif; color: var(--ink); }
+  #key .lbl { position: absolute; left: 30px; bottom: 26px; font: 500 34px var(--sans); color: var(--muted); }
+  #key .side { position: absolute; left: 30px; top: 30px; font: 600 24px var(--sans); color: var(--accent); letter-spacing: 0.04em; }
+  #ring { position: absolute; width: 230px; height: 200px; border-radius: 30px; border: 4px solid var(--orange); opacity: 0; }
+
+  /* S2 app cards */
+  .card { position: absolute; width: 780px; height: 320px; background: rgba(255, 255, 255, 0.92); border-radius: 30px; overflow: hidden;
+          box-shadow: 0 30px 60px -28px rgba(16, 34, 43, 0.45), 0 0 0 1px rgba(16, 34, 43, 0.05); opacity: 0; }
+  .card .hd { height: 70px; display: flex; align-items: center; gap: 14px; padding: 0 26px; font-size: 25px; font-weight: 600; border-bottom: 1px solid var(--line); }
+  .card .ico { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: #fff; }
+  .card .ico svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .card .hd small { margin-left: auto; font-size: 19px; color: var(--muted); font-weight: 400; }
+  .card .bd { padding: 26px 30px; font-size: 31px; line-height: 1.45; }
+  .bub { display: inline-block; padding: 16px 24px; border-radius: 24px; font-size: 31px; line-height: 1.4; max-width: 640px; }
+  .w { opacity: 0; display: inline-block; white-space: pre; }
+  .minipill { transform-origin: center; }
+
+  /* S3 */
+  #chat .bd { padding: 30px; display: flex; flex-direction: column; gap: 22px; }
+  .row { display: flex; flex-direction: column; align-items: flex-end; opacity: 0; }
+  .row .tag { font-size: 19px; color: var(--muted); margin-bottom: 8px; }
+  .out { background: linear-gradient(140deg, #FF9A5C, var(--orange)); color: #fff; border-bottom-right-radius: 8px; font-size: 36px; }
+  .det { position: absolute; background: rgba(255, 255, 255, 0.9); border-radius: 30px; padding: 34px 38px;
+         box-shadow: 0 30px 60px -28px rgba(16, 34, 43, 0.45), 0 0 0 1px rgba(16, 34, 43, 0.05); }
+  .det h4 { font-size: 22px; font-weight: 500; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+  .badge { position: relative; height: 96px; margin-top: 14px; }
+  .badge span { position: absolute; left: 0; top: 0; font-size: 64px; font-weight: 600; opacity: 0; white-space: nowrap; }
+  .chips { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 18px; }
+  .chip { padding: 12px 22px; border-radius: 999px; background: #fff; box-shadow: inset 0 0 0 2px rgba(16, 34, 43, 0.08); font-size: 26px; opacity: 0;
+          display: inline-flex; gap: 12px; align-items: baseline; }
+  .chip .a { font-weight: 600; }
+  .chip .e { color: var(--muted); font-size: 22px; }
+  .chip.hot { background: linear-gradient(140deg, #FF9A5C, var(--orange)); color: #fff; box-shadow: none; }
+  .chip.hot .e { color: rgba(255, 255, 255, 0.85); }
+
+  /* S4 */
+  .say { position: absolute; left: 260px; width: 1400px; top: 330px; background: rgba(255, 255, 255, 0.92); border-radius: 34px; padding: 50px 64px; opacity: 0;
+         box-shadow: 0 30px 60px -28px rgba(16, 34, 43, 0.45), 0 0 0 1px rgba(16, 34, 43, 0.05); }
+  .say .lab { font-size: 24px; color: var(--muted); font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; display: flex; justify-content: space-between; }
+  .say .lab [lang="ar"] { text-transform: none; letter-spacing: 0; font-size: 26px; }
+  .say .q { font-size: 64px; font-weight: 500; margin: 14px 0 34px; position: relative; color: #3a4c56; }
+  .say .q .s { position: relative; display: inline-block; white-space: pre; }
+  .say .q .s::after { content: ""; position: absolute; left: -4px; right: -4px; top: 54%; height: 6px; border-radius: 3px; background: var(--orange);
+                      transform-origin: left; transform: scaleX(var(--k, 0)); }
+  .say .res { display: flex; align-items: center; gap: 26px; padding: 30px 40px; border-radius: 24px; background: #F4F8FB;
+              box-shadow: inset 0 0 0 2px rgba(62, 149, 209, 0.25); opacity: 0; }
+  .say .res .ok { width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(140deg, #3FB0B0, var(--teal)); display: grid; place-items: center; flex-shrink: 0; }
+  .say .res .ok svg { width: 30px; height: 30px; stroke: #fff; stroke-width: 3.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .say .res .t { font-size: 64px; font-weight: 600; color: var(--ink); }
+
+  .shot { position: absolute; display: block; filter: drop-shadow(0 34px 50px rgba(16, 34, 43, 0.35)); }
+  #hl { position: absolute; border: 5px solid var(--orange); border-radius: 22px; opacity: 0; box-shadow: 0 0 0 9999px rgba(16, 34, 43, 0); }
+
+  /* S5 */
+  #ar-wrap { position: absolute; overflow: hidden; }
+  #lang { position: absolute; padding: 16px 28px; border-radius: 999px; background: #fff; font-size: 30px; font-weight: 500; opacity: 0;
+          box-shadow: 0 20px 40px -14px rgba(16, 34, 43, 0.45); display: flex; align-items: center; gap: 16px; white-space: nowrap; }
+  #lang .from { color: var(--muted); }
+  #lang .to { color: #fff; background: linear-gradient(140deg, #4C8CC9, var(--deep)); padding: 4px 20px; border-radius: 999px; }
+
+  /* S6 */
+  #mac { position: absolute; left: 610px; top: 330px; width: 700px; }
+  #mac .scr { width: 700px; height: 440px; border-radius: 30px 30px 8px 8px; background: #10222B; padding: 18px; }
+  #mac .scr .in { width: 100%; height: 100%; border-radius: 16px; overflow: hidden; position: relative;
+                  background: radial-gradient(80% 90% at 20% 110%, rgba(253, 109, 57, 0.95), transparent 60%),
+                              radial-gradient(70% 80% at 95% 100%, rgba(62, 149, 209, 0.95), transparent 60%), #14232c; }
+  #mac .base { width: 860px; height: 34px; margin-left: -80px; border-radius: 4px 4px 26px 26px; background: linear-gradient(180deg, #d9dde1, #b7bdc3); }
+  #mac .notch { width: 140px; height: 10px; margin: 0 auto; border-radius: 0 0 10px 10px; background: #a8afb6; }
+  #lock { position: absolute; left: 50%; top: 50%; width: 150px; height: 150px; margin: -85px 0 0 -75px; }
+  #lock svg { width: 150px; height: 150px; stroke: #fff; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .orbit { position: absolute; left: 50%; top: 50%; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.35); }
+  .nochips { position: absolute; left: 0; right: 0; top: 870px; display: flex; justify-content: center; gap: 26px; }
+  .no { padding: 18px 30px; border-radius: 999px; background: rgba(255, 255, 255, 0.95); font-size: 30px; font-weight: 500; opacity: 0;
+        box-shadow: 0 18px 36px -16px rgba(16, 34, 43, 0.45); display: flex; align-items: center; gap: 16px; }
+  .no .x { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(140deg, #FF9A5C, var(--orange)); display: grid; place-items: center; }
+  .no .x svg { width: 18px; height: 18px; stroke: #fff; stroke-width: 3.4; fill: none; stroke-linecap: round; }
+  .no .ar { color: var(--deep); }
+
+  /* S7 */
+  #banner { position: absolute; left: 260px; top: 120px; width: 1400px; height: 298px; border-radius: 34px; overflow: hidden;
+            box-shadow: 0 34px 60px -24px rgba(16, 34, 43, 0.5); }
+  #banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  #brand { position: absolute; left: 0; right: 0; top: 500px; display: flex; justify-content: center; align-items: center; gap: 34px; }
+  #brand img.icon { width: 150px; height: 150px; }
+  #brand svg { height: 92px; width: auto; fill: var(--ink); }
+  #tag { position: absolute; left: 0; right: 0; top: 720px; text-align: center; }
+  #tag .en { font-size: 62px; font-weight: 600; letter-spacing: -0.025em; }
+  #tag .ar { font-size: 58px; font-weight: 500; color: var(--deep); margin-top: 6px; }
+  #by { position: absolute; left: 0; right: 0; top: 960px; text-align: center; font-size: 28px; color: var(--muted); letter-spacing: 0.03em; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="aura"></div>
+
+  <!-- 1 · Hook -->
+  <section class="scene" id="s1">
+    <div class="cap" id="c1a"><div class="en">Tired of typing?</div><div class="ar" lang="ar">تعبت من الكتابة؟</div></div>
+    <div class="cap" id="c1b"><div class="en">Hold <kbd>Right <span class="opt">⌥</span></kbd> and just talk.</div>
+      <div class="ar" lang="ar">اضغط مطوّل على <kbd>اليمين <span class="opt">⌥</span></kbd> وتكلّم</div></div>
+    <div class="cap" id="c1c"><div class="en">Let go, and it's typed for you.</div><div class="ar" lang="ar">تفكّه، وكلامك ينكتب على طول</div></div>
+    <div class="win" id="mail" style="left:360px; top:330px; width:1200px; height:500px">
+      <div class="tb"><i class="tl r"></i><i class="tl y"></i><i class="tl g"></i><span class="ttl">New Message</span></div>
+      <div class="field"><b>To:</b>Sara</div>
+      <div class="field"><b>Subject:</b>Campaign brief</div>
+      <div style="padding:30px 34px; font-size:38px; line-height:1.5;"><span id="typed"></span><br><span id="dict"></span><i class="caret" id="caret1"></i></div>
+    </div>
+    <div id="key"><div class="side">RIGHT</div><div class="sym">⌥</div><div class="lbl">option</div></div>
+    <div id="ring"></div>
+    <div class="pill" id="pill1"></div>
+  </section>
+
+  <!-- 2 · Any app -->
+  <section class="scene" id="s2">
+    <div class="cap" id="c2"><div class="en">Your words land in any app.</div><div class="ar" lang="ar">كلامك يوصل لأي تطبيق</div></div>
+    <div class="card" id="k0" style="left:150px; top:320px">
+      <div class="hd"><span class="ico" style="background:linear-gradient(140deg,#7CC0EA,#3E95D1)"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>Email<small>Re: Final brief</small></div>
+      <div class="bd" data-text="Attached is the final brief. Let me know what you think."></div>
+    </div>
+    <div class="card" id="k1" style="left:990px; top:320px">
+      <div class="hd"><span class="ico" style="background:linear-gradient(140deg,#5BD27A,#1E9E6A)"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-5.1A8 8 0 1 1 21 12z"/></svg></span>WhatsApp Web<small>Mum</small></div>
+      <div class="bd" style="display:flex; justify-content:flex-end; padding-top:34px"><span class="bub" lang="ar" style="background:#DFF6E2" data-text="واصل بعد 10 دقايق، جهّزي القهوة"></span></div>
+    </div>
+    <div class="card" id="k2" style="left:150px; top:680px">
+      <div class="hd"><span class="ico" style="background:linear-gradient(140deg,#B07CD8,#6B3FA0)"><svg viewBox="0 0 24 24"><path d="M9 4 7 20M17 4l-2 16M4 9h17M3 15h17"/></svg></span>Slack<small>#marketing</small></div>
+      <div class="bd" data-text="New captions are up in the shared folder."></div>
+    </div>
+    <div class="card" id="k3" style="left:990px; top:680px">
+      <div class="hd"><span class="ico" style="background:linear-gradient(140deg,#FFD66B,#F0A623)"><svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg></span>Notes<small>Friday shoot</small></div>
+      <div class="bd" data-text="Ideas: launch reel, client brief, behind the scenes."></div>
+    </div>
+  </section>
+
+  <!-- 3 · Arabic + English -->
+  <section class="scene" id="s3">
+    <div class="cap" id="c3"><div class="en">Arabic or English. It knows which.</div><div class="ar" lang="ar">عربي أو إنجليزي، يعرف بروحه</div></div>
+    <div class="win" id="chat" style="left:160px; top:330px; width:940px; height:560px">
+      <div class="tb"><i class="tl r"></i><i class="tl y"></i><i class="tl g"></i><span class="ttl">Chat · Noor</span></div>
+      <div class="bd">
+        <div class="row" id="r1"><span class="tag">Arabic · العربية</span><span class="bub out" lang="ar">شحالج؟ نتلاقى الساعة 4 في الكوفي؟</span></div>
+        <div class="row" id="r2"><span class="tag">English · الإنجليزية</span><span class="bub out">Perfect, see you at 4!</span></div>
+      </div>
+    </div>
+    <div class="det" id="det" style="left:1160px; top:330px; width:600px; height:560px">
+      <h4>Speaking language</h4>
+      <div style="font-size:24px; color:var(--muted); margin-top:6px">Arabic or English · <span lang="ar">عربي أو إنجليزي</span></div>
+      <div class="badge"><span id="b0" style="color:var(--muted)">Listening…</span><span id="b1" lang="ar" style="color:var(--accent)">العربية</span><span id="b2" style="color:var(--deep)">English</span></div>
+      <h4 style="margin-top:30px">Dialects</h4>
+      <div class="chips">
+        <span class="chip hot"><span class="a" lang="ar">خليجي</span><span class="e">Gulf</span></span>
+        <span class="chip hot"><span class="a" lang="ar">عُماني</span><span class="e">Omani</span></span>
+        <span class="chip"><span class="a" lang="ar">فصحى</span><span class="e">MSA</span></span>
+        <span class="chip"><span class="a" lang="ar">مصري</span><span class="e">Egyptian</span></span>
+        <span class="chip"><span class="a" lang="ar">شامي</span><span class="e">Levantine</span></span>
+      </div>
+    </div>
+    <div class="pill" id="pill3"></div>
+  </section>
+
+  <!-- 4 · Smart touches -->
+  <section class="scene" id="s4">
+    <div class="cap" id="c4a"><div class="en">Changed your mind? Just say so.</div><div class="ar" lang="ar">غيّرت رأيك؟ قولها وبس</div></div>
+    <div class="cap" id="c4b"><div class="en">Shortcuts for what you type every day.</div><div class="ar" lang="ar">اختصارات للي تكتبه كل يوم</div></div>
+    <div class="cap" id="c4c"><div class="en">No ums. Punctuation included.</div><div class="ar" lang="ar">بلا «إمم»، والترقيم علينا</div></div>
+
+    <div class="say" id="sa">
+      <div class="lab"><span>You say</span><span lang="ar">تقول</span></div>
+      <div class="q">“Meet at <span class="s" id="sa1">3, no wait,</span> 4”</div>
+      <div class="res"><span class="ok"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="t">Meet at 4.</span></div>
+    </div>
+
+    <div id="sb" class="abs" style="inset:0; opacity:0">
+      <img class="shot" id="sbshot" src="assets/screens/shortcuts.png" style="left:110px; top:330px; width:1000px">
+      <div id="hl"></div>
+      <div class="say" style="left:1170px; width:640px; top:400px; padding:44px 46px; opacity:1">
+        <div class="lab"><span>You say</span><span lang="ar">تقول</span></div>
+        <div class="q" style="font-size:58px">“sign off”</div>
+        <div class="res" id="sbres"><span class="ok"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="t" style="font-size:52px">Best regards,</span></div>
+      </div>
+    </div>
+
+    <div class="say" id="sc">
+      <div class="lab"><span>You say</span><span lang="ar">تقول</span></div>
+      <div class="q">“<span class="s" id="sc1">Um,</span> the brief is, <span class="s" id="sc2">uh,</span> ready”</div>
+      <div class="res"><span class="ok"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="t">The brief is ready.</span></div>
+    </div>
+  </section>
+
+  <!-- 5 · Bilingual app -->
+  <section class="scene" id="s5">
+    <div class="cap" id="c5a"><div class="en">The whole app speaks both.</div><div class="ar" lang="ar">التطبيق كله بالعربي والإنجليزي</div></div>
+    <div class="cap" id="c5b"><div class="en">Arabic flips it right to left.</div><div class="ar" lang="ar">بالعربي، كل شي من اليمين لليسار</div></div>
+    <img class="shot" id="f1" src="assets/screens/notes.png" style="width:900px">
+    <img class="shot" id="f2" src="assets/screens/clipboard.png" style="width:900px">
+    <img class="shot" id="f3" src="assets/screens/your-words.png" style="width:900px">
+    <img class="shot" id="en" src="assets/screens/home-en.png" style="left:410px; top:300px; width:1100px">
+    <div id="ar-wrap" style="left:400px; top:268px; width:1120px; height:812px">
+      <img class="shot" id="arimg" src="assets/screens/home-ar.png" style="left:10px; top:0; width:1100px; filter:none">
+    </div>
+    <div id="lang"><span>App language</span><span class="from">English</span><span>→</span><span class="to" lang="ar">العربية</span></div>
+  </section>
+
+  <!-- 6 · Privacy -->
+  <section class="scene" id="s6">
+    <div class="cap" id="c6"><div class="en">Everything stays on your Mac.</div><div class="ar" lang="ar">كل شي يبقى على جهازك</div></div>
+    <div id="mac">
+      <div class="scr"><div class="in">
+        <div class="orbit" id="o1"></div><div class="orbit" id="o2"></div>
+        <div id="lock"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/><path d="M12 15v2.2"/></svg></div>
+      </div></div>
+      <div class="base"><div class="notch"></div></div>
+    </div>
+    <div class="nochips">
+      <div class="no"><span class="x"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span>No account<span class="ar" lang="ar">بدون حساب</span></div>
+      <div class="no"><span class="x"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span>No subscription<span class="ar" lang="ar">بدون اشتراك</span></div>
+      <div class="no"><span class="x"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span>No cloud<span class="ar" lang="ar">بدون سحابة</span></div>
+    </div>
+  </section>
+
+  <!-- 7 · End card -->
+  <section class="scene" id="s7">
+    <div id="banner"><img id="ban-en" src="assets/header-megaphone.webp"><img id="ban-ar" src="assets/header-megaphone-ar.webp" style="opacity:0"></div>
+    <div id="brand">
+      <img class="icon" src="assets/kalam-icon.png">
+      <svg viewBox="0 0 1242.07 343.95" id="wordmark"></svg>
+    </div>
+    <div id="tag"><div class="en">Write less, speak more.</div><div class="ar" lang="ar">اشرح بلا حدود</div></div>
+    <div id="by">Powered by Amira Hamood</div>
+  </section>
+
+  <div id="grain"></div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const eo = (x) => 1 - Math.pow(1 - x, 3);
+const eio = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const back = (x) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+// 0→1 over [a, a+d], held, then 1→0 over [b-d, b].
+const win = (t, a, b, d = 0.4) => eo(prog(t, a, a + d)) * (1 - eio(prog(t, b - d, b)));
+function put(el, o, x = 0, y = 0, s = 1, extra = "") {
+  el.style.opacity = o;
+  el.style.transform = `translate(${x}px, ${y}px) scale(${s}) ${extra}`;
+}
+// Fade + rise for things entering at time a.
+function rise(el, t, a, d = 0.5, dist = 40) {
+  const k = eo(prog(t, a, a + d));
+  put(el, k, 0, (1 - k) * dist);
+}
+function cap(id, t, a, b) {
+  const k = win(t, a, b, 0.35), e = eo(prog(t, a, a + 0.5));
+  put($(id), k, 0, (1 - e) * 26);
+}
+
+// ── Recording bar, same maths as ui.py ─────────────────────────────────────
+const BARS = 11, STOPS = [[253, 110, 56], [255, 194, 84], [92, 161, 209]];
+function brand(tt) {
+  tt = clamp(tt) * (STOPS.length - 1);
+  const i = Math.min(Math.floor(tt), STOPS.length - 2), f = tt - i, a = STOPS[i], b = STOPS[i + 1];
+  return `rgb(${a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(",")})`;
+}
+function buildPill(el) {
+  for (let i = 0; i < BARS; i++) { const b = document.createElement("i"); b.style.background = brand(i / (BARS - 1)); el.appendChild(b); }
+}
+// Syllable-like loudness envelope for "someone talking".
+function speech(t) {
+  const syl = Math.pow(Math.abs(Math.sin(t * 6.1)), 0.8) * 0.65 + Math.abs(Math.sin(t * 2.3 + 1.1)) * 0.35;
+  const phrase = 0.55 + 0.45 * Math.sin(t * 1.3 + 0.4);
+  return clamp(syl * phrase * 1.15);
+}
+// mode: "rec" | "busy"
+function pill(el, t, vis, mode) {
+  const bars = el.children, c = (BARS - 1) / 2, maxH = 52.8, minH = 7.2;
+  for (let i = 0; i < BARS; i++) {
+    let v;
+    if (mode === "busy") v = 0.25 + 0.25 * (1 + Math.sin(t * 6 - i * 0.7)) / 2;
+    else {
+      const shape = 1 - Math.pow(Math.abs(i - c) / (c + 1), 1.6);
+      const jitter = 0.75 + 0.25 * Math.sin(t * 13 + i * 1.9);
+      v = speech(t) * shape * jitter;
+    }
+    bars[i].style.height = (minH + (maxH - minH) * v) + "px";
+  }
+  el.style.opacity = vis;
+}
+
+// Word-by-word reveal: wrap words of [data-text] into spans once.
+function words(el) {
+  if (!el._w) {
+    el.innerHTML = "";
+    el.dataset.text.split(" ").forEach((w, i, arr) => {
+      const s = document.createElement("span"); s.className = "w"; s.textContent = w + (i < arr.length - 1 ? " " : "");
+      el.appendChild(s);
+    });
+    el._w = [...el.children];
+  }
+  return el._w;
+}
+function reveal(el, t, a, d) {
+  const ws = words(el), n = ws.length;
+  ws.forEach((w, i) => {
+    const k = eo(prog(t, a + (i / n) * d, a + (i / n) * d + 0.22));
+    w.style.opacity = k; w.style.transform = `translateY(${(1 - k) * 12}px)`;
+  });
+}
+
+// ── Scene timing (seconds). Music is 120 BPM, so 2 s = one bar. ────────────
+const SC = { s1: [0, 8], s2: [8, 14], s3: [14, 20], s4: [20, 28], s5: [28, 34], s6: [34, 38.5], s7: [38.5, 44] };
+const DURATION = 44;
+
+const SLOW = [[0.7, "H"], [1.0, "Hi"], [1.35, "Hi "], [1.85, "Hi S"], [2.2, "Hi Sr"], [2.75, "Hi S"], [3.1, "Hi Sa"], [3.35, "Hi Sar"], [3.55, "Hi Sara"], [3.8, "Hi Sara,"]];
+const DICT = "Thanks for the update! Let's review the brief tomorrow at 10.";
+// Each card in scene 2: [record start, text start]
+const CARDS = [[9.0, 9.55], [10.15, 10.7], [11.3, 11.85], [12.45, 13.0]];
+
+function init() {
+  buildPill($("pill1")); buildPill($("pill3"));
+  document.querySelectorAll("#s2 .card").forEach((c) => {
+    const p = document.createElement("div"); p.className = "pill minipill"; buildPill(p);
+    p.style.left = "246px"; p.style.top = "200px"; c.appendChild(p); c._pill = p;
+  });
+  $("dict").dataset.text = DICT;
+  // Wordmark from the app's own logo file.
+  fetch("assets/logo-full.svg").then((r) => r.text()).then((s) => {
+    $("wordmark").innerHTML = s.replace(/^[\s\S]*?<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "");
+    window.__ready = true;
+  });
+}
+
+function renderAt(t) {
+  // Backdrop drifts slowly so the frame never feels frozen.
+  $("aura").style.transform = `translate(${Math.sin(t * 0.21) * 60}px, ${Math.cos(t * 0.17) * 40}px) rotate(${Math.sin(t * 0.08) * 3}deg)`;
+
+  for (const [id, [a, b]] of Object.entries(SC)) {
+    const first = a === 0, last = b === DURATION;
+    const fin = first ? eo(prog(t, 0, 0.6)) : eo(prog(t, a, a + 0.45));
+    const fout = last ? 1 : 1 - eio(prog(t, b - 0.3, b + 0.25));
+    const s = $(id);
+    s.style.display = t < a - 0.01 || t > b + 0.26 ? "none" : "block";
+    s.style.opacity = fin * fout;
+    s.style.transform = `translateY(${(1 - fin) * 30 - (1 - fout) * 30}px) scale(${1 + (1 - fout) * 0.03})`;
+  }
+
+  // 1 · Hook
+  if (t <= 8.3) {
+    cap("c1a", t, 0.2, 3.95); cap("c1b", t, 3.95, 6.7); cap("c1c", t, 6.7, 8.4);
+    rise($("mail"), t, 0.1, 0.7, 60);
+    let s = ""; for (const [tt, v] of SLOW) if (t >= tt) s = v; $("typed").textContent = s;
+    reveal($("dict"), t, 6.6, 0.7);
+    const typingNow = SLOW.some(([tt]) => t >= tt && t < tt + 0.15) || (t > 6.6 && t < 7.4);
+    $("caret1").style.opacity = typingNow || Math.floor(t * 2.2) % 2 === 0 ? 1 : 0;
+    // Key: appears at 3.5, pressed 4.0–6.2.
+    const kIn = back(prog(t, 3.5, 3.9)), pressed = t >= 4.0 && t < 6.2;
+    const kOut = 1 - eio(prog(t, 7.0, 7.5));
+    put($("key"), clamp(prog(t, 3.5, 3.75)) * kOut, 1500, 650 + (pressed ? 12 : 0), (0.6 + 0.4 * kIn), "");
+    $("key").style.left = "0px"; $("key").style.top = "0px";
+    $("key").style.boxShadow = pressed ? "0 2px 0 #d9d2c8, 0 10px 24px -8px rgba(16,34,43,0.4), inset 0 0 0 2px rgba(255,255,255,0.9)" : "";
+    const rp = prog(t, 4.0, 4.6);
+    $("ring").style.left = "0px"; $("ring").style.top = "0px";
+    put($("ring"), t >= 4.0 ? (1 - rp) * 0.9 : 0, 1500, 662, 1 + rp * 0.35);
+    // Pill at the bottom of the screen, like the real app.
+    const pv = eo(prog(t, 4.0, 4.2)) * (1 - eio(prog(t, 6.6, 6.9)));
+    pill($("pill1"), t, pv, t < 6.2 ? "rec" : "busy");
+    $("pill1").style.left = "816px"; $("pill1").style.top = "940px";
+    $("pill1").style.transform = `translateY(${(1 - eo(prog(t, 4.0, 4.25))) * 40}px) scale(${0.8 + 0.2 * eo(prog(t, 4.0, 4.25))})`;
+  }
+
+  // 2 · Any app
+  if (t >= 7.9 && t <= 14.3) {
+    cap("c2", t, 8.15, 14.4);
+    document.querySelectorAll("#s2 .card").forEach((c, i) => {
+      const a = 8.25 + i * 0.12, k = eo(prog(t, a, a + 0.55));
+      put(c, k, 0, (1 - k) * 70, 0.94 + 0.06 * k);
+      const [r, w] = CARDS[i];
+      const bd = c.querySelector("[data-text]");
+      reveal(bd, t, w, 0.5);
+      const pv = eo(prog(t, r, r + 0.12)) * (1 - eio(prog(t, w + 0.05, w + 0.3)));
+      pill(c._pill, t, pv, t < w - 0.05 ? "rec" : "busy");
+      c._pill.style.transform = `scale(${0.75})`;
+      // Gentle lift on the active card.
+      const act = win(t, r, w + 0.8, 0.2);
+      c.style.boxShadow = `0 ${30 + act * 14}px ${60 + act * 20}px -28px rgba(16,34,43,${0.45 + act * 0.15}), 0 0 0 ${1 + act * 3}px rgba(253,109,57,${0.05 + act * 0.6})`;
+    });
+  }
+
+  // 3 · Arabic + English
+  if (t >= 13.9 && t <= 20.3) {
+    cap("c3", t, 14.15, 20.4);
+    rise($("chat"), t, 14.25, 0.6, 60); rise($("det"), t, 14.4, 0.6, 60);
+    const recA = [14.7, 15.9], recB = [16.6, 17.7];
+    let pv = 0, mode = "rec";
+    if (t < recA[1] + 0.35) { pv = eo(prog(t, recA[0], recA[0] + 0.15)) * (1 - eio(prog(t, recA[1] + 0.15, recA[1] + 0.35))); mode = t < recA[1] ? "rec" : "busy"; }
+    else { pv = eo(prog(t, recB[0], recB[0] + 0.15)) * (1 - eio(prog(t, recB[1] + 0.15, recB[1] + 0.35))); mode = t < recB[1] ? "rec" : "busy"; }
+    pill($("pill3"), t, pv, mode);
+    $("pill3").style.left = "816px"; $("pill3").style.top = "940px";
+    const r1 = back(prog(t, 16.05, 16.4)), r2 = back(prog(t, 17.85, 18.2));
+    put($("r1"), clamp(prog(t, 16.05, 16.25)), 0, (1 - r1) * 30, 0.9 + 0.1 * r1);
+    put($("r2"), clamp(prog(t, 17.85, 18.05)), 0, (1 - r2) * 30, 0.9 + 0.1 * r2);
+    // Detected-language badge: Listening → العربية → English
+    const b1 = win(t, 15.0, 16.75, 0.25), b2 = eo(prog(t, 16.75, 17.0));
+    put($("b0"), 1 - eo(prog(t, 15.0, 15.25)), 0, 0); put($("b1"), b1, 0, (1 - eo(prog(t, 15.0, 15.25))) * 20 - (1 - (1 - eio(prog(t, 16.5, 16.75)))) * 20);
+    put($("b2"), b2, 0, (1 - b2) * 20);
+    document.querySelectorAll("#s3 .chip").forEach((c, i) => {
+      const a = 18.3 + i * 0.16, k = back(prog(t, a, a + 0.35));
+      put(c, clamp(prog(t, a, a + 0.2)), 0, 0, 0.6 + 0.4 * k);
+    });
+  }
+
+  // 4 · Smart touches: three beats
+  if (t >= 19.9 && t <= 28.3) {
+    cap("c4a", t, 20.15, 22.75); cap("c4b", t, 22.75, 25.35); cap("c4c", t, 25.35, 28.4);
+    // a) scratch that
+    const sa = win(t, 20.25, 22.75, 0.35);
+    put($("sa"), sa, 0, (1 - eo(prog(t, 20.25, 20.75))) * 50 - (1 - (1 - eio(prog(t, 22.4, 22.75)))) * 30);
+    $("sa1").style.setProperty("--k", eio(prog(t, 21.0, 21.35)));
+    $("sa1").style.opacity = 1 - 0.55 * prog(t, 21.35, 21.6);
+    const ra = back(prog(t, 21.55, 21.95));
+    put($("sa").querySelector(".res"), clamp(prog(t, 21.55, 21.75)), 0, (1 - ra) * 24, 0.94 + 0.06 * ra);
+    // b) shortcuts, on the real Shortcuts screen
+    const sb = win(t, 22.85, 25.35, 0.35);
+    put($("sb"), sb, (1 - eo(prog(t, 22.85, 23.35))) * 60, 0);
+    // Highlight the "sign off → Best regards," row (screenshot coordinates scaled to 1000 px).
+    const sc = 1000 / 1933, hl = $("hl");
+    hl.style.left = (110 + 130 * sc) + "px"; hl.style.top = (330 + 455 * sc) + "px";
+    hl.style.width = (1680 * sc) + "px"; hl.style.height = (115 * sc) + "px";
+    const hk = back(prog(t, 23.4, 23.75));
+    put(hl, clamp(prog(t, 23.4, 23.6)), 0, 0, 1.08 - 0.08 * hk);
+    const rb = back(prog(t, 24.05, 24.45));
+    put($("sbres"), clamp(prog(t, 24.05, 24.25)), 0, (1 - rb) * 24, 0.94 + 0.06 * rb);
+    // c) filler words
+    const sc4 = win(t, 25.45, 28.0, 0.35);
+    put($("sc"), sc4, 0, (1 - eo(prog(t, 25.45, 25.95))) * 50);
+    $("sc1").style.setProperty("--k", eio(prog(t, 26.1, 26.35)));
+    $("sc2").style.setProperty("--k", eio(prog(t, 26.3, 26.55)));
+    $("sc1").style.opacity = 1 - 0.55 * prog(t, 26.4, 26.65);
+    $("sc2").style.opacity = 1 - 0.55 * prog(t, 26.6, 26.85);
+    const rc = back(prog(t, 26.75, 27.15));
+    put($("sc").querySelector(".res"), clamp(prog(t, 26.75, 26.95)), 0, (1 - rc) * 24, 0.94 + 0.06 * rc);
+  }
+
+  // 5 · Bilingual app
+  if (t >= 27.9 && t <= 34.3) {
+    cap("c5a", t, 28.15, 31.2); cap("c5b", t, 31.2, 34.4);
+    // Fan of other real screens behind the home window.
+    const fan = [["f1", -430, 40, -8], ["f2", 0, -10, 0], ["f3", 430, 40, 8]];
+    fan.forEach(([id, dx, dy, rot], i) => {
+      const k = eo(prog(t, 28.3 + i * 0.1, 28.9 + i * 0.1));
+      const el = $(id); el.style.left = "510px"; el.style.top = "330px";
+      el.style.opacity = 0.9 * k;
+      el.style.transform = `translate(${dx * k}px, ${dy + (1 - k) * 80}px) rotate(${rot * k}deg) scale(0.92)`;
+    });
+    const e = eo(prog(t, 28.25, 28.85));
+    put($("en"), e, 0, (1 - e) * 80 + Math.sin(t * 0.9) * 4, 0.96 + 0.04 * e);
+    // Wipe from right to left, revealing the Arabic window.
+    const w = eio(prog(t, 30.9, 31.6));
+    $("ar-wrap").style.clipPath = `inset(0 0 0 ${(1 - w) * 100}%)`;
+    $("ar-wrap").style.opacity = w > 0 ? 1 : 0;
+    $("arimg").style.transform = `translateY(${Math.sin(t * 0.9) * 4}px)`;
+    $("arimg").style.filter = "drop-shadow(0 34px 50px rgba(16,34,43,0.35))";
+    const lk = back(prog(t, 30.2, 30.55));
+    $("lang").style.left = "1270px"; $("lang").style.top = "250px";
+    put($("lang"), clamp(prog(t, 30.2, 30.4)) * (1 - eio(prog(t, 32.4, 32.8))), 0, 0, 0.7 + 0.3 * lk);
+  }
+
+  // 6 · Privacy
+  if (t >= 33.9 && t <= 38.8) {
+    cap("c6", t, 34.15, 38.9);
+    const m = eo(prog(t, 34.2, 34.8));
+    put($("mac"), m, 0, (1 - m) * 60, 0.95 + 0.05 * m);
+    const lk = back(prog(t, 34.7, 35.1));
+    put($("lock"), clamp(prog(t, 34.7, 34.9)), 0, 0, 0.5 + 0.5 * lk);
+    [["o1", 0], ["o2", 0.6]].forEach(([id, off]) => {
+      const ph = ((t - 34.7 + off) % 1.2) / 1.2, s = 140 + ph * 360;
+      const o = $(id); o.style.width = o.style.height = s + "px"; o.style.marginLeft = o.style.marginTop = (-s / 2) + "px";
+      o.style.opacity = t > 34.7 ? (1 - ph) * 0.8 : 0;
+    });
+    document.querySelectorAll("#s6 .no").forEach((c, i) => {
+      const a = 35.4 + i * 0.3, k = back(prog(t, a, a + 0.4));
+      put(c, clamp(prog(t, a, a + 0.2)), 0, (1 - k) * 30, 0.85 + 0.15 * k);
+    });
+  }
+
+  // 7 · End card
+  if (t >= 38.4) {
+    const b = eo(prog(t, 38.45, 39.15));
+    put($("banner"), b, 0, (1 - b) * 50, 0.96 + 0.04 * b);
+    $("ban-ar").style.opacity = eio(prog(t, 41.4, 42.0));
+    const k = back(prog(t, 39.1, 39.6));
+    put($("brand"), clamp(prog(t, 39.1, 39.35)), 0, 0, 0.8 + 0.2 * k);
+    rise($("tag").children[0], t, 39.6, 0.5, 30);
+    rise($("tag").children[1], t, 39.85, 0.5, 30);
+    rise($("by"), t, 40.3, 0.6, 20);
+  }
+}
+window.renderAt = renderAt;
+window.DURATION = DURATION;
+init();
+</script>
+</body>
+</html>
