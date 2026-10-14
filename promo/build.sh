@@ -38,7 +38,7 @@ python3 "$HERE/crop_screens.py"
 python3 "$HERE/$MUSIC" "$WORK/music.wav"
 # Normalise loudness and limit peaks on the WAV first, so the AAC encode stays below 0 dBTP.
 ffmpeg -y -hide_banner -loglevel error -i "$WORK/music.wav" \
-  -af "loudnorm=I=-15:TP=-2:LRA=11,aresample=48000,alimiter=limit=0.63:attack=1:release=60:level=false" -ar 48000 "$WORK/music-norm.wav"
+  -af "loudnorm=I=-15:TP=-3:LRA=11,aresample=48000,alimiter=limit=0.5:attack=1:release=60:level=false" -ar 48000 "$WORK/music-norm.wav"
 node "$HERE/render.mjs" frames "$WORK/frames" 30
 
 ffmpeg -y -hide_banner -loglevel error -framerate 30 -i "$WORK/frames/f%05d.jpg" -i "$WORK/music-norm.wav" \
