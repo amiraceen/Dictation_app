@@ -26,13 +26,13 @@ This file records what was agreed. Nothing here is rendered until the full brief
 - **1 → 2 transition:** the key presses, white rings pulse out from it, and the section 2 look (calm cut artboard 3, orange glow over the person) spreads out as a circle from the key. The recording bar appears above the key.
 - **3:** background `bg/sky-peach.png`. Cards: Email, WhatsApp (real WhatsApp mark: phone handset in a speech bubble on WhatsApp green), X (replaces Slack), Notes. Each card lands with the burst animation.
 - **4:** background `bg/blue-bars.webp` (blue gradient with the faint recording-icon bars). Chat bubbles are flat coral with a pointed tail and no drop shadow, white text (as in the reference). The English/العربية glass toggle stays as it is. The dialect chips (خليجي، عُماني، فصحى، مصري، شامي) become glass like the toggle: translucent white, thin light border, white text. Standard recording bar. Bubbles land with the burst.
-- **7:** burst animation when the card lands (motion only, not the colours from the reference).
+- **7:** same background and setup as the calm cut (soft cream/peach). "Um, the brief is, uh, ready" appears with the fillers highlighted; the fillers fade out and the gaps close. Instead of leaving empty space, that original line then scales down and moves up under the caption (small, kept visible, muted), and the clean result "The brief is ready." types in underneath it in big bold dark text, in the middle of the frame. The ✓ result pill is rounded like section 5 and lands with the burst animation (motion only, not the colours from the reference).
 - **5:** background `bg/diagonal-soft.webp` (smooth blue with the orange-yellow diagonal on the right). The ✓ result card is a fully rounded pill (white, teal check) with a slight soft shadow underneath.
 - **6:** same background and layout as the dynamic cut (sky background, real Shortcuts screen, "sign off" → ✓ Best regards,). Beat 1: the camera pushes in on the top nav bar and the Shortcuts icon (⚡, the active teal one) gets a magnifier-style lens with a soft ring so it reads as the Shortcuts menu. Beat 2: the camera pans right so the window's right edge is in view and settles on the "sign off → Best regards," row, with a magnifier lens enlarging that row; then the ✓ Best regards, pill lands.
-- **7–9:** backgrounds and changes still to come.
+- **8–9:** backgrounds and changes still to come.
 
 ## Open
 
-- Backgrounds and notes for sections 7–9.
+- Backgrounds and notes for sections 8–9.
 - Text inside the mockups (email, chat, cards): Arabic or keep as is.
 - Final approval to render.
