@@ -27,10 +27,11 @@ This file records what was agreed. Nothing here is rendered until the full brief
 - **3:** background `bg/sky-peach.png`. Cards: Email, WhatsApp (real WhatsApp mark: phone handset in a speech bubble on WhatsApp green), X (replaces Slack), Notes. Each card lands with the burst animation.
 - **4:** background `bg/blue-bars.webp` (blue gradient with the faint recording-icon bars). Chat bubbles are flat coral with a pointed tail and no drop shadow, white text (as in the reference). The English/العربية glass toggle stays as it is. The dialect chips (خليجي، عُماني، فصحى، مصري، شامي) become glass like the toggle: translucent white, thin light border, white text. Standard recording bar. Bubbles land with the burst.
 - **7:** burst animation when the card lands (motion only, not the colours from the reference).
-- **5–9:** backgrounds and changes still to come.
+- **5:** background `bg/diagonal-soft.webp` (smooth blue with the orange-yellow diagonal on the right). The ✓ result card is a fully rounded pill (white, teal check) with a slight soft shadow underneath.
+- **6–9:** backgrounds and changes still to come.
 
 ## Open
 
-- Backgrounds and notes for sections 5–9.
+- Backgrounds and notes for sections 6–9.
 - Text inside the mockups (email, chat, cards): Arabic or keep as is.
 - Final approval to render.
