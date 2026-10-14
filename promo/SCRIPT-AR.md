@@ -29,10 +29,12 @@ This file records what was agreed. Nothing here is rendered until the full brief
 - **7:** same background and setup as the calm cut (soft cream/peach). "Um, the brief is, uh, ready" appears with the fillers highlighted; the fillers fade out and the gaps close. Instead of leaving empty space, that original line then scales down and moves up under the caption (small, kept visible, muted), and the clean result "The brief is ready." types in underneath it in big bold dark text, in the middle of the frame. The ✓ result pill is rounded like section 5 and lands with the burst animation (motion only, not the colours from the reference).
 - **5:** background `bg/diagonal-soft.webp` (smooth blue with the orange-yellow diagonal on the right). The ✓ result card is a fully rounded pill (white, teal check) with a slight soft shadow underneath.
 - **6:** same background and layout as the dynamic cut (sky background, real Shortcuts screen, "sign off" → ✓ Best regards,). Beat 1: the camera pushes in on the top nav bar and the Shortcuts icon (⚡, the active teal one) gets a magnifier-style lens with a soft ring so it reads as the Shortcuts menu. Beat 2: the camera pans right so the window's right edge is in view and settles on the "sign off → Best regards," row, with a magnifier lens enlarging that row; then the ✓ Best regards, pill lands.
-- **8–9:** backgrounds and changes still to come.
+- **8:** background `bg/blue-clear.webp` (clean bright blue gradient). Animation exactly as section 5 of the parallax vertical cut (the "Halima" 42 s video, `scenes-vertical.html`): the real app screens (Notes, Clipboard, Your words, Shortcuts) are dealt in one after another like cards with a label pill under each, the English home screen lands on top, the "App language: English → العربية" pill pops in, and the home screen does a 3D flip to the Arabic home screen. Each screen lands with the burst animation.
+- **7 and 8 both use the burst** (7 on the ✓ pill, 8 on each screen as it lands).
+- **9:** background and changes still to come.
 
 ## Open
 
-- Backgrounds and notes for sections 8–9.
+- Background and notes for section 9.
 - Text inside the mockups (email, chat, cards): Arabic or keep as is.
 - Final approval to render.
