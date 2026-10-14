@@ -25,8 +25,9 @@ This file records what was agreed. Nothing here is rendered until the full brief
 - **1 + 2:** as in the calm cut (person-writing background, email window, typing "Hi Halima,"). Captions Arabic only, black. The «⌥ اليمين» chip in the caption is black with white text. The big on-screen RIGHT ⌥ key stays white.
 - **1 → 2 transition:** the key presses, white rings pulse out from it, and the section 2 look (calm cut artboard 3, orange glow over the person) spreads out as a circle from the key. The recording bar appears above the key.
 - **3:** background `bg/sky-peach.png`. Cards: Email, WhatsApp (real WhatsApp mark: phone handset in a speech bubble on WhatsApp green), X (replaces Slack), Notes. Each card lands with the burst animation.
-- **4 and 7:** burst animation when the bubble/card lands (motion only, not the colours from the reference).
-- **4–9:** backgrounds and changes still to come.
+- **4:** background `bg/blue-bars.webp` (blue gradient with the faint recording-icon bars). Chat bubbles are flat coral with a pointed tail and no drop shadow, white text (as in the reference). The English/العربية glass toggle stays as it is. The dialect chips (خليجي، عُماني، فصحى، مصري، شامي) become glass like the toggle: translucent white, thin light border, white text. Standard recording bar. Bubbles land with the burst.
+- **7:** burst animation when the card lands (motion only, not the colours from the reference).
+- **5–9:** backgrounds and changes still to come.
 
 ## Open
 
