@@ -31,6 +31,6 @@ This file records what was agreed. Nothing here is rendered until the full brief
 
 ## Open
 
-- Backgrounds and notes for sections 4–9.
+- Backgrounds and notes for sections 5–9.
 - Text inside the mockups (email, chat, cards): Arabic or keep as is.
 - Final approval to render.
