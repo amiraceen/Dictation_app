@@ -28,10 +28,11 @@ This file records what was agreed. Nothing here is rendered until the full brief
 - **4:** background `bg/blue-bars.webp` (blue gradient with the faint recording-icon bars). Chat bubbles are flat coral with a pointed tail and no drop shadow, white text (as in the reference). The English/العربية glass toggle stays as it is. The dialect chips (خليجي، عُماني، فصحى، مصري، شامي) become glass like the toggle: translucent white, thin light border, white text. Standard recording bar. Bubbles land with the burst.
 - **7:** burst animation when the card lands (motion only, not the colours from the reference).
 - **5:** background `bg/diagonal-soft.webp` (smooth blue with the orange-yellow diagonal on the right). The ✓ result card is a fully rounded pill (white, teal check) with a slight soft shadow underneath.
-- **6–9:** backgrounds and changes still to come.
+- **6:** same background and layout as the dynamic cut (sky background, real Shortcuts screen, "sign off" → ✓ Best regards,). Beat 1: the camera pushes in on the top nav bar and the Shortcuts icon (⚡, the active teal one) gets a magnifier-style lens with a soft ring so it reads as the Shortcuts menu. Beat 2: the camera pans right so the window's right edge is in view and settles on the "sign off → Best regards," row, with a magnifier lens enlarging that row; then the ✓ Best regards, pill lands.
+- **7–9:** backgrounds and changes still to come.
 
 ## Open
 
-- Backgrounds and notes for sections 6–9.
+- Backgrounds and notes for sections 7–9.
 - Text inside the mockups (email, chat, cards): Arabic or keep as is.
 - Final approval to render.
