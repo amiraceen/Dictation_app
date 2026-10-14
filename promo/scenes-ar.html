@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8">
+<title>Kalam promo · Arabic</title>
+<style>
+  @font-face { font-family: "Readex Pro"; font-weight: 160 700; src: url(assets/readex-pro-arabic-wght-normal.woff2) format("woff2");
+    unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0898-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+  @font-face { font-family: "Readex Pro"; font-weight: 160 700; src: url(assets/readex-pro-latin-ext-wght-normal.woff2) format("woff2");
+    unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  @font-face { font-family: "Readex Pro"; font-weight: 160 700; src: url(assets/readex-pro-latin-wght-normal.woff2) format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+  :root {
+    --coral: #EE7A4A; --amber: #EDB04C; --sky: #5B9BD6; --navy: #2D5A96; --teal: #2E8393; --ink: #14212E;
+    --muted: #5E6E78; --line: rgba(20, 33, 46, 0.08);
+    --sans: "Readex Pro", Inter, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #F7F0EB; }
+  body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #F7F0EB; }
+  .ltr { direction: ltr; unicode-bidi: isolate; }
+
+  .scene { position: absolute; inset: 0; overflow: hidden; display: none; }
+  .bg { position: absolute; inset: -60px; background-size: cover; background-position: center; will-change: transform; }
+  .wash { position: absolute; inset: 0; pointer-events: none; }
+  .cam { position: absolute; inset: 0; perspective: 1800px; perspective-origin: 50% 45%; will-change: transform; }
+  .cam > * { position: absolute; }
+
+  /* Arabic caption, kinetic word by word. */
+  .cap { left: 50px; right: 50px; top: 240px; text-align: center; direction: rtl; }
+  .cap .l { font-size: 76px; font-weight: 700; line-height: 1.4; color: var(--ink); }
+  .cap .l2 { font-size: 60px; font-weight: 600; margin-top: 6px; }
+  .cap.light .l { color: #fff; text-shadow: 0 2px 26px rgba(15, 29, 51, 0.3); }
+  .u { display: inline-block; white-space: pre; opacity: 0; }
+  kbd { font-family: var(--sans); font-weight: 600; font-size: 0.78em; padding: 0.04em 0.36em 0.1em; border-radius: 0.3em;
+        background: var(--ink); color: #fff; display: inline-block; line-height: 1.25; box-shadow: 0 6px 16px -6px rgba(20, 33, 46, 0.45); }
+  kbd .opt { font-family: Inter, sans-serif; font-weight: 500; }
+
+  .glass { background: rgba(255, 255, 255, 0.92); border-radius: 36px; overflow: hidden;
+           box-shadow: 0 50px 90px -40px rgba(20, 33, 46, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.6) inset; }
+  .tb { height: 74px; display: flex; align-items: center; gap: 14px; padding: 0 30px; border-bottom: 1px solid var(--line);
+        font-size: 27px; font-weight: 500; color: var(--muted); direction: ltr; }
+  .tl { width: 18px; height: 18px; border-radius: 50%; display: inline-block; }
+  .tl.r { background: #FF5F57; } .tl.y { background: #FEBC2E; } .tl.g { background: #28C840; }
+  .tb .ttl { margin-left: 12px; }
+  .field { padding: 20px 36px; border-bottom: 1px solid var(--line); font-size: 31px; color: var(--muted); direction: ltr; }
+  .field b { color: var(--ink); font-weight: 500; margin-right: 12px; }
+  .caret { display: inline-block; width: 3px; height: 1.05em; background: var(--coral); vertical-align: -0.15em; margin-left: 3px; border-radius: 2px; }
+  .w { display: inline-block; white-space: pre; opacity: 0; }
+
+  /* The original Kalam recording bar (ui.py): dark frosted capsule, 11 bars orange → yellow → blue. */
+  .rec { width: 300px; height: 90px; border-radius: 45px; opacity: 0;
+         background: rgba(52, 44, 40, 0.62); backdrop-filter: blur(18px) saturate(1.3);
+         box-shadow: 0 18px 40px -14px rgba(20, 20, 20, 0.5), inset 0 0 0 2px rgba(255, 255, 255, 0.38), inset 0 0 0 999px rgba(255, 255, 255, 0.08);
+         display: flex; align-items: center; justify-content: center; gap: 9px; }
+  .rec i { display: block; width: 7px; border-radius: 4px; height: 8px; }
+
+  #key { width: 260px; height: 226px; border-radius: 38px; background: linear-gradient(180deg, #ffffff, #f2ece6); opacity: 0;
+         box-shadow: 0 16px 0 #ddd5cb, 0 40px 60px -16px rgba(20, 33, 46, 0.35), inset 0 0 0 2px rgba(255, 255, 255, 0.9); direction: ltr; }
+  #key .sym { position: absolute; right: 34px; top: 22px; font: 400 84px Inter, sans-serif; color: var(--ink); }
+  #key .lbl { position: absolute; left: 34px; bottom: 28px; font: 400 40px var(--sans); color: var(--muted); }
+  #key .side { position: absolute; left: 34px; top: 34px; font: 600 26px var(--sans); color: var(--coral); letter-spacing: 0.06em; }
+  .ring { border-radius: 50%; border: 5px solid rgba(255, 255, 255, 0.85); opacity: 0; }
+
+  .card { left: 70px; width: 940px; height: 236px; opacity: 0; transform-origin: 50% 0%; direction: ltr; }
+  .card .hd { height: 70px; display: flex; align-items: center; gap: 16px; padding: 0 28px; font-size: 28px; font-weight: 500; border-bottom: 1px solid var(--line); }
+  .card .ico { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; }
+  .card .ico svg { width: 26px; height: 26px; }
+  .card .hd small { margin-left: auto; font-size: 23px; color: var(--muted); font-weight: 400; }
+  .card .bd { padding: 24px 30px; font-size: 34px; line-height: 1.42; }
+  .card .rec { position: absolute; right: 22px; bottom: 16px; transform-origin: 100% 100%; }
+  .bub { display: inline-block; padding: 16px 26px; border-radius: 28px; font-size: 34px; line-height: 1.35; }
+
+  #toggle { left: 140px; top: 650px; width: 800px; height: 124px; border-radius: 62px; opacity: 0; direction: ltr;
+            background: rgba(255, 255, 255, 0.16); box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.36); backdrop-filter: blur(8px); }
+  #knob { position: absolute; top: 10px; width: 390px; height: 104px; border-radius: 52px; background: #fff; box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.3); opacity: 0; }
+  #toggle .opt { position: absolute; top: 0; width: 400px; height: 124px; display: grid; place-items: center; font-size: 50px; font-weight: 600; color: #fff; }
+  .row { right: 80px; display: flex; flex-direction: column; align-items: flex-end; opacity: 0; }
+  .row .tag { font-size: 28px; color: rgba(255, 255, 255, 0.85); margin-bottom: 12px; }
+  /* Flat coral chat bubble with a pointed tail, no shadow. */
+  .out { position: relative; background: #F4884A; color: #fff; font-size: 46px; padding: 22px 36px; border-radius: 40px; border-bottom-right-radius: 0; }
+  .out::after { content: ""; position: absolute; right: 0; bottom: -24px; border-top: 26px solid #F4884A; border-left: 34px solid transparent; }
+  .chips { left: 40px; right: 40px; top: 1360px; display: flex; flex-wrap: wrap; justify-content: center; gap: 22px; direction: rtl; }
+  .chip { padding: 16px 40px; border-radius: 999px; font-size: 44px; font-weight: 600; color: #fff; opacity: 0;
+          background: rgba(255, 255, 255, 0.16); box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.4); backdrop-filter: blur(8px); }
+
+  .big { left: 40px; right: 40px; text-align: center; font-size: 116px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.14; direction: ltr; }
+  .big .u { opacity: 0; }
+  .strike { position: relative; display: inline-block; white-space: pre; }
+  .strike::after { content: ""; position: absolute; left: -6px; right: -6px; top: 54%; height: 10px; border-radius: 5px; background: var(--coral);
+                   transform-origin: left; transform: scaleX(var(--k, 0)); }
+  /* Result pill: fully rounded, soft shadow underneath. */
+  .res { left: 0; right: 0; margin: 0 auto; width: max-content; min-width: 620px; display: flex; align-items: center; gap: 26px; padding: 30px 60px 30px 34px;
+         border-radius: 999px; background: #fff; opacity: 0; direction: ltr;
+         box-shadow: 0 22px 36px -18px rgba(20, 33, 46, 0.38), 0 4px 10px -4px rgba(20, 33, 46, 0.12); }
+  .res .ok { width: 78px; height: 78px; border-radius: 50%; background: #3E7F8C; display: grid; place-items: center; flex-shrink: 0; }
+  .res .ok svg { width: 40px; height: 40px; stroke: #fff; stroke-width: 3.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .res .t { font-size: 68px; font-weight: 700; letter-spacing: -0.02em; }
+  .say { left: 0; right: 0; text-align: center; opacity: 0; }
+  .say small { display: block; font-size: 34px; color: var(--ink); font-weight: 600; margin-bottom: 14px; }
+  .say span { display: inline-block; padding: 22px 46px; border-radius: 60px; background: var(--ink); color: #fff; font-size: 62px; font-weight: 500; direction: ltr; }
+  .fill { display: inline-block; white-space: pre; overflow: hidden; vertical-align: bottom; padding: 0 14px; border-radius: 26px; background: rgba(237, 176, 76, 0.38); }
+
+  #scwrap { left: 70px; top: 620px; width: 940px; height: 620px; transform-origin: 0 0; }
+  #scwrap img { position: absolute; left: 0; top: 0; width: 940px; filter: drop-shadow(0 30px 40px rgba(20, 33, 46, 0.3)); }
+  .lens { border-radius: 50%; overflow: hidden; opacity: 0; background: #fff;
+          box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.95), 0 0 0 9px rgba(46, 131, 147, 0.55), 0 30px 60px -18px rgba(20, 33, 46, 0.55); }
+  .lens img { position: absolute; max-width: none; }
+
+  .deck { left: 70px; top: 720px; width: 940px; height: 680px; transform-style: preserve-3d; }
+  .deck img.d { position: absolute; left: 0; top: 0; width: 940px; opacity: 0; filter: drop-shadow(0 34px 40px rgba(20, 33, 46, 0.3)); }
+  #flip { position: absolute; left: 0; top: 0; width: 940px; height: 680px; transform-style: preserve-3d; opacity: 0; }
+  #flip img { position: absolute; left: 0; top: 0; width: 940px; backface-visibility: hidden; filter: drop-shadow(0 34px 44px rgba(20, 33, 46, 0.35)); }
+  #flip img.back { transform: rotateY(180deg); }
+  .label { left: 0; right: 0; top: 1470px; text-align: center; opacity: 0; }
+  .label span { display: inline-flex; gap: 18px; align-items: center; padding: 16px 38px; border-radius: 999px; background: rgba(255, 255, 255, 0.95);
+                font-size: 44px; font-weight: 600; box-shadow: 0 20px 40px -18px rgba(20, 33, 46, 0.35); direction: rtl; }
+  #lang .to { color: #fff; background: var(--navy); padding: 4px 24px; border-radius: 999px; }
+  #lang .from { color: var(--muted); font-weight: 500; }
+
+  #mac { left: 140px; top: 640px; width: 800px; opacity: 0; }
+  #mac .scr { width: 800px; height: 500px; border-radius: 34px 34px 10px 10px; background: #0b1524; padding: 20px; box-shadow: 0 0 0 2px rgba(255,255,255,0.14), 0 60px 90px -40px rgba(0,0,0,.6); }
+  #mac .in { width: 100%; height: 100%; border-radius: 18px; overflow: hidden; position: relative;
+             background: radial-gradient(80% 90% at 15% 110%, rgba(238, 122, 74, 0.9), transparent 60%),
+                         radial-gradient(70% 80% at 95% 100%, rgba(91, 155, 214, 0.9), transparent 60%), #13233a; }
+  #mac .base { width: 960px; height: 36px; margin-left: -80px; border-radius: 4px 4px 28px 28px; background: linear-gradient(180deg, #dfe3e7, #a3aab2); }
+  #mac .notch { width: 160px; height: 12px; margin: 0 auto; border-radius: 0 0 12px 12px; background: #8f969d; }
+  #lock { position: absolute; left: 50%; top: 50%; width: 170px; height: 170px; margin: -95px 0 0 -85px; opacity: 0; }
+  #lock svg { width: 170px; height: 170px; stroke: #fff; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .halo { position: absolute; left: 50%; top: 50%; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.4); }
+  .no { left: 0; right: 0; text-align: center; opacity: 0; }
+  .no > span { display: inline-flex; align-items: center; gap: 22px; padding: 22px 44px 22px 30px; border-radius: 999px; background: #fff; font-size: 50px; font-weight: 600;
+               box-shadow: 0 22px 36px -18px rgba(20, 33, 46, 0.4); direction: rtl; }
+  .no .x { width: 58px; height: 58px; border-radius: 50%; background: #3E7F8C; display: grid; place-items: center; }
+  .no .x svg { width: 30px; height: 30px; stroke: #fff; stroke-width: 3.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+  #endicon { left: 440px; top: 1040px; width: 200px; height: 200px; opacity: 0; filter: drop-shadow(0 24px 40px rgba(15, 29, 51, 0.35)); }
+  #wordmark { left: 0; right: 0; top: 1280px; margin: 0 auto; height: 104px; width: 376px; fill: #fff; opacity: 0; }
+  #tagar { left: 30px; right: 30px; top: 1440px; text-align: center; font-size: 80px; font-weight: 700; color: #fff; direction: rtl; text-shadow: 0 2px 30px rgba(15, 29, 51, 0.35); }
+
+  .dot { position: absolute; border-radius: 50%; opacity: 0; pointer-events: none; }
+  #grain { position: absolute; inset: 0; opacity: 0.05; pointer-events: none; mix-blend-mode: multiply; z-index: 9;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 1 + 2 · لين الحين تكتب؟ → اضغط مطوّل -->
+  <section class="scene" id="s1">
+    <div class="bg" style="background-image:url(assets/bg/person-writing.webp)"></div>
+    <div class="wash" style="background:linear-gradient(180deg, rgba(247,240,235,.55), rgba(247,240,235,0) 38%)"></div>
+    <div class="wash" id="bloom" style="background:radial-gradient(70% 45% at 50% 70%, rgba(238,122,74,.85), transparent 72%), linear-gradient(180deg, rgba(238,122,74,.28), rgba(238,122,74,.58))"></div>
+    <div class="cam" id="cam1">
+      <div class="cap" id="c1"><div class="l">لين الحين تكتب؟</div></div>
+      <div class="cap" id="c2"><div class="l">اضغط مطوّل على <kbd><span class="opt">⌥</span> اليمين</kbd> واشرح.</div></div>
+      <div class="cap" id="c2b"><div class="l">تفكّه وينكتب على طول</div></div>
+      <div class="glass" id="mail" style="left:70px; top:580px; width:940px; height:520px; opacity:0">
+        <div class="tb"><i class="tl r"></i><i class="tl y"></i><i class="tl g"></i><span class="ttl">New Message</span></div>
+        <div class="field"><b>To:</b>Halima</div>
+        <div class="field"><b>Subject:</b>Campaign brief</div>
+        <div style="padding:28px 36px; font-size:44px; line-height:1.45; direction:ltr"><span id="typed"></span><br><span id="dict"></span><i class="caret" id="caret1"></i></div>
+      </div>
+      <div class="ring" id="ring1"></div><div class="ring" id="ring2"></div>
+      <div class="rec" id="rec1" style="left:390px; top:1120px"></div>
+      <div id="key" style="left:410px; top:1250px"><div class="side">RIGHT</div><div class="sym">⌥</div><div class="lbl">option</div></div>
+    </div>
+  </section>
+
+  <!-- 3 · يشتغل في أي تطبيق -->
+  <section class="scene" id="s3">
+    <div class="bg" style="background-image:url(assets/bg/sky-peach.png)"></div>
+    <div class="cam">
+      <div class="cap" id="c3"><div class="l">يشتغل في أي تطبيق</div></div>
+      <div class="card glass" style="top:560px">
+        <div class="hd"><span class="ico" style="background:var(--sky)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>Email<small>Re: Final brief</small></div>
+        <div class="bd" data-text="Attached is the final brief. Let me know what you think!"></div>
+      </div>
+      <div class="card glass" style="top:826px">
+        <div class="hd"><span class="ico" style="background:#25D366"><svg viewBox="0 0 24 24"><path fill="none" stroke="#fff" stroke-width="1.9" stroke-linejoin="round" d="M12 3.2a8.8 8.8 0 0 0-7.6 13.2L3.2 20.8l4.5-1.2A8.8 8.8 0 1 0 12 3.2z"/><path fill="#fff" d="M15.9 13.6c-.2-.1-1.3-.7-1.5-.7-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1a6 6 0 0 1-3-2.6c-.2-.4.2-.4.6-1.2.1-.1 0-.3 0-.4l-.7-1.6c-.2-.4-.4-.4-.5-.4h-.5a.9.9 0 0 0-.6.3 2.6 2.6 0 0 0-.8 1.9c0 1.1.8 2.2.9 2.4.1.2 1.6 2.5 3.9 3.4 1.4.6 2 .7 2.7.6.4-.1 1.3-.5 1.5-1.1.2-.5.2-1 .1-1.1l-.4-.2z"/></svg></span>WhatsApp<small>Mum</small></div>
+        <div class="bd" style="display:flex; justify-content:flex-end; padding-top:30px"><span class="bub" dir="rtl" style="background:#DCF8C6" data-text="واصل بعد 10 دقايق، تجهّزي"></span></div>
+      </div>
+      <div class="card glass" style="top:1092px">
+        <div class="hd"><span class="ico" style="background:#000"><svg viewBox="0 0 24 24"><path fill="#fff" d="M17.8 3h2.9l-6.4 7.3L21.9 21h-5.9l-4.6-6-5.3 6H3.2l6.9-7.8L2.8 3h6l4.2 5.5L17.8 3zm-1 16.2h1.6L8.1 4.7H6.4l10.4 14.5z"/></svg></span>X<small>@kalam</small></div>
+        <div class="bd" data-text="New captions are up. Spoken, not typed."></div>
+      </div>
+      <div class="card glass" style="top:1358px">
+        <div class="hd"><span class="ico" style="background:var(--amber)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg></span>Notes<small>Friday shoot</small></div>
+        <div class="bd" data-text="Ideas: launch reel, client brief, behind the scenes."></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · يدعم ويفهم اللغتين -->
+  <section class="scene" id="s4">
+    <div class="bg" style="background-image:url(assets/bg/blue-bars.webp)"></div>
+    <div class="cam">
+      <div class="cap light" id="c4"><div class="l">يدعم ويفهم اللغتين</div></div>
+      <div id="toggle"><div id="knob"></div>
+        <div class="opt" id="optEn" style="left:0">English</div><div class="opt" id="optAr" style="right:0">العربية</div></div>
+      <div class="row" id="r1" style="top:860px"><span class="tag">عربي</span><span class="out" dir="rtl">شحالش؟ نتلاقى الساعة 4 في الكوفي؟</span></div>
+      <div class="row" id="r2" style="top:1060px"><span class="tag">إنجليزي</span><span class="out ltr">Perfect, see you at 4!</span></div>
+      <div class="rec" id="rec4" style="left:390px; top:1240px"></div>
+      <div class="chips">
+        <span class="chip">خليجي</span><span class="chip">عُماني</span><span class="chip">فصحى</span><span class="chip">مصري</span><span class="chip">شامي</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · غيّرت رأيك وأنت تتكلم -->
+  <section class="scene" id="s5">
+    <div class="bg" style="background-image:url(assets/bg/diagonal-soft.webp)"></div>
+    <div class="cam">
+      <div class="cap" id="c5"><div class="l">غيّرت رأيك وأنت تتكلم</div><div class="l l2">كلام يفهمك ويعدّل</div></div>
+      <div class="big" style="top:720px"><span class="u">“Meet at</span><br><span class="u"><span class="strike" id="st1">3, no wait,</span></span><br><span class="u">4”</span></div>
+      <div class="res" id="r5" style="top:1300px"><span class="ok"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="t">Meet at 4.</span></div>
+    </div>
+  </section>
+
+  <!-- 6 · ضيّف اختصاراتك -->
+  <section class="scene" id="s6">
+    <div class="bg" style="background-image:url(assets/bg/sky.webp)"></div>
+    <div class="cam">
+      <div class="cap" id="c6"><div class="l">ضيّف اختصاراتك</div></div>
+      <div id="scwrap"><img src="assets/screens/shortcuts.png"></div>
+      <div class="lens" id="lens1" style="width:240px; height:240px"><img src="assets/screens/shortcuts.png"></div>
+      <div class="lens" id="lens2" style="width:300px; height:300px"><img src="assets/screens/shortcuts.png"></div>
+      <div class="say" id="say6" style="top:1330px"><small>تقول</small><span>“sign off”</span></div>
+      <div class="res" id="r6" style="top:1360px"><span class="ok"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="t">Best regards,</span></div>
+    </div>
+  </section>
+
+  <!-- 7 · يحذف «إمم» و«آه» تلقائي -->
+  <section class="scene" id="s7">
+    <div class="bg" style="background-image:url(assets/bg/cream.webp)"></div>
+    <div class="cam">
+      <div class="cap" id="c7"><div class="l">يحذف «إمم» و«آه» تلقائي</div></div>
+      <div class="big" id="raw" style="top:720px; font-size:100px; transform-origin:50% 0"><span class="u"><span class="fill" id="um">Um, </span></span><span class="u">the brief is, </span><span class="u"><span class="fill" id="uh">uh, </span></span><span class="u">ready</span></div>
+      <div class="big" id="clean" style="top:760px; font-size:112px"></div>
+      <div class="res" id="r7" style="top:1300px"><span class="ok"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="t">The brief is ready.</span></div>
+    </div>
+  </section>
+
+  <!-- 8 · واجهة عربية أو إنجليزية -->
+  <section class="scene" id="s8">
+    <div class="bg" style="background-image:url(assets/bg/blue-clear.webp)"></div>
+    <div class="cam">
+      <div class="cap" id="c8"><div class="l">واجهة عربية أو إنجليزية</div></div>
+      <div class="deck">
+        <img class="d" src="assets/screens/notes.png">
+        <img class="d" src="assets/screens/clipboard.png">
+        <img class="d" src="assets/screens/your-words.png">
+        <img class="d" src="assets/screens/shortcuts.png">
+        <div id="flip"><img class="front" src="assets/screens/home-en.png"><img class="back" src="assets/screens/home-ar.png"></div>
+      </div>
+      <div class="label"><span>الملاحظات</span></div>
+      <div class="label"><span>الحافظة</span></div>
+      <div class="label"><span>كلماتك</span></div>
+      <div class="label"><span>الاختصارات</span></div>
+      <div class="label" id="lang"><span>لغة التطبيق <span class="from ltr">English</span> ← <span class="to">العربية</span></span></div>
+    </div>
+  </section>
+
+  <!-- 9 · كل اللي تقوله يبقى في جهازك -->
+  <section class="scene" id="s9">
+    <div class="bg" style="background-image:url(assets/bg/blue-cream.webp)"></div>
+    <div class="cam">
+      <div class="cap light" id="c9"><div class="l" style="font-size:64px">كل اللي تقوله يبقى في جهازك.</div></div>
+      <div id="mac">
+        <div class="scr"><div class="in">
+          <div class="halo"></div><div class="halo"></div>
+          <div id="lock"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/><path d="M12 15v2.2"/></svg></div>
+        </div></div>
+        <div class="base"><div class="notch"></div></div>
+      </div>
+      <div class="no" style="top:1300px"><span><span class="x"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>بدون حساب</span></div>
+      <div class="no" style="top:1430px"><span><span class="x"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>بدون اشتراك</span></div>
+      <div class="no" style="top:1560px"><span><span class="x"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>يشتغل أوفلاين</span></div>
+    </div>
+  </section>
+
+  <!-- 10 · Outro -->
+  <section class="scene" id="s10">
+    <div class="bg" style="background-image:url(assets/bg/megaphone.webp)"></div>
+    <div class="wash" style="background:linear-gradient(180deg, rgba(15,29,51,0) 50%, rgba(15,29,51,.3))"></div>
+    <div class="cam">
+      <img id="endicon" src="assets/kalam-icon.png">
+      <svg id="wordmark" viewBox="0 0 1242.07 343.95"></svg>
+      <div id="tagar">اشرح بلا حدود</div>
+    </div>
+  </section>
+
+  <div id="grain"></div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const eo = (x) => 1 - Math.pow(1 - x, 3);
+const eio = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+// Well-damped spring 0→1: soft settle, about 1% overshoot.
+const spring = (x) => {
+  if (x <= 0) return 0;
+  const w = 11, z = 0.82, r = Math.sqrt(1 - z * z);
+  return 1 - Math.exp(-z * w * x) * (Math.cos(w * r * x) + (z / r) * Math.sin(w * r * x));
+};
+const op = (el, o) => { el.style.opacity = o; };
+const tf = (el, s) => { el.style.transform = s; };
+
+const DURATION = 66;
+const SC = [["s1", 0, 12], ["s3", 12, 20], ["s4", 20, 26], ["s5", 26, 32], ["s6", 32, 40], ["s7", 40, 46], ["s8", 46, 54], ["s9", 54, 60], ["s10", 60, 66]];
+// Parallax slide direction per cut: [dx, dy].
+const DIR = { 12: [-1, 0], 20: [0, 1], 26: [1, 0], 32: [0, 1], 40: [-1, 0], 46: [0, 1], 54: [1, 0], 60: [0, 1] };
+const WH = 0.35;
+
+// Pop in with a soft spring at time a (optional exit at b).
+function popIn(el, t, a, o = {}) {
+  const { b = 1e9, dy = 70, s0 = 0.8, rot = 0, tilt = 0, ry = 0, z = 0, extra = "" } = o;
+  const k = spring(Math.max(0, t - a)), out = eio(prog(t, b - 0.25, b));
+  op(el, clamp((t - a) / 0.12) * (1 - out));
+  tf(el, `translateY(${(1 - k) * dy - out * 30}px) translateZ(${(1 - k) * z}px) rotateX(${(1 - k) * tilt}deg) rotateY(${(1 - k) * ry}deg) rotate(${(1 - k) * rot}deg) scale(${s0 + (1 - s0) * k}) ${extra}`);
+  return k;
+}
+// Word units for kinetic captions; <kbd> stays one unit.
+function units(el) {
+  if (el._u) return el._u;
+  const out = [];
+  [...el.childNodes].forEach((n) => {
+    if (n.nodeType === 3) {
+      n.textContent.split(/(\s+)/).forEach((part) => {
+        if (!part) return;
+        if (/^\s+$/.test(part)) { el.insertBefore(document.createTextNode(part), n); return; }
+        const s = document.createElement("span"); s.className = "u"; s.textContent = part; el.insertBefore(s, n); out.push(s);
+      });
+      el.removeChild(n);
+    } else { const s = document.createElement("span"); s.className = "u"; el.insertBefore(s, n); s.appendChild(n); out.push(s); }
+  });
+  return (el._u = out);
+}
+function cap(id, t, a, b) {
+  const el = $(id);
+  if (t < a - 0.05 || t > b + 0.05) { op(el, 0); return; }
+  const out = eio(prog(t, b - 0.3, b));
+  op(el, 1 - out); tf(el, `translateY(${-out * 40}px)`);
+  el.querySelectorAll(".l").forEach((line, li) => units(line).forEach((u, i) => {
+    const s = a + li * 0.25 + i * 0.08, k = spring(Math.max(0, t - s));
+    op(u, clamp((t - s) / 0.12));
+    tf(u, `translateY(${(1 - k) * 46}px) scale(${0.86 + 0.14 * k})`);
+  }));
+}
+function words(el) {
+  if (!el._w) {
+    el.innerHTML = "";
+    el.dataset.text.split(" ").forEach((w, i, arr) => {
+      const s = document.createElement("span"); s.className = "w"; s.textContent = w + (i < arr.length - 1 ? " " : ""); el.appendChild(s);
+    });
+    el._w = [...el.children];
+  }
+  return el._w;
+}
+function typeIn(el, t, a, d) {
+  const ws = words(el), n = ws.length;
+  ws.forEach((w, i) => {
+    const s = a + (i / n) * d, k = spring(Math.max(0, t - s));
+    op(w, clamp((t - s) / 0.08)); tf(w, `translateY(${(1 - k) * 18}px) scale(${0.9 + 0.1 * k})`);
+  });
+}
+
+// ── Original Kalam recording bar (ui.py) ────────────────────────────────────
+const BARS = 11, STOPS = [[253, 110, 56], [255, 194, 84], [92, 161, 209]];
+function brand(x) {
+  x = clamp(x) * (STOPS.length - 1);
+  const i = Math.min(Math.floor(x), STOPS.length - 2), f = x - i, a = STOPS[i], b = STOPS[i + 1];
+  return `rgb(${a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(",")})`;
+}
+function buildRec(el) {
+  for (let i = 0; i < BARS; i++) { const b = document.createElement("i"); b.style.background = brand(i / (BARS - 1)); el.appendChild(b); }
+}
+function speech(t) {
+  const syl = Math.pow(Math.abs(Math.sin(t * 6.1)), 0.8) * 0.65 + Math.abs(Math.sin(t * 2.3 + 1.1)) * 0.35;
+  return clamp(syl * (0.55 + 0.45 * Math.sin(t * 1.3 + 0.4)) * 1.15);
+}
+// Bars follow the voice from `on`, shimmer while transcribing from `busy`, fade at `off`.
+function rec(el, t, on, busy, off, scale = 1) {
+  const c = (BARS - 1) / 2;
+  [...el.children].forEach((b, i) => {
+    const v = t >= busy ? 0.25 + 0.25 * (1 + Math.sin(t * 6 - i * 0.7)) / 2
+                        : speech(t) * (1 - Math.pow(Math.abs(i - c) / (c + 1), 1.6)) * (0.75 + 0.25 * Math.sin(t * 13 + i * 1.9));
+    b.style.height = (8 + 52 * v) + "px";
+  });
+  const k = spring(Math.max(0, t - on)), out = eio(prog(t, off, off + 0.25));
+  op(el, (t >= on ? 1 : 0) * (1 - out));
+  tf(el, `translateY(${(1 - k) * 40}px) scale(${scale * (0.7 + 0.3 * k)})`);
+}
+
+// ── Burst: dots fly out from an element as it lands ─────────────────────────
+const BURST_COLS = ["#EE7A4A", "#EDB04C", "#5B9BD6", "#3E7F8C", "#ffffff"];
+const bursts = [];
+function addBurst(host, x, y, t0, spread = 1) {
+  const dots = [];
+  for (let i = 0; i < 20; i++) {
+    const d = document.createElement("div"); d.className = "dot";
+    const r = 9 + ((i * 37 + bursts.length * 11) % 13);
+    d.style.width = d.style.height = r + "px"; d.style.background = BURST_COLS[(i + bursts.length) % BURST_COLS.length];
+    d.style.left = (x - r / 2) + "px"; d.style.top = (y - r / 2) + "px";
+    d._a = (i / 20) * Math.PI * 2 + ((i * 53 + bursts.length) % 10) / 20;
+    d._R = (200 + ((i * 71 + bursts.length * 29) % 170)) * spread;
+    host.appendChild(d); dots.push(d);
+  }
+  bursts.push({ t0, dots });
+}
+function drawBursts(t) {
+  for (const { t0, dots } of bursts) {
+    const p = prog(t, t0, t0 + 0.8);
+    dots.forEach((d) => {
+      if (t < t0 || p >= 1) { op(d, 0); return; }
+      const r = eo(p) * d._R;
+      op(d, 1 - p);
+      tf(d, `translate(${Math.cos(d._a) * r}px, ${Math.sin(d._a) * r * 0.75 + p * p * 90}px) scale(${1 - 0.6 * p})`);
+    });
+  }
+}
+
+// ── Scenes: parallax slide (background moves slower than the content) ───────
+function scenes(t) {
+  for (const [id, a, b] of SC) {
+    const s = $(id);
+    if (t < a - WH || t > b + WH) { s.style.display = "none"; continue; }
+    s.style.display = "block";
+    let e = 0, dir = [0, 0], clip = "none";
+    if (a > 0 && t < a + WH) {
+      const k = eio(prog(t, a - WH, a + WH)); e = 1 - k; dir = DIR[a];
+      clip = dir[0] > 0 ? `inset(0 0 0 ${e * 100}%)` : dir[0] < 0 ? `inset(0 ${e * 100}% 0 0)` : `inset(${e * 100}% 0 0 0)`;
+    } else if (b < DURATION && t > b - WH) {
+      const k = eio(prog(t, b - WH, b + WH)); e = -k; dir = DIR[b];
+    }
+    s.style.clipPath = clip; s.style.zIndex = t >= a ? 2 : 1;
+    const ox = e * 1080 * dir[0], oy = e * 1920 * dir[1];
+    const u = prog(t, a, b), drift = (0.5 - u) * 60;
+    tf(s.querySelector(".bg"), `translate(${ox * 0.35}px, ${oy * 0.35 + drift}px) scale(${1.02 + 0.04 * u})`);
+    s.querySelectorAll(".wash").forEach((w) => tf(w, `translate(${ox * 0.35}px, ${oy * 0.35}px)`));
+    tf(s.querySelector(".cam"), `translate(${ox}px, ${oy}px)`);
+  }
+}
+
+const SLOW = [[0.6, "H"], [0.85, "Hi"], [1.1, "Hi "], [1.5, "Hi H"], [1.8, "Hi Ha"], [2.25, "Hi Hal"], [2.5, "Hi Halu"], [2.95, "Hi Hal"], [3.15, "Hi Hali"], [3.35, "Hi Halim"], [3.55, "Hi Halima"], [3.75, "Hi Halima,"]];
+const CARDS = [12.5, 14.4, 16.3, 18.2];
+const DEAL = [46.6, 47.2, 47.8, 48.4], HOME = 49.0;
+
+// Shortcuts screen: image-local coordinates (screenshot drawn 940 px wide).
+const SCK = 940 / 1933, BOLT = [1234 * SCK, 68 * SCK], ROW = [205 * 2 * SCK, 253 * 2 * SCK];
+const CAM = { A: [1, 0, 0], B: [2.0, 540 - 70 - 2.0 * BOLT[0], 820 - 620 - 2.0 * BOLT[1]], C: [1.15, 1040 - 70 - 1.15 * 928, 880 - 620 - 1.15 * ROW[1]] };
+function lerpCam(p, q, k) { return p.map((v, i) => v + (q[i] - v) * k); }
+function lens(el, t, a, b, cx, cy, R, L, mag) {
+  el.style.left = (cx - R) + "px"; el.style.top = (cy - R) + "px";
+  const im = el.querySelector("img");
+  im.style.width = (940 * mag) + "px"; im.style.left = (R - L[0] * mag) + "px"; im.style.top = (R - L[1] * mag) + "px";
+  popIn(el, t, a, { b, dy: 0, s0: 0.3 });
+}
+
+function init() {
+  ["rec1", "rec4"].forEach((id) => buildRec($(id)));
+  $$("#s3 .card").forEach((c) => { const r = document.createElement("div"); r.className = "rec"; buildRec(r); c.appendChild(r); c._rec = r; });
+  $("dict").dataset.text = "Thanks for the update! Let's review the brief tomorrow at 10.";
+  $("clean").dataset.text = "The brief is ready.";
+  const cam = (id) => $(id).querySelector(".cam");
+  // Section 3: each card bursts as it lands.
+  [560, 826, 1092, 1358].forEach((y, i) => addBurst(cam("s3"), 540, y + 118, CARDS[i] + 0.12, 1.2));
+  // Section 4: each chat bubble bursts as it lands.
+  addBurst(cam("s4"), 700, 935, 21.75); addBurst(cam("s4"), 820, 1135, 23.45);
+  // Section 7: the result pill bursts.
+  addBurst(cam("s7"), 540, 1370, 44.45, 1.3);
+  // Section 8: each screen bursts as it lands.
+  [...DEAL, HOME].forEach((a) => addBurst(cam("s8"), 540, 1060, a + 0.2, 1.6));
+  // Section 9: each chip bursts.
+  [1300, 1430, 1560].forEach((y, i) => addBurst(cam("s9"), 540, y + 50, 55.45 + i * 0.5, 1.1));
+  fetch("assets/logo-full.svg").then((r) => r.text()).then((s) => {
+    $("wordmark").innerHTML = s.replace(/^[\s\S]*?<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "");
+    window.__ready = true;
+  });
+}
+
+function renderAt(t) {
+  scenes(t); drawBursts(t);
+  const sway = (ph, amp = 2) => `rotateY(${Math.sin(t * 0.5 + ph) * amp}deg) rotateX(${Math.cos(t * 0.42 + ph) * amp * 0.6}deg)`;
+
+  // 1 + 2 · typing, then Right ⌥, then it's typed for you
+  if (t < 12.5) {
+    cap("c1", t, 0.3, 3.9); cap("c2", t, 4.2, 6.8); cap("c2b", t, 7.0, 11.8);
+    popIn($("mail"), t, 0.15, { dy: 80, s0: 0.94, tilt: 14, extra: sway(0, 1.8) });
+    let s = ""; for (const [tt, v] of SLOW) if (t >= tt) s = v; $("typed").textContent = s;
+    typeIn($("dict"), t, 7.0, 0.9);
+    const typing = SLOW.some(([tt]) => t >= tt && t < tt + 0.15) || (t > 7.0 && t < 7.9);
+    op($("caret1"), typing || Math.floor(t * 2) % 2 === 0 ? 1 : 0);
+    // Key glides in, presses at 4.0 (rings + circular reveal), releases at 6.6, then leaves.
+    const pressed = t >= 4.0 && t < 6.6 ? eo(prog(t, 4.0, 4.1)) : 0;
+    popIn($("key"), t, 3.0, { b: 7.4, dy: 140, s0: 0.85, tilt: 20, extra: `translateY(${pressed * 14}px)` });
+    $("key").style.boxShadow = `0 ${16 - 13 * pressed}px 0 #ddd5cb, 0 ${40 - 22 * pressed}px 60px -16px rgba(20,33,46,0.35), inset 0 0 0 2px rgba(255,255,255,0.9)`;
+    $("bloom").style.clipPath = `circle(${eo(prog(t, 4.0, 4.7)) * 2300}px at 540px 1363px)`;
+    [["ring1", 4.0], ["ring2", 4.18]].forEach(([id, a]) => {
+      const p = prog(t, a, a + 0.9), r = 200 + eo(p) * 760, el = $(id);
+      el.style.width = el.style.height = r + "px"; el.style.left = (540 - r / 2) + "px"; el.style.top = (1363 - r / 2) + "px";
+      op(el, t >= a && p < 1 ? (1 - p) * 0.9 : 0);
+    });
+    rec($("rec1"), t, 4.15, 6.6, 7.1, 1.15);
+  }
+
+  // 3 · any app
+  if (t > 11.5 && t < 20.5) {
+    cap("c3", t, 12.4, 19.7);
+    $$("#s3 .card").forEach((c, i) => {
+      const a = CARDS[i];
+      popIn(c, t, a, { dy: 90, s0: 0.82, tilt: 30, z: -200, extra: sway(i * 1.3, 1.4) });
+      typeIn(c.querySelector("[data-text]"), t, a + 0.75, 0.6);
+      rec(c._rec, t, a + 0.2, a + 0.7, a + 0.8, 0.55);
+    });
+  }
+
+  // 4 · understands both languages
+  if (t > 19.5 && t < 26.5) {
+    cap("c4", t, 20.4, 25.7);
+    popIn($("toggle"), t, 20.5, { dy: 50, s0: 0.85, tilt: 30 });
+    const g = eio(prog(t, 23.0, 23.5));
+    $("knob").style.left = (400 - 390 * g) + "px";
+    op($("knob"), eo(prog(t, 21.0, 21.3)));
+    $("optAr").style.color = t >= 21.05 && t < 23.25 ? "var(--navy)" : "#fff";
+    $("optEn").style.color = t >= 23.25 ? "var(--navy)" : "#fff";
+    if (t < 22.0) rec($("rec4"), t, 20.6, 21.5, 21.6, 1.1); else rec($("rec4"), t, 22.3, 23.2, 23.3, 1.1);
+    popIn($("r1"), t, 21.7, { dy: 60, s0: 0.7, ry: -30 });
+    popIn($("r2"), t, 23.4, { dy: 60, s0: 0.7, ry: -30 });
+    $$("#s4 .chip").forEach((c, i) => popIn(c, t, 24.0 + i * 0.15, { dy: 60, s0: 0.6, ry: i % 2 ? -50 : 50 }));
+  }
+
+  // 5 · change your mind mid-speaking
+  if (t > 25.5 && t < 32.5) {
+    cap("c5", t, 26.4, 31.7);
+    $$("#s5 .big .u").forEach((u, i) => popIn(u, t, [27.2, 27.7, 28.2][i], { dy: 70, s0: 0.6, tilt: 40 }));
+    $("st1").style.setProperty("--k", eio(prog(t, 28.6, 28.9)));
+    op($("st1"), 1 - 0.55 * prog(t, 28.85, 29.1));
+    popIn($("r5"), t, 29.0, { dy: 80, s0: 0.8, tilt: 40 });
+  }
+
+  // 6 · shortcuts: push in on the Shortcuts menu, then pan to the "sign off" row
+  if (t > 31.5 && t < 40.5) {
+    cap("c6", t, 32.4, 39.7);
+    const w = $("scwrap");
+    let c = CAM.A;
+    if (t >= 33.0) c = lerpCam(CAM.A, CAM.B, eio(prog(t, 33.0, 34.0)));
+    if (t >= 35.4) c = lerpCam(CAM.B, CAM.C, eio(prog(t, 35.4, 36.6)));
+    const k = spring(Math.max(0, t - 32.4));
+    op(w, clamp((t - 32.4) / 0.15));
+    tf(w, `translate(${c[1]}px, ${c[2] + (1 - k) * 80}px) scale(${c[0] * (0.92 + 0.08 * k)})`);
+    lens($("lens1"), t, 34.0, 35.4, 540, 820, 120, BOLT, 3.6);
+    const L2 = [200 * 2 * SCK, ROW[1]];
+    lens($("lens2"), t, 36.6, 39.6, 70 + CAM.C[1] + CAM.C[0] * L2[0], 620 + CAM.C[2] + CAM.C[0] * L2[1], 150, L2, 2.6);
+    popIn($("say6"), t, 37.4, { b: 38.3, dy: 50, s0: 0.7 });
+    popIn($("r6"), t, 38.4, { dy: 70, s0: 0.8, tilt: 40 });
+  }
+
+  // 7 · removes the ums and uhs
+  if (t > 39.5 && t < 46.5) {
+    cap("c7", t, 40.4, 45.7);
+    $$("#raw > .u").forEach((u, i) => popIn(u, t, 40.6 + i * 0.12, { dy: 50, s0: 0.7, tilt: 30 }));
+    [["um", 41.6], ["uh", 41.8]].forEach(([id, a]) => {
+      const el = $(id), f = eo(prog(t, a, a + 0.25)), k = eio(prog(t, a + 0.2, a + 0.6));
+      if (!el._w && t >= a) el._w = el.offsetWidth;
+      op(el, 1 - f); el.style.maxWidth = t < a ? "none" : (el._w * (1 - k)) + "px";
+      el.style.paddingLeft = el.style.paddingRight = (14 * (1 - k)) + "px";
+    });
+    // The cleaned line shrinks and moves up under the caption, staying visible.
+    const m = eio(prog(t, 42.6, 43.3)), raw = $("raw");
+    raw.style.top = (720 - 250 * m) + "px";
+    raw.style.color = m > 0 ? `rgba(20,33,46,${1 - 0.45 * m})` : "";
+    raw.style.transform = `scale(${1 - 0.5 * m})`;
+    typeIn($("clean"), t, 43.3, 0.7);
+    popIn($("r7"), t, 44.4, { dy: 80, s0: 0.8, tilt: 40 });
+  }
+
+  // 8 · Arabic or English interface
+  if (t > 45.5 && t < 54.5) {
+    cap("c8", t, 46.4, 53.7);
+    const dim = eio(prog(t, HOME, HOME + 0.5));
+    $$("#s8 .deck img.d").forEach((im, i) => {
+      const k = popIn(im, t, DEAL[i], { dy: 600, s0: 0.85, tilt: 12, ry: -40, z: -300, rot: i % 2 ? 6 : -6, extra: `translate(${(i - 1.5) * 12}px, ${i * 6}px)` });
+      op(im, parseFloat(im.style.opacity) * (1 - 0.88 * dim));
+    });
+    $$("#s8 .label").forEach((l, i) => { if (i < 4) popIn(l, t, DEAL[i] + 0.05, { b: i < 3 ? DEAL[i + 1] + 0.05 : HOME, dy: 30, s0: 0.7 }); });
+    popIn($("lang"), t, 49.7, { dy: 40, s0: 0.6 });
+    const rot = 180 * eio(prog(t, 50.3, 51.3));
+    popIn($("flip"), t, HOME, { dy: 200, s0: 1.15, tilt: 24, z: -300, extra: `rotateY(${rot}deg)` });
+  }
+
+  // 9 · private and local
+  if (t > 53.5 && t < 60.5) {
+    cap("c9", t, 54.4, 59.7);
+    popIn($("mac"), t, 54.2, { dy: 90, s0: 0.9, tilt: 34, z: -260, extra: sway(1, 1.4) });
+    popIn($("lock"), t, 54.7, { dy: -120, s0: 1.6 });
+    $$("#s9 .halo").forEach((h, i) => {
+      const ph = ((t - 54.8 + i * 1.0) % 2.0) / 2.0, s = 170 + ph * 420;
+      h.style.width = h.style.height = s + "px"; h.style.marginLeft = h.style.marginTop = (-s / 2) + "px";
+      op(h, t > 54.8 ? (1 - ph) * 0.7 : 0);
+    });
+    $$("#s9 .no").forEach((c, i) => popIn(c, t, 55.4 + i * 0.5, { dy: 50, s0: 0.7, ry: 60 }));
+  }
+
+  // 10 · outro (unchanged, Arabic tagline only)
+  if (t > 59.5) {
+    popIn($("endicon"), t, 60.5, { dy: 0, s0: 0.3, rot: -12 });
+    popIn($("wordmark"), t, 61.0, { dy: 50, s0: 0.7 });
+    const tg = $("tagar"); units(tg);
+    tg._u.forEach((u, i) => { const s = 61.5 + i * 0.12, k = spring(Math.max(0, t - s)); op(u, clamp((t - s) / 0.12)); tf(u, `translateY(${(1 - k) * 40}px)`); });
+  }
+}
+
+window.renderAt = renderAt;
+window.DURATION = DURATION;
+init();
+</script>
+</body>
+</html>
