@@ -1,6 +1,7 @@
 // Renders promo/scenes.html frame by frame with Playwright.
 //   node render.mjs frames <outDir> [fps]      → every frame as JPEG
 //   node render.mjs stills <outDir> t1 t2 …    → PNG stills at given seconds (previews, poster)
+//   node render.mjs cues <outDir>              → <outDir>/cues.json from window.CUES (sound cues)
 // PAGE (default scenes.html) and SIZE (default 1920x1080) pick the cut, e.g.
 //   PAGE=scenes-vertical.html SIZE=1080x1920 node render.mjs frames out
 import http from "node:http";
@@ -43,7 +44,10 @@ async function frame(t, file, type) {
   await page.screenshot({ path: file, type, ...(type === "jpeg" ? { quality: 95 } : {}) });
 }
 
-if (mode === "frames") {
+if (mode === "cues") {
+  // Writes the page's sound cues (window.CUES) as JSON, so the soundtrack can follow the clicks.
+  fs.writeFileSync(path.join(outDir, "cues.json"), JSON.stringify(await page.evaluate(() => window.CUES)));
+} else if (mode === "frames") {
   const fps = Number(rest[0] || 30);
   const duration = await page.evaluate(() => window.DURATION);
   const n = Math.round(duration * fps);

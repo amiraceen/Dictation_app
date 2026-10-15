@@ -4,6 +4,7 @@
 #   promo/build.sh vertical   → kalam-promo-vertical.mp4 + kalam-promo-vertical-poster.png (9:16, 1080×1920)
 #   promo/build.sh calm       → kalam-promo-vertical-calm.mp4 + poster (9:16, calm 3D cut)
 #   promo/build.sh lively     → kalam-promo-vertical-lively.mp4 + poster (9:16, lively cut, 60 s)
+#   promo/build.sh install    → kalam-install.mp4 + poster (install how-to reel, 9:16, 76 s)
 #   promo/build.sh ar         → kalam-promo-ar.mp4 + poster (Arabic, 9:16, 66 s, top quality)
 #   promo/build.sh dynamic    → kalam-promo-vertical-dynamic.mp4 + poster (9:16, parallax cut on the supplied backgrounds, 60 s)
 # Needs node + Playwright (Chromium), python3 + numpy + Pillow, and ffmpeg.
@@ -14,7 +15,10 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 mkdir -p "$OUT"
 
-if [ "${1:-}" = "ar" ]; then
+if [ "${1:-}" = "install" ]; then
+  export PAGE=scenes-install.html SIZE=1080x1920
+  MUSIC=music_install.py NAME=kalam-install POSTER_T=3 CRF=${CRF:-16} ABR=${ABR:-320k} CUES=1
+elif [ "${1:-}" = "ar" ]; then
   export PAGE=scenes-ar.html SIZE=1080x1920
   MUSIC=music_ar.py NAME=kalam-promo-ar POSTER_T=64 CRF=${CRF:-16} ABR=${ABR:-320k}   # top quality; shared by link
 elif [ "${1:-}" = "dynamic" ]; then
@@ -35,7 +39,12 @@ else
 fi
 
 python3 "$HERE/crop_screens.py"
-python3 "$HERE/$MUSIC" "$WORK/music.wav"
+if [ "${CUES:-}" = 1 ]; then
+  node "$HERE/render.mjs" cues "$WORK"            # click/pop times from the page
+  python3 "$HERE/$MUSIC" "$WORK/cues.json" "$WORK/music.wav"
+else
+  python3 "$HERE/$MUSIC" "$WORK/music.wav"
+fi
 # Normalise loudness and limit peaks on the WAV first, so the AAC encode stays below 0 dBTP.
 ffmpeg -y -hide_banner -loglevel error -i "$WORK/music.wav" \
   -af "loudnorm=I=-15:TP=-3:LRA=11,aresample=48000,alimiter=limit=0.5:attack=1:release=60:level=false" -ar 48000 "$WORK/music-norm.wav"
