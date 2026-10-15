@@ -15,7 +15,7 @@ let playwright;
 try { playwright = require("playwright"); } catch { playwright = require("/opt/node22/lib/node_modules/playwright"); }
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const TYPES = { ".html": "text/html", ".png": "image/png", ".webp": "image/webp", ".svg": "image/svg+xml", ".woff2": "font/woff2" };
+const TYPES = { ".html": "text/html", ".png": "image/png", ".webp": "image/webp", ".svg": "image/svg+xml", ".woff2": "font/woff2", ".jpg": "image/jpeg", ".json": "application/json" };
 
 const server = http.createServer((req, res) => {
   const p = path.join(HERE, decodeURIComponent(new URL(req.url, "http://x").pathname));

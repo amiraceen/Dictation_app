@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kalam film intro</title>
+<style>
+  @font-face { font-family: "Readex Pro"; font-weight: 160 700; src: url(assets/readex-pro-arabic-wght-normal.woff2) format("woff2");
+    unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0898-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+  @font-face { font-family: "Readex Pro"; font-weight: 160 700; src: url(assets/readex-pro-latin-ext-wght-normal.woff2) format("woff2");
+    unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  @font-face { font-family: "Readex Pro"; font-weight: 160 700; src: url(assets/readex-pro-latin-wght-normal.woff2) format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+  :root {
+    --coral: #EE7A4A; --amber: #EDB04C; --sky: #5B9BD6; --navy: #2D5A96; --teal: #2E8393; --ink: #14212E;
+    --muted: #5E6E78; --mist: #C9D7E6; --blush: #F6DDD3;
+    --sans: "Readex Pro", Inter, sans-serif; --mac: Inter, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #F4F0EE; }
+  body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #F4F0EE; }
+  .abs { position: absolute; }
+
+  /* ── Film plates: one still each, moved by a virtual camera ── */
+  #plates { position: absolute; inset: 0; }
+  .plate { position: absolute; left: 0; top: 0; transform-origin: 0 0; display: none; }
+  .plate > img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+  .scrwrap { position: absolute; inset: 0; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+  .scr { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; transform-origin: 0 0; overflow: hidden;
+         filter: blur(0.7px) saturate(0.92); }
+  .pfx { position: absolute; pointer-events: none; }
+
+  /* Virtual laptop screen (1440 × 900), seen small and soft on the plates */
+  .wall { position: absolute; inset: 0; background: linear-gradient(165deg, #dfe8f2 0%, #f3ede9 55%, #f3d9cd 100%); }
+  .wall.warm { background: radial-gradient(70% 80% at 78% 85%, #ef7d4b 0%, rgba(239, 125, 75, 0) 70%),
+                           radial-gradient(60% 70% at 15% 20%, #f6e3d6 0%, rgba(246, 227, 214, 0) 70%),
+                           linear-gradient(150deg, #f6dccd, #f2a07a); }
+  .menubar { position: absolute; left: 0; right: 0; top: 0; height: 30px; background: rgba(255, 255, 255, 0.55); }
+  .win { position: absolute; left: 190px; top: 90px; width: 1060px; height: 730px; background: #fff; border-radius: 18px;
+         box-shadow: 0 30px 60px -20px rgba(20, 33, 46, 0.35); overflow: hidden; font-family: var(--mac); }
+  .win .tbar { height: 56px; background: #f4f2f1; border-bottom: 1px solid #e6e2df; display: flex; align-items: center; gap: 12px; padding: 0 22px; }
+  .win .tbar i { width: 16px; height: 16px; border-radius: 50%; display: block; }
+  .win .row { padding: 18px 40px; border-bottom: 1px solid #eee; font-size: 30px; color: #8a949b; }
+  .win .row b { color: var(--ink); font-weight: 500; }
+  .win .body { padding: 34px 40px; font-size: 44px; line-height: 1.5; color: var(--ink); white-space: pre-wrap; }
+  .win .body.big { font-size: 74px; line-height: 1.4; padding: 60px 56px; }
+  .scaret { display: inline-block; width: 4px; height: 1.1em; background: var(--coral); vertical-align: -0.2em; margin-left: 2px; }
+  .kwin { position: absolute; left: 180px; top: 80px; width: 1080px; border-radius: 22px; overflow: hidden;
+          box-shadow: 0 40px 80px -24px rgba(20, 33, 46, 0.45); }
+  .kwin img { display: block; width: 100%; }
+  .srec { position: absolute; left: 570px; bottom: 34px; transform-origin: 50% 100%; }
+
+  /* ── The original Kalam recording bar (ui.py): dark frosted capsule, 11 bars orange → yellow → blue ── */
+  .rec { width: 300px; height: 90px; border-radius: 45px; opacity: 0;
+         background: rgba(52, 44, 40, 0.62); backdrop-filter: blur(18px) saturate(1.3);
+         box-shadow: 0 18px 40px -14px rgba(20, 20, 20, 0.5), inset 0 0 0 2px rgba(255, 255, 255, 0.38), inset 0 0 0 999px rgba(255, 255, 255, 0.08);
+         display: flex; align-items: center; justify-content: center; gap: 9px; }
+  .rec i { display: block; width: 7px; border-radius: 4px; height: 8px; }
+
+  /* ── Post overlays: captions and frosted cards in the empty gradient ── */
+  .cap { position: absolute; left: 60px; right: 60px; top: 196px; text-align: center; opacity: 0; }
+  .cap .en { font-size: 66px; font-weight: 500; letter-spacing: -0.015em; line-height: 1.22; }
+  .cap .ar { font-size: 58px; font-weight: 500; line-height: 1.5; margin-top: 10px; direction: rtl; }
+  .u { display: inline-block; white-space: pre; opacity: 0; }
+
+  .card { position: absolute; opacity: 0; border-radius: 34px; padding: 30px 38px;
+          background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(26px) saturate(1.3);
+          box-shadow: 0 34px 70px -34px rgba(20, 33, 46, 0.35), inset 0 0 0 1.5px rgba(255, 255, 255, 0.8); }
+  .card .meta { font-size: 27px; font-weight: 500; color: var(--muted); display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .card .meta .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--coral); }
+  .card .txt { font-size: 40px; line-height: 1.42; color: var(--ink); min-height: 1.42em; }
+  .caret { display: inline-block; width: 3px; height: 1.05em; background: var(--coral); vertical-align: -0.17em; margin-left: 2px; border-radius: 2px; }
+  .w { display: inline-block; white-space: pre; opacity: 0; }
+  .quote { font-style: normal; color: #3c4a55; }
+  .quote .w { color: inherit; }
+  .pill { position: absolute; opacity: 0; display: flex; align-items: center; gap: 14px; padding: 16px 30px 16px 18px; border-radius: 999px;
+          background: rgba(255, 255, 255, 0.72); backdrop-filter: blur(20px); font-size: 32px; font-weight: 500;
+          box-shadow: 0 20px 44px -22px rgba(20, 33, 46, 0.4), inset 0 0 0 1.5px rgba(255, 255, 255, 0.9); }
+  .pill .ck { width: 46px; height: 46px; border-radius: 50%; background: var(--teal); display: grid; place-items: center; }
+  .strike { position: relative; display: inline-block; }
+  .strike::after { content: ""; position: absolute; left: -2px; right: -2px; top: 54%; height: 4px; border-radius: 2px; background: var(--coral);
+                   transform-origin: 0 50%; transform: scaleX(var(--s, 0)); }
+  .hl { border-radius: 10px; padding: 0 6px; margin: 0 -6px; }
+
+  kbd { font-family: var(--sans); font-weight: 600; font-size: 36px; padding: 10px 22px 12px; border-radius: 16px;
+        background: var(--ink); color: #fff; display: inline-block; line-height: 1.1; box-shadow: 0 14px 30px -12px rgba(20, 33, 46, 0.55); }
+  kbd .opt { font-family: Inter, sans-serif; font-weight: 500; }
+  .tag { display: inline-flex; gap: 10px; align-items: center; font-size: 26px; font-weight: 600; color: var(--coral);
+         background: rgba(238, 122, 74, 0.12); padding: 8px 18px; border-radius: 999px; margin-bottom: 16px; }
+  .line { font-size: 50px; font-weight: 500; line-height: 1.4; }
+
+  /* Kalam icon pop with a coral glow */
+  #icon { position: absolute; left: 0; top: 0; width: 210px; height: 210px; opacity: 0; transform-origin: 50% 50%; }
+  #icon img { width: 100%; height: 100%; border-radius: 48px; box-shadow: 0 30px 60px -24px rgba(20, 33, 46, 0.5); }
+  .glow { position: absolute; border-radius: 50%; pointer-events: none; opacity: 0;
+          background: radial-gradient(circle, rgba(238, 122, 74, 0.55) 0%, rgba(237, 176, 76, 0.22) 38%, rgba(238, 122, 74, 0) 70%); }
+  .ring { position: absolute; border-radius: 50%; border: 3px solid rgba(238, 122, 74, 0.7); opacity: 0; pointer-events: none; }
+
+  /* End card */
+  #end { position: absolute; inset: 0; opacity: 0; background: linear-gradient(180deg, #C9D7E6 0%, #F4F0EE 52%, #F6DDD3 100%); }
+  #end .glow { left: 240px; top: 300px; width: 600px; height: 600px; }
+  #eicon { position: absolute; left: 420px; top: 480px; width: 240px; height: 240px; opacity: 0; }
+  #eicon img { width: 100%; height: 100%; border-radius: 56px; box-shadow: 0 40px 80px -30px rgba(20, 33, 46, 0.55); }
+  #wordmark { position: absolute; left: 0; right: 0; top: 820px; margin: 0 auto; width: 400px; height: 111px; fill: var(--ink); opacity: 0; }
+  #tagen { position: absolute; left: 0; right: 0; top: 1040px; text-align: center; font-size: 66px; font-weight: 500; letter-spacing: -0.015em; opacity: 0; }
+  #tagar { position: absolute; left: 0; right: 0; top: 1140px; text-align: center; font-size: 62px; font-weight: 500; direction: rtl; opacity: 0; }
+
+  #flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  #grain { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; pointer-events: none; mix-blend-mode: overlay; opacity: 0.16; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="plates"></div>
+
+  <!-- Captions -->
+  <div class="cap" id="c1"><div class="en">Typing it all out takes forever.</div><div class="ar">الكتابة تاخذ وقت طويل</div></div>
+  <div class="cap" id="c2"><div class="en">Your ideas move faster than your fingers.</div><div class="ar">أفكارك أسرع من أصابعك</div></div>
+  <div class="cap" id="c3"><div class="en">Meet Kalam.</div><div class="ar">تعرّف على كلام</div></div>
+  <div class="cap" id="c4"><div class="en">Hold. Speak.</div><div class="ar">اضغط. وتكلّم.</div></div>
+  <div class="cap" id="c5"><div class="en">Let go. Done.</div><div class="ar">فكّه، وينكتب.</div></div>
+  <div class="cap" id="c6"><div class="en">Say it your way.</div><div class="ar">قُلها بطريقتك</div></div>
+  <div class="cap" id="c7" style="left: 400px; text-align: right;"><div class="en">Private.</div><div class="en">Stays on your Mac.</div><div class="ar">خاص. يبقى في جهازك.</div></div>
+  <div class="cap" id="c8"><div class="en">Free. No subscription.</div><div class="ar">مجاني. بدون اشتراك.</div></div>
+  <div class="cap" id="c9"><div class="en">Arabic. English. Every accent.</div><div class="ar">عربي. إنجليزي. بلهجتك.</div></div>
+
+  <!-- 1 + 2 · the slow draft -->
+  <div class="card" id="draft" style="left: 380px; top: 470px; width: 640px;">
+    <div class="meta"><span class="dot"></span>New message · To: Sara</div>
+    <div class="txt"><span id="typed"></span><span class="caret" id="caret1"></span></div>
+  </div>
+
+  <!-- 3 · Kalam icon -->
+  <div class="glow" id="iglow"></div>
+  <div class="ring" id="ir1"></div><div class="ring" id="ir2"></div>
+  <div id="icon"><img src="assets/kalam-icon.png" alt=""></div>
+
+  <!-- 4 · what he says, the recording bar, the key -->
+  <div class="card quote" id="said" style="left: 70px; top: 470px; width: 940px;">
+    <div class="meta"><span class="dot" style="background: var(--sky)"></span>You say</div>
+    <div class="txt" id="saidtxt"></div>
+  </div>
+  <div class="rec abs" id="rec4" style="left: 390px; top: 860px;"></div>
+  <div class="abs" id="keychip" style="left: 690px; top: 1610px; opacity: 0;"><kbd>Right <span class="opt">⌥</span></kbd></div>
+
+  <!-- 5 · typed for you -->
+  <div class="card" id="result" style="left: 70px; top: 440px; width: 940px;">
+    <div class="meta"><span class="dot"></span>New message · To: Sara</div>
+    <div class="txt" id="restxt"></div>
+  </div>
+  <div class="pill" id="done" style="right: 60px; top: 820px;">
+    <span class="ck"><svg width="26" height="26" viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Typed where your cursor is
+  </div>
+
+  <!-- 6 · scratch that -->
+  <div class="card" id="fix" style="left: 430px; top: 440px; width: 590px;">
+    <div class="meta"><span class="dot" style="background: var(--sky)"></span>You say</div>
+    <div class="txt quote" id="fixsaid">“Meet at <span class="hl" id="fhl"><span class="strike" id="fst">3, no wait,</span></span> 4.”</div>
+    <div style="height: 1.5px; background: rgba(20, 33, 46, 0.1); margin: 22px 0 20px;" id="fixrule"></div>
+    <div class="meta"><span class="dot"></span>Kalam types</div>
+    <div class="txt" id="fixout" style="font-size: 56px; font-weight: 500;">Meet at 4.</div>
+  </div>
+
+  <!-- 7 · offline -->
+  <div class="pill" id="offline" style="right: 60px; top: 620px; padding-left: 22px;">
+    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#14212E" stroke-width="2" stroke-linecap="round">
+      <path d="M2.5 8.8a14 14 0 0 1 19 0"/><path d="M5.6 12.1a9.5 9.5 0 0 1 12.8 0"/><path d="M8.8 15.4a5 5 0 0 1 6.4 0"/>
+      <circle cx="12" cy="19" r="1.1" fill="#14212E"/><path d="M3.5 3.5l17 17" stroke="#EE7A4A" stroke-width="2.4"/></svg>
+    <span>Works offline<br><span style="font-size: 30px; direction: rtl; display: block; text-align: left; margin-top: 4px;">يشتغل أوفلاين</span></span>
+  </div>
+
+  <!-- 9 · dialects -->
+  <div class="card" id="dia" style="left: 300px; top: 405px; width: 720px;">
+    <div class="tag" id="diatag"></div>
+    <div class="line" id="dialine"></div>
+  </div>
+
+  <!-- 10 · end card -->
+  <section id="end">
+    <div class="glow" id="eglow"></div>
+    <div id="eicon"><img src="assets/kalam-icon.png" alt=""></div>
+    <svg id="wordmark" viewBox="0 0 1242.07 343.95"></svg>
+    <div id="tagen">Write less, speak more.</div>
+    <div id="tagar">اشرح بلا حدود</div>
+  </section>
+
+  <div id="flash"></div>
+  <canvas id="grain" width="540" height="960"></canvas>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const eo = (x) => 1 - Math.pow(1 - x, 3);
+const eio = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const spring = (x) => {
+  if (x <= 0) return 0;
+  const w = 11, z = 0.82, r = Math.sqrt(1 - z * z);
+  return 1 - Math.exp(-z * w * x) * (Math.cos(w * r * x) + (z / r) * Math.sin(w * r * x));
+};
+const op = (el, o) => { el.style.opacity = o; };
+const tf = (el, s) => { el.style.transform = s; };
+
+// ── Timeline (seconds) ──────────────────────────────────────────────────────
+const T = {
+  s1: 0, s2: 6.0, s3: 9.6, s4: 13.8, s5: 18.6, s6: 23.2, s7: 27.8, s8: 32.0, s9: 36.0, s10: 42.4,
+};
+const SWAP = [36.0, 37.6, 39.2, 40.8];       // Khaliji, Levantine, English, Omani
+const DURATION = 49;
+const PRESS = 14.25, RELEASE = 18.6;
+const CUES = { duration: DURATION, cuts: [T.s2, T.s3, T.s4, T.s5, T.s6, T.s7, T.s8, T.s9, T.s10], swaps: SWAP.slice(1),
+               keys: [], icon: 10.2, press: PRESS, release: RELEASE, pops: [], chime: [19.15, 25.3], end: 42.9 };
+
+// ── Plates ──────────────────────────────────────────────────────────────────
+// [id, still, screen kind]; quads (screen corners in hd px) come from film_prep.py.
+const PLATES = [
+  ["p1", "01-typing-close", "mail"], ["p2", "01-typing", "mail"], ["p3", "03-discover", "kalam"],
+  ["p4", "04-key-macro"], ["p5", "05-release", "mail"], ["p6", "05-release", "mail"],
+  ["p7", "07-private-screen"], ["p8", "08-relaxed", "kalam"],
+  ["p9a", "09a-khaliji", "line"], ["p9b", "09b-levantine", "line"], ["p9c", "09c-english", "line"], ["p9d", "03-discover", "line"],
+];
+const DIALECTS = [
+  { tag: "Khaliji · خليجي", text: "وينك؟ أنا جاي الحين", rtl: true },
+  { tag: "Levantine · شامي", text: "وينك؟ أنا جاي هلأ", rtl: true },
+  { tag: "English", text: "Running ten minutes late, start without me.", rtl: false },
+  { tag: "Omani · عُماني", text: "وين إنت؟ أنا جاي الحين", rtl: true },
+];
+const P = {};
+
+function homography(w, h, q) {
+  const [[x0, y0], [x1, y1], [x2, y2], [x3, y3]] = q;
+  const dx1 = x1 - x2, dx2 = x3 - x2, dy1 = y1 - y2, dy2 = y3 - y2, sx = x0 - x1 + x2 - x3, sy = y0 - y1 + y2 - y3;
+  const det = dx1 * dy2 - dx2 * dy1;
+  const g = (sx * dy2 - dx2 * sy) / det, h2 = (dx1 * sy - sx * dy1) / det;
+  const a = x1 - x0 + g * x1, b = x3 - x0 + h2 * x3, d = y1 - y0 + g * y1, e = y3 - y0 + h2 * y3;
+  return `matrix3d(${[a / w, d / w, 0, g / w, b / h, e / h, 0, h2 / h, 0, 0, 1, 0, x0, y0, 0, 1].join(",")})`;
+}
+function screenHTML(kind) {
+  const tl = `<div class="tbar"><i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i></div>`;
+  if (kind === "kalam") return `<div class="wall warm"></div><div class="menubar"></div><div class="kwin"><img src="assets/screens/home-en.png"></div>`;
+  if (kind === "line") return `<div class="wall"></div><div class="menubar"></div><div class="win">${tl}<div class="row"><b>Messages</b></div><div class="body big"></div></div><div class="rec srec"></div>`;
+  return `<div class="wall"></div><div class="menubar"></div><div class="win">${tl}<div class="row">To: <b>Sara</b></div><div class="row">Subject: <b>The brief</b></div><div class="body"></div></div><div class="rec srec"></div>`;
+}
+function buildPlates(quads) {
+  for (const [id, still, kind] of PLATES) {
+    const el = document.createElement("div"); el.className = "plate"; el.id = id;
+    el.innerHTML = `<img src="assets/film/hd/${still}.jpg">`;
+    const p = { el, still, kind, img: el.firstChild, fx: [] };
+    if (kind) {
+      const wrap = document.createElement("div"); wrap.className = "scrwrap";
+      wrap.style.webkitMaskImage = wrap.style.maskImage = `url(assets/film/hd/${still}-matte.png)`;
+      const scr = document.createElement("div"); scr.className = "scr"; scr.innerHTML = screenHTML(kind);
+      scr.style.transform = homography(1440, 900, quads[still]);
+      wrap.appendChild(scr); el.appendChild(wrap);
+      p.scr = scr; p.body = scr.querySelector(".body"); p.srec = scr.querySelector(".srec");
+      if (p.srec) buildRec(p.srec);
+      p.quad = quads[still];
+    }
+    $("plates").appendChild(el); P[id] = p;
+  }
+}
+// Virtual camera: scale k about focus point (fx, fy) in still pixels, plus a gentle handheld drift.
+function cam(id, t, k, fx, fy, hand = 1) {
+  const p = P[id], W = p.img.naturalWidth, H = p.img.naturalHeight;
+  const S0 = 1080 / W, y0 = (1920 - H * S0) / 2, S = S0 * k;
+  let left = fx * S0 - fx * S, top = y0 + fy * S0 - fy * S;
+  left += hand * (Math.sin(t * 0.83 + 1.3) * 2.2 + Math.sin(t * 1.91) * 0.9);
+  top += hand * (Math.cos(t * 0.71) * 2.0 + Math.sin(t * 2.3 + 0.5) * 0.8);
+  left = clamp(left, 1080 - W * S, 0); top = clamp(top, 1920 - H * S, 0);
+  const rot = hand * Math.sin(t * 0.6 + 0.4) * 0.08;
+  p.el.style.display = "block"; p.el.style.width = W + "px"; p.el.style.height = H + "px";
+  tf(p.el, `translate(${left}px, ${top}px) scale(${S}) rotate(${rot}deg)`);
+  p.S = S; p.left = left; p.top = top;
+  return p;
+}
+const toFrame = (p, x, y) => [p.left + x * p.S, p.top + y * p.S];
+
+// ── Text helpers ────────────────────────────────────────────────────────────
+function units(el) {
+  if (el._u) return el._u;
+  const out = [];
+  [...el.childNodes].forEach((n) => {
+    if (n.nodeType !== 3) return;
+    n.textContent.split(/(\s+)/).forEach((part) => {
+      if (!part) return;
+      if (/^\s+$/.test(part)) { el.insertBefore(document.createTextNode(part), n); return; }
+      const s = document.createElement("span"); s.className = "u"; s.textContent = part; el.insertBefore(s, n); out.push(s);
+    });
+    el.removeChild(n);
+  });
+  return (el._u = out);
+}
+// Caption: words drift up out of a soft blur, English first, Arabic just after.
+function cap(id, t, a, b) {
+  const el = $(id);
+  if (t < a - 0.05 || t > b + 0.05) { op(el, 0); return; }
+  const out = eio(prog(t, b - 0.35, b));
+  op(el, 1 - out); tf(el, `translateY(${-out * 24}px)`);
+  $$(".en, .ar", el).forEach((line, li) => units(line).forEach((u, i) => {
+    const s = a + li * 0.32 + i * 0.075, k = eo(prog(t, s, s + 0.6));
+    op(u, k); tf(u, `translateY(${(1 - k) * 26}px)`); u.style.filter = `blur(${(1 - k) * 8}px)`;
+  }));
+}
+function words(el, text) {
+  if (!el._w || el._t !== text) {
+    el.innerHTML = ""; el._t = text;
+    text.split(" ").forEach((w, i, arr) => {
+      const s = document.createElement("span"); s.className = "w"; s.textContent = w + (i < arr.length - 1 ? " " : ""); el.appendChild(s);
+    });
+    el._w = [...el.children];
+  }
+  return el._w;
+}
+function typeIn(el, t, a, d, rise = 14) {
+  const ws = el._w, n = ws.length;
+  ws.forEach((w, i) => {
+    const s = a + (i / n) * d, k = eo(prog(t, s, s + 0.3));
+    op(w, k); tf(w, `translateY(${(1 - k) * rise}px)`); w.style.filter = `blur(${(1 - k) * 5}px)`;
+  });
+}
+// Frosted card: rises and un-blurs in, fades out.
+function card(el, t, a, b, dy = 34) {
+  if (t < a - 0.02 || t > b + 0.02) { op(el, 0); return 0; }
+  const k = eo(prog(t, a, a + 0.55)), out = eio(prog(t, b - 0.35, b));
+  op(el, k * (1 - out)); tf(el, `translateY(${(1 - k) * dy - out * 16}px) scale(${0.97 + 0.03 * k})`);
+  return k;
+}
+
+// ── Recording bar ───────────────────────────────────────────────────────────
+const BARS = 11, STOPS = [[253, 110, 56], [255, 194, 84], [92, 161, 209]];
+function brand(x) {
+  x = clamp(x) * (STOPS.length - 1);
+  const i = Math.min(Math.floor(x), STOPS.length - 2), f = x - i, a = STOPS[i], b = STOPS[i + 1];
+  return `rgb(${a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(",")})`;
+}
+function buildRec(el) {
+  for (let i = 0; i < BARS; i++) { const b = document.createElement("i"); b.style.background = brand(i / (BARS - 1)); el.appendChild(b); }
+}
+function speech(t) {
+  const syl = Math.pow(Math.abs(Math.sin(t * 6.1)), 0.8) * 0.65 + Math.abs(Math.sin(t * 2.3 + 1.1)) * 0.35;
+  return clamp(syl * (0.55 + 0.45 * Math.sin(t * 1.3 + 0.4)) * 1.15);
+}
+function rec(el, t, on, busy, off, scale = 1, extra = "") {
+  const c = (BARS - 1) / 2;
+  [...el.children].forEach((b, i) => {
+    const v = t >= busy ? 0.25 + 0.25 * (1 + Math.sin(t * 6 - i * 0.7)) / 2
+                        : speech(t) * (1 - Math.pow(Math.abs(i - c) / (c + 1), 1.6)) * (0.75 + 0.25 * Math.sin(t * 13 + i * 1.9));
+    b.style.height = (8 + 52 * v) + "px";
+  });
+  const k = spring(Math.max(0, t - on)), out = eio(prog(t, off, off + 0.3));
+  op(el, (t >= on && t < off + 0.3 ? 1 : 0) * (1 - out));
+  tf(el, `${extra} translateY(${(1 - k) * 30}px) scale(${scale * (0.7 + 0.3 * k)})`);
+}
+
+// ── The slow draft: keystrokes with a typo, then a stall and a rethink ─────
+const DRAFT = [];
+(function () {
+  let s = "", t = 0.9;
+  const type = (str, rate = 0.13) => { for (const ch of str) { s += ch; t += rate * (0.7 + 0.6 * ((s.length * 37) % 10) / 10) + (ch === " " ? 0.06 : 0); DRAFT.push([t, s]); CUES.keys.push(+t.toFixed(3)); } };
+  const back = (n, rate = 0.11) => { for (let i = 0; i < n; i++) { s = s.slice(0, -1); t += rate; DRAFT.push([t, s]); CUES.keys.push(+t.toFixed(3)); } };
+  const wait = (d) => { t += d; };
+  type("Hi Sara,"); wait(0.5); type(" quick updat"); wait(0.15); type("e on teh"); wait(0.35); back(3); type("the brief"); wait(0.6);
+  type(" for tomorow"); wait(0.5); back(2); type("row"); wait(0.9);
+  // Shot 2: he stops, deletes, starts again.
+  t = Math.max(t, 6.9); back(13, 0.09); wait(0.8); type(" — wait, I"); wait(0.7); back(9, 0.1);
+})();
+function draftAt(t) { let s = ""; for (const [tt, v] of DRAFT) if (t >= tt) s = v; return s; }
+const SAID = "Hi Sara, quick update: the brief is ready. I'll send it tonight, and let's go over it tomorrow at 10.";
+
+// ── Grain (deterministic) ───────────────────────────────────────────────────
+const G = [];
+function buildGrain() {
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let k = 0; k < 6; k++) {
+    const c = document.createElement("canvas"); c.width = 540; c.height = 960;
+    const x = c.getContext("2d"), d = x.createImageData(540, 960);
+    for (let i = 0; i < d.data.length; i += 4) {
+      const v = 128 + ((rnd() + rnd() + rnd()) / 3 - 0.5) * 255 * 0.9;
+      d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255;
+    }
+    x.putImageData(d, 0, 0); G.push(c);
+  }
+}
+function grain(t) {
+  const f = Math.floor(t * 30), cv = $("grain"), x = cv.getContext("2d");
+  x.drawImage(G[f % G.length], -((f * 131) % 40), -((f * 71) % 40), 580, 1000);
+}
+
+// ── Build ───────────────────────────────────────────────────────────────────
+function init() {
+  buildGrain(); buildRec($("rec4"));
+  [["iglow", 560], ["eglow", 600]].forEach(([id, s]) => { $(id).style.width = $(id).style.height = s + "px"; });
+  [$("ir1"), $("ir2")].forEach((r) => { r.style.width = r.style.height = "210px"; });
+  words($("saidtxt"), SAID); words($("restxt"), SAID);
+  Promise.all([
+    fetch("assets/film/hd/quads.json").then((r) => r.json()).then(buildPlates),
+    fetch("assets/logo-full.svg").then((r) => r.text()).then((s) => { $("wordmark").innerHTML = s.replace(/^[\s\S]*?<svg[^>]*>/, "").replace(/<\/svg>\s*$/, ""); }),
+  ]).then(() => Promise.all([...document.images].map((i) => i.decode().catch(() => {})))).then(() => { window.__ready = true; });
+}
+
+// ── Render ──────────────────────────────────────────────────────────────────
+function show(id) { for (const k in P) if (k !== id) P[k].el.style.display = "none"; }
+
+function renderAt(t) {
+  grain(t);
+  let flash = 0;
+
+  // 1 · typing, slow dolly in (the close plate)
+  if (t < T.s2) {
+    show("p1");
+    const p = cam("p1", t, 1.0 + 0.07 * eio(prog(t, 0, T.s2)), 900, 1330, 0.6);
+    p.body.textContent = draftAt(t);
+  }
+  // 2 · the stall
+  else if (t < T.s3) {
+    show("p2");
+    const p = cam("p2", t, 1.03, 700, 1250, 1);
+    p.body.textContent = draftAt(t);
+  }
+  // 3 · discovery: the screen warms, the icon pops
+  else if (t < T.s4) {
+    show("p3");
+    const p = cam("p3", t, 1.02 + 0.02 * prog(t, T.s3, T.s4), 860, 1420, 0.8);
+    const kw = p.scr.querySelector(".kwin"), k = eo(prog(t, 12.55, 13.1));
+    op(kw, k); tf(kw, `translateY(${(1 - k) * 60}px) scale(${0.9 + 0.1 * k})`);
+  }
+  // 4 · macro: finger on Right ⌥, recording
+  else if (t < T.s5) {
+    show("p4");
+    const p = cam("p4", t, 1.0 + 0.05 * eio(prog(t, T.s4, T.s5)), 690, 1560, 0.5);
+    if (!p.fx.length) {
+      const g = document.createElement("div"); g.className = "glow pfx"; g.style.width = g.style.height = "260px";
+      g.style.left = (681 - 130) + "px"; g.style.top = (1601 - 130) + "px"; g.style.mixBlendMode = "screen";
+      const r = document.createElement("div"); r.className = "ring pfx"; r.style.width = r.style.height = "120px";
+      r.style.left = (681 - 60) + "px"; r.style.top = (1601 - 60) + "px";
+      p.el.append(g, r); p.fx = [g, r];
+    }
+    const [g, r] = p.fx, held = t >= PRESS ? 1 : 0;
+    op(g, held * (0.75 + 0.25 * Math.sin((t - PRESS) * 3.2)) * eo(prog(t, PRESS, PRESS + 0.3)));
+    tf(g, `scale(${0.8 + 0.2 * eo(prog(t, PRESS, PRESS + 0.4))})`);
+    for (const [rr, ph] of [[r, 0]]) {
+      const q = ((t - PRESS - ph) % 1.1 + 1.1) % 1.1 / 1.1;
+      op(rr, held * (1 - q) * 0.8); tf(rr, `scale(${0.6 + q * 1.8})`);
+    }
+  }
+  // 5 · release: the words land
+  else if (t < T.s6) {
+    show("p5");
+    const p = cam("p5", t, 1.03, 860, 1420, 0.8);
+    p.body.textContent = SAID;
+    const k = eo(prog(t, T.s5 + 0.35, T.s5 + 0.9));
+    op(p.body, k);
+    rec(p.srec, t, T.s5 - 1, T.s5, T.s5 + 0.35, 1.6);
+  }
+  // 6 · scratch that (same plate, slow dolly in)
+  else if (t < T.s7) {
+    show("p6");
+    const p = cam("p6", t, 1.03 + 0.07 * eio(prog(t, T.s6, T.s7)), 900, 1300, 0.6);
+    const fixed = t >= 25.1;
+    p.body.textContent = SAID + (fixed ? "\nMeet at 4." : "");
+    rec(p.srec, t, T.s6 + 0.4, 24.75, 25.05, 1.6);
+  }
+  // 7 · private: the recording bar on his screen, offline
+  else if (t < T.s8) {
+    show("p7");
+    const p = cam("p7", t, 1.02 + 0.03 * prog(t, T.s7, T.s8), 780, 1500, 0.5);
+    if (!p.fx.length) {
+      const r = document.createElement("div"); r.className = "rec pfx"; buildRec(r);
+      r.style.left = (789 - 150) + "px"; r.style.top = (1729 - 45) + "px";
+      p.el.appendChild(r); p.fx = [r];
+    }
+    rec(p.fx[0], t, T.s7 + 0.2, 1e9, T.s8 + 1, 0.47);
+    p.fx[0].style.filter = "blur(0.6px)";
+  }
+  // 8 · free, relaxed (slow dolly back)
+  else if (t < T.s9) {
+    show("p8");
+    cam("p8", t, 1.1 - 0.09 * eio(prog(t, T.s8, T.s9)), 640, 1250, 0.4);
+  }
+  // 9 · four freeze cuts, one continuous move
+  else {
+    const i = t < SWAP[1] ? 0 : t < SWAP[2] ? 1 : t < SWAP[3] ? 2 : 3, id = ["p9a", "p9b", "p9c", "p9d"][i];
+    show(id);
+    const p = cam(id, t, 1.0 + 0.12 * prog(t, T.s9, T.s10 + 1.2), 760, 1300, 0);
+    const D = DIALECTS[i];
+    p.body.textContent = D.text; p.body.style.direction = D.rtl ? "rtl" : "ltr";
+    rec(p.srec, t, -1, -1, -1);
+    if (i > 0) flash = 0.5 * (1 - eo(prog(t, SWAP[i], SWAP[i] + 0.22)));
+    // End card takes over: the shot softens into the gradient.
+    $("plates").style.filter = t > T.s10 ? `blur(${18 * eio(prog(t, T.s10, T.s10 + 0.8))}px)` : "none";
+  }
+  if (t < T.s9) $("plates").style.filter = "none";
+  op($("flash"), flash);
+
+  // Captions
+  cap("c1", t, 0.5, T.s2 - 0.1);
+  cap("c2", t, T.s2 + 0.25, T.s3 - 0.1);
+  cap("c3", t, 10.7, T.s4 - 0.1);
+  cap("c4", t, T.s4 + 0.25, T.s5 - 0.1);
+  cap("c5", t, T.s5 + 0.2, T.s6 - 0.1);
+  cap("c6", t, T.s6 + 0.25, T.s7 - 0.1);
+  cap("c7", t, T.s7 + 0.25, T.s8 - 0.1);
+  cap("c8", t, T.s8 + 0.25, T.s9 - 0.1);
+  cap("c9", t, T.s9 + 0.25, T.s10 - 0.05);
+
+  // 1 + 2 · draft card, typed in step with the screen
+  card($("draft"), t, 0.7, T.s3 - 0.1);
+  $("typed").textContent = draftAt(t);
+  const keying = DRAFT.some(([tt]) => t >= tt && t < tt + 0.2);
+  op($("caret1"), keying || Math.floor(t * 1.8) % 2 === 0 ? 1 : 0);
+
+  // 3 · icon: pops above the laptop with a coral glow, then drops into the screen
+  if (t >= T.s3 && t < T.s4) {
+    const p = P.p3, k = spring(Math.max(0, t - CUES.icon)), fly = eio(prog(t, 12.2, 12.75));
+    const [sx, sy] = toFrame(p, (p.quad[0][0] + p.quad[2][0]) / 2, (p.quad[0][1] + p.quad[2][1]) / 2);
+    const x = 760 + (sx - 760) * fly, y = 640 + (sy - 640) * fly, s = (0.55 + 0.45 * k) * (1 - 0.86 * fly);
+    op($("icon"), clamp((t - CUES.icon) / 0.1) * (1 - prog(t, 12.6, 12.75)));
+    tf($("icon"), `translate(${x - 105}px, ${y - 105}px) scale(${s}) rotate(${(1 - k) * -8}deg)`);
+    const gk = eo(prog(t, CUES.icon, CUES.icon + 0.6)) * (1 - fly * 0.6);
+    op($("iglow"), gk * (0.85 + 0.15 * Math.sin(t * 2.4)));
+    tf($("iglow"), `translate(${x - 280}px, ${y - 280}px) scale(${0.7 + 0.3 * gk})`);
+    [$("ir1"), $("ir2")].forEach((r, j) => {
+      const q = prog(t, CUES.icon + 0.05 + j * 0.25, CUES.icon + 1.25 + j * 0.25);
+      op(r, (q > 0 && q < 1 ? 1 - q : 0) * 0.9 * (1 - fly)); tf(r, `translate(${x - 105}px, ${y - 105}px) scale(${1 + q * 1.6})`);
+    });
+  } else { op($("icon"), 0); op($("iglow"), 0); op($("ir1"), 0); op($("ir2"), 0); }
+
+  // 4 · what he says, while the bar listens
+  card($("said"), t, PRESS + 0.25, T.s5 - 0.05);
+  typeIn($("saidtxt"), t, PRESS + 0.5, 3.4);
+  rec($("rec4"), t, PRESS + 0.1, 1e9, T.s5 - 0.2, 1.15);
+  const kc = $("keychip"), kk = spring(Math.max(0, t - (T.s4 + 0.3))), kout = prog(t, T.s5 - 0.25, T.s5);
+  op(kc, (t >= T.s4 + 0.3 && t < T.s5 ? 1 : 0) * clamp((t - T.s4 - 0.3) / 0.1) * (1 - kout));
+  tf(kc, `translateY(${(1 - kk) * 30}px) scale(${0.85 + 0.15 * kk})`);
+
+  // 5 · the text, all at once
+  card($("result"), t, T.s5 + 0.15, T.s6 - 0.05, 20);
+  typeIn($("restxt"), t, T.s5 + 0.3, 0.55, 8);
+  const dk = spring(Math.max(0, t - 19.15)), dout = prog(t, T.s6 - 0.3, T.s6 - 0.05);
+  op($("done"), (t >= 19.15 && t < T.s6 ? 1 : 0) * clamp((t - 19.15) / 0.1) * (1 - dout));
+  tf($("done"), `translateY(${(1 - dk) * 30}px) scale(${0.8 + 0.2 * dk})`);
+
+  // 6 · "Meet at 3, no wait, 4." → "Meet at 4."
+  card($("fix"), t, T.s6 + 0.3, T.s7 - 0.05);
+  const hk = eo(prog(t, 24.2, 24.5));
+  $("fhl").style.background = `rgba(238, 122, 74, ${0.18 * hk})`;
+  $("fst").style.setProperty("--s", eo(prog(t, 24.55, 24.9)));
+  $("fst").style.opacity = 1 - 0.55 * prog(t, 24.8, 25.1);
+  const fo = eo(prog(t, 25.1, 25.55));
+  op($("fixout"), fo); tf($("fixout"), `translateY(${(1 - fo) * 16}px)`); $("fixout").style.filter = `blur(${(1 - fo) * 6}px)`;
+  [$("fixrule"), ...$$("#fix .meta")].slice(0, 2).forEach((e) => op(e, 1));
+  op($$("#fix .meta")[1], fo);
+
+  // 7 · offline pill
+  const ok = spring(Math.max(0, t - (T.s7 + 1.2))), oout = prog(t, T.s8 - 0.3, T.s8 - 0.05);
+  op($("offline"), (t >= T.s7 + 1.2 && t < T.s8 ? 1 : 0) * clamp((t - T.s7 - 1.2) / 0.1) * (1 - oout));
+  tf($("offline"), `translateY(${(1 - ok) * 30}px) scale(${0.85 + 0.15 * ok})`);
+
+  // 9 · dialect card, swapped on each cut
+  if (t >= T.s9 && t < T.s10) {
+    const i = t < SWAP[1] ? 0 : t < SWAP[2] ? 1 : t < SWAP[3] ? 2 : 3, D = DIALECTS[i];
+    if ($("dia")._i !== i) {
+      $("dia")._i = i; $("diatag").textContent = D.tag;
+      $("dialine").textContent = D.text; $("dialine").style.direction = D.rtl ? "rtl" : "ltr"; $("dialine").style.textAlign = D.rtl ? "right" : "left";
+    }
+    const a = i === 0 ? T.s9 + 0.35 : SWAP[i];
+    const k = i === 0 ? eo(prog(t, a, a + 0.5)) : 1, out = eio(prog(t, T.s10 - 0.3, T.s10));
+    op($("dia"), k * (1 - out)); tf($("dia"), `translateY(${(1 - k) * 30}px)`);
+    const lk = i === 0 ? k : eo(prog(t, a + 0.02, a + 0.3));
+    op($("dialine"), lk); $("dialine").style.filter = `blur(${(1 - lk) * 6}px)`;
+  } else op($("dia"), 0);
+
+  // 10 · end card
+  const ek = eio(prog(t, T.s10, T.s10 + 0.8));
+  op($("end"), ek);
+  if (t >= T.s10) {
+    const ik = spring(Math.max(0, t - CUES.end));
+    op($("eicon"), clamp((t - CUES.end) / 0.1)); tf($("eicon"), `scale(${0.6 + 0.4 * ik})`);
+    op($("eglow"), eo(prog(t, CUES.end, CUES.end + 0.8)) * (0.8 + 0.2 * Math.sin((t - CUES.end) * 2)));
+    tf($("eglow"), `scale(${0.75 + 0.25 * eo(prog(t, CUES.end, CUES.end + 0.9))})`);
+    [["wordmark", 43.4], ["tagen", 43.9], ["tagar", 44.3]].forEach(([id, a]) => {
+      const k = eo(prog(t, a, a + 0.7)); op($(id), k); tf($(id), `translateY(${(1 - k) * 22}px)`); $(id).style.filter = `blur(${(1 - k) * 8}px)`;
+    });
+    if (t > DURATION - 1.2) op($("end"), 1);
+  }
+}
+
+window.DURATION = DURATION;
+window.CUES = CUES;
+window.renderAt = renderAt;
+init();
+</script>
+</body>
+</html>

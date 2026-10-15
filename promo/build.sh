@@ -5,6 +5,7 @@
 #   promo/build.sh calm       → kalam-promo-vertical-calm.mp4 + poster (9:16, calm 3D cut)
 #   promo/build.sh lively     → kalam-promo-vertical-lively.mp4 + poster (9:16, lively cut, 60 s)
 #   promo/build.sh install    → kalam-install.mp4 + poster (install how-to reel, 9:16, 76 s)
+#   promo/build.sh film       → kalam-film.mp4 + poster (film-style intro on the silhouette stills, 9:16, 49 s, top quality)
 #   promo/build.sh ar         → kalam-promo-ar.mp4 + poster (Arabic, 9:16, 66 s, top quality)
 #   promo/build.sh dynamic    → kalam-promo-vertical-dynamic.mp4 + poster (9:16, parallax cut on the supplied backgrounds, 60 s)
 # Needs node + Playwright (Chromium), python3 + numpy + Pillow, and ffmpeg.
@@ -15,7 +16,10 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 mkdir -p "$OUT"
 
-if [ "${1:-}" = "install" ]; then
+if [ "${1:-}" = "film" ]; then
+  export PAGE=scenes-film.html SIZE=1080x1920
+  MUSIC=music_film.py NAME=kalam-film POSTER_T=11.4 CRF=${CRF:-14} ABR=${ABR:-320k} CUES=1
+elif [ "${1:-}" = "install" ]; then
   export PAGE=scenes-install.html SIZE=1080x1920
   MUSIC=music_install.py NAME=kalam-install POSTER_T=3 CRF=${CRF:-16} ABR=${ABR:-320k} CUES=1
 elif [ "${1:-}" = "ar" ]; then
