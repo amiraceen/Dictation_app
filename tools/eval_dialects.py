@@ -53,7 +53,7 @@ def to_16k(array, sr):
 
 # Open dialect test sets, tried in order; any that is gated (needs a login) is skipped.
 DIALECT_SETS = ["Arabic-STT/kejue-voice", "Arabic-STT/sada2022", "Arabic-STT/kejue-common-voice",
-                "Arabic-STT/Casablanca"]
+                "Arabic-STT/Casablanca", "MightyStudent/Egyptian-ASR-MGB-3", "Arabic-STT/ASR_Code_Switch"]
 
 
 def load_dialect_sets(n_clips, repos=DIALECT_SETS, min_s=2.0, max_s=15.0, max_configs=8):
@@ -169,52 +169,81 @@ def score(model, clips):
     return jiwer.wer(refs, hyps), jiwer.cer(refs, hyps), statistics.median(times), list(zip(refs, hyps))[:2]
 
 
+def run_one(spec, sets):
+    """Score one model on every set. Returns {set: (wer, cer, secs)} and examples."""
+    model = load_model(spec)
+    names = list(sets)
+    model(sets[names[0]][0][1])                           # warm-up
+    row, examples = {}, {}
+    for name in names:
+        try:
+            wer, cer, secs, ex = score(model, sets[name])
+        except Exception as e:
+            print(f"  {name}: FAILED {type(e).__name__}: {e}", flush=True)
+            continue
+        row[name], examples[name] = (wer, cer, secs), ex
+        print(f"  {name:<22} WER {wer:6.1%}  CER {cer:6.1%}  {secs:.2f}s/clip", flush=True)
+    return row, examples
+
+
 def main():
+    import json
+    import pickle
+    import subprocess
+    import tempfile
     ap = argparse.ArgumentParser()
     ap.add_argument("--models", default="mlx,mlx-noprompt")
     ap.add_argument("--clips", type=int, default=25, help="clips per dialect")
     ap.add_argument("--out", default="dialect_results.md")
+    ap.add_argument("--one", help=argparse.SUPPRESS)          # internal: score one model, write JSON
+    ap.add_argument("--sets", help=argparse.SUPPRESS)
     args = ap.parse_args()
+
+    if args.one:                                              # child process: one model, then exit
+        with open(args.sets, "rb") as f:
+            sets = pickle.load(f)
+        row, ex = run_one(args.one, sets)
+        with open(args.out, "w", encoding="utf-8") as f:
+            json.dump({"row": row, "examples": ex}, f, ensure_ascii=False)
+        return
 
     print("Loading test audio…", flush=True)
     sets = load_dialect_sets(args.clips)
     sets.update(load_fleurs(args.clips))
     names = list(sets)
+    work = tempfile.mkdtemp()
+    sets_path = os.path.join(work, "sets.pkl")
+    with open(sets_path, "wb") as f:
+        pickle.dump(sets, f)
 
-    table = {}
-    examples = {}
+    table, examples = {}, {}
     for spec in [m.strip() for m in args.models.split(",") if m.strip()]:
         print(f"\n{spec}", flush=True)
-        try:
-            model = load_model(spec)
-            model(sets[names[0]][0][1])                    # warm-up
-        except Exception as e:
-            print(f"  FAILED to load: {type(e).__name__}: {e}", flush=True)
+        out = os.path.join(work, f"{len(table)}.json")
+        # Each model runs in its own process, so the previous one's GPU memory is freed.
+        r = subprocess.run([sys.executable, os.path.abspath(__file__), "--one", spec, "--sets", sets_path,
+                            "--out", out])
+        if r.returncode != 0 or not os.path.exists(out):
+            print(f"  FAILED (exit {r.returncode})", flush=True)
             continue
-        table[spec] = {}
-        for name in names:
-            try:
-                wer, cer, secs, ex = score(model, sets[name])
-            except Exception as e:
-                print(f"  {name}: FAILED {type(e).__name__}: {e}", flush=True)
-                continue
-            table[spec][name] = (wer, cer, secs)
+        with open(out, encoding="utf-8") as f:
+            res = json.load(f)
+        table[spec] = {k: tuple(v) for k, v in res["row"].items()}
+        for name, ex in res["examples"].items():
             examples[(spec, name)] = ex
-            print(f"  {name:<22} WER {wer:6.1%}  CER {cer:6.1%}  {secs:.2f}s/clip", flush=True)
-        del model
 
     dial = [n for n in names if n != "MSA (FLEURS)"]
     lines = ["## Arabic dialect accuracy (word errors, lower is better)", "",
              "| Model | " + " | ".join(names) + " | Dialects average | s/clip |",
              "|---|" + "---|" * (len(names) + 2)]
     for spec, row in table.items():
-        cells = [f"{row[n][0]:.0%}" if n in row else "–" for n in names]
+        cells = [f"{row[n][0]:.1%}" if n in row else "–" for n in names]
         avg = [row[n][0] for n in dial if n in row]
         secs = [row[n][2] for n in row]
-        lines.append(f"| {spec} | " + " | ".join(cells) +
-                     f" | {statistics.mean(avg):.0%} | {statistics.median(secs):.2f} |" if avg and secs
-                     else f"| {spec} | " + " | ".join(cells) + " | – | – |")
-    lines += ["", f"{args.clips} clips per set. Dialect sets are everyday speech; FLEURS is read formal Arabic.", ""]
+        lines.append(f"| {spec} | " + " | ".join(cells) + f" | {statistics.mean(avg):.1%} |" if avg
+                     else f"| {spec} | " + " | ".join(cells) + " | – |")
+        lines[-1] += f" {statistics.median(secs):.2f} |" if secs else " – |"
+    lines += ["", f"Up to {args.clips} clips per set. Dialect sets are everyday speech; FLEURS is read formal Arabic.", ""]
     for (spec, name), ex in examples.items():
         lines.append(f"<details><summary>{spec} · {name}</summary>\n")
         lines += [f"- expected: {r}\n  - heard: {h}" for r, h in ex]
