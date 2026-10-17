@@ -1,0 +1,49 @@
+name: Arabic dialect test
+
+# Scores speech models on everyday Arabic dialects (Casablanca: UAE, Egypt, Jordan,
+# Palestine, Yemen, ...) and formal Arabic (FLEURS) on a GitHub Mac. Results appear
+# in the run's summary page. Runs when the test changes, or by hand with other models.
+on:
+  push:
+    paths: ["tools/eval_dialects.py", ".github/workflows/dialect-eval.yml"]
+  workflow_dispatch:
+    inputs:
+      models:
+        description: "Comma-separated: mlx, mlx-noprompt, mlx:<repo>, hf:<repo>"
+        default: "mlx,mlx-noprompt,mlx:mlx-community/whisper-large-v3-mlx,hf:openai/whisper-large-v3-turbo,hf:oddadmix/whisper-large-v3-turbo-arabic-dialectal,hf:VohoAI/whisper-saudi-small"
+      clips:
+        description: "Clips per dialect"
+        default: "25"
+
+jobs:
+  eval:
+    runs-on: macos-14
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cache models and test audio
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: dialect-eval-v1
+      - name: Install
+        run: |
+          python -m pip install --quiet faster-whisper jiwer huggingface_hub numpy soundfile librosa \
+            mlx tiktoken tqdm more-itertools torch transformers accelerate "datasets>=2.19,<4"
+          python -m pip install --quiet --no-deps "mlx-whisper==0.4.3"
+      - name: Score models
+        env:
+          HF_HUB_DISABLE_PROGRESS_BARS: "1"
+        run: |
+          python tools/eval_dialects.py \
+            --models "${{ github.event.inputs.models || 'mlx,mlx-noprompt,mlx:mlx-community/whisper-large-v3-mlx,hf:openai/whisper-large-v3-turbo,hf:oddadmix/whisper-large-v3-turbo-arabic-dialectal,hf:VohoAI/whisper-saudi-small' }}" \
+            --clips "${{ github.event.inputs.clips || '25' }}" --out dialect_results.md
+          cat dialect_results.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dialect-results
+          path: dialect_results.md
