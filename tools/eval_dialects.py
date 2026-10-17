@@ -12,6 +12,7 @@ Models:
   mlx                  the app's Accurate model (large-v3-turbo on the GPU) with the app's dialect prompt
   mlx-noprompt         the same model without the prompt
   mlx:<repo>           any MLX Whisper model from Hugging Face (e.g. mlx-community/whisper-large-v3-mlx)
+  mlx-noprompt:<repo>  the same, without the dialect prompt
   hf:<repo>            any Whisper model in Transformers format (fine-tunes), run with PyTorch on the GPU
 
 Prints a table of word error rate (WER) per dialect; lower is better.
@@ -126,9 +127,13 @@ class HfModel:
     def __init__(self, repo):
         import torch
         from transformers import pipeline
-        dev = "mps" if torch.backends.mps.is_available() else "cpu"
-        self.pipe = pipeline("automatic-speech-recognition", model=repo, device=dev,
-                             torch_dtype=torch.float16 if dev == "mps" else torch.float32)
+        try:                    # the Mac's GPU when there's room, else the CPU (GitHub's virtual Macs)
+            if not torch.backends.mps.is_available():
+                raise RuntimeError("no MPS")
+            self.pipe = pipeline("automatic-speech-recognition", model=repo, device="mps", dtype=torch.float16)
+        except Exception as e:
+            print(f"  GPU unavailable ({str(e)[:60]}); using the CPU", flush=True)
+            self.pipe = pipeline("automatic-speech-recognition", model=repo, device="cpu", dtype=torch.float32)
         self.kwargs = {"language": "ar", "task": "transcribe"}
 
     def __call__(self, audio):
@@ -152,6 +157,8 @@ def load_model(spec):
         return MlxModel(prompt=False)
     if spec.startswith("mlx:"):
         return MlxModel(spec[4:], prompt=True)
+    if spec.startswith("mlx-noprompt:"):
+        return MlxModel(spec[len("mlx-noprompt:"):], prompt=False)
     if spec.startswith("hf:"):
         return HfModel(spec[3:])
     raise ValueError(f"unknown model {spec}")

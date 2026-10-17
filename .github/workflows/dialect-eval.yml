@@ -10,15 +10,15 @@ on:
     inputs:
       models:
         description: "Comma-separated: mlx, mlx-noprompt, mlx:<repo>, hf:<repo>"
-        default: "mlx,mlx-noprompt,mlx:mlx-community/whisper-large-v3-mlx,hf:openai/whisper-large-v3-turbo,hf:oddadmix/whisper-large-v3-turbo-arabic-dialectal,hf:VohoAI/whisper-saudi-small"
+        default: "mlx,mlx-noprompt,mlx:mlx-community/whisper-large-v3-mlx,mlx-noprompt:mlx-community/whisper-large-v3-mlx,hf:oddadmix/whisper-large-v3-turbo-arabic-dialectal,hf:VohoAI/whisper-saudi-small,hf:openai/whisper-large-v3-turbo"
       clips:
         description: "Clips per dialect"
-        default: "25"
+        default: "40"
 
 jobs:
   eval:
     runs-on: macos-14
-    timeout-minutes: 150
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -40,8 +40,8 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           python tools/eval_dialects.py \
-            --models "${{ github.event.inputs.models || 'mlx,mlx-noprompt,mlx:mlx-community/whisper-large-v3-mlx,hf:openai/whisper-large-v3-turbo,hf:oddadmix/whisper-large-v3-turbo-arabic-dialectal,hf:VohoAI/whisper-saudi-small' }}" \
-            --clips "${{ github.event.inputs.clips || '25' }}" --out dialect_results.md
+            --models "${{ github.event.inputs.models || 'mlx,mlx-noprompt,mlx:mlx-community/whisper-large-v3-mlx,mlx-noprompt:mlx-community/whisper-large-v3-mlx,hf:oddadmix/whisper-large-v3-turbo-arabic-dialectal,hf:VohoAI/whisper-saudi-small,hf:openai/whisper-large-v3-turbo' }}" \
+            --clips "${{ github.event.inputs.clips || '40' }}" --out dialect_results.md
           cat dialect_results.md >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
