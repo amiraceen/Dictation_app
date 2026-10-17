@@ -13,7 +13,9 @@ Models:
   mlx-noprompt         the same model without the prompt
   mlx:<repo>           any MLX Whisper model from Hugging Face (e.g. mlx-community/whisper-large-v3-mlx)
   mlx-noprompt:<repo>  the same, without the dialect prompt
-  hf:<repo>            any Whisper model in Transformers format (fine-tunes), run with PyTorch on the GPU
+  mlx-hf:<repo>        a Transformers-format fine-tune converted to MLX and run exactly like the app
+  mlx-hf-noprompt:<repo>  the same, without the dialect prompt
+  hf:<repo>            any Whisper model in Transformers format (fine-tunes), run with PyTorch
 
 Prints a table of word error rate (WER) per dialect; lower is better.
 """
@@ -104,11 +106,15 @@ def load_fleurs(n_clips):
 # ── Models ──
 
 class MlxModel:
-    def __init__(self, repo=None, prompt=True):
+    def __init__(self, repo=None, prompt=True, hf_repo=None):
         import tempfile
         import mlx_engine
         folder = tempfile.mkdtemp()
-        if repo:
+        if hf_repo:
+            from huggingface_hub import snapshot_download
+            src = snapshot_download(hf_repo, allow_patterns=["config.json", "*.safetensors"])
+            mlx_engine.convert_hf(src, folder)
+        elif repo:
             from huggingface_hub import snapshot_download
             snapshot_download(repo, local_dir=folder, allow_patterns=["config.json", "weights.*", "*.npz"])
         else:
@@ -159,6 +165,8 @@ def load_model(spec):
         return MlxModel(spec[4:], prompt=True)
     if spec.startswith("mlx-noprompt:"):
         return MlxModel(spec[len("mlx-noprompt:"):], prompt=False)
+    if spec.startswith(("mlx-hf:", "mlx-hf-noprompt:")):            # a Transformers fine-tune, run the app's way
+        return MlxModel(hf_repo=spec.split(":", 1)[1], prompt=spec.startswith("mlx-hf:"))
     if spec.startswith("hf:"):
         return HfModel(spec[3:])
     raise ValueError(f"unknown model {spec}")

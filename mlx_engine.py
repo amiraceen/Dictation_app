@@ -131,6 +131,59 @@ class MlxWhisper:
                           "avg_logprob": result.avg_logprob, "compression_ratio": result.compression_ratio})]
 
 
+_HF_NAMES = [("model.", ""), (".layers.", ".blocks."), (".self_attn_layer_norm.", ".attn_ln."),
+             (".self_attn.", ".attn."), (".encoder_attn_layer_norm.", ".cross_attn_ln."),
+             (".encoder_attn.", ".cross_attn."), (".final_layer_norm.", ".mlp_ln."), (".q_proj.", ".query."),
+             (".k_proj.", ".key."), (".v_proj.", ".value."), (".out_proj.", ".out."), (".fc1.", ".mlp1."),
+             (".fc2.", ".mlp2."), ("decoder.embed_positions.weight", "decoder.positional_embedding"),
+             ("decoder.embed_tokens.", "decoder.token_embedding."), ("encoder.layer_norm.", "encoder.ln_post."),
+             ("decoder.layer_norm.", "decoder.ln.")]
+
+
+def hf_name_to_mlx(name):
+    """A Transformers Whisper weight name -> the matching mlx_whisper name (None = not needed)."""
+    if name == "proj_out.weight" or name.endswith("encoder.embed_positions.weight"):
+        return None                      # tied to the token embedding / computed by MLX
+    for a, b in _HF_NAMES:
+        name = name.replace(a, b)
+    return name
+
+
+def hf_config_to_mlx(cfg):
+    return {"n_mels": cfg["num_mel_bins"], "n_audio_ctx": cfg["max_source_positions"],
+            "n_audio_state": cfg["d_model"], "n_audio_head": cfg["encoder_attention_heads"],
+            "n_audio_layer": cfg["encoder_layers"], "n_vocab": cfg["vocab_size"],
+            "n_text_ctx": cfg["max_target_positions"], "n_text_state": cfg["d_model"],
+            "n_text_head": cfg["decoder_attention_heads"], "n_text_layer": cfg["decoder_layers"]}
+
+
+def convert_hf(src, dst):
+    """Turn a Transformers-format Whisper (config.json + *.safetensors, e.g. a published
+    Arabic fine-tune) into the MLX format this app loads, stored as float16."""
+    import glob
+    import json
+    import os
+    import mlx.core as mx
+    with open(os.path.join(src, "config.json")) as f:
+        cfg = json.load(f)
+    files = sorted(glob.glob(os.path.join(src, "*.safetensors")))
+    if not files:
+        raise RuntimeError("this model has no .safetensors weights")
+    weights = {}
+    for path in files:
+        for name, w in mx.load(path).items():
+            new = hf_name_to_mlx(name)
+            if new is None:
+                continue
+            if new.endswith(("conv1.weight", "conv2.weight")):
+                w = w.transpose(0, 2, 1)             # PyTorch (out, in, k) -> MLX (out, k, in)
+            weights[new] = w.astype(mx.float16)
+    os.makedirs(dst, exist_ok=True)
+    mx.save_safetensors(os.path.join(dst, "weights.safetensors"), weights)
+    with open(os.path.join(dst, "config.json"), "w") as f:
+        json.dump(dict(hf_config_to_mlx(cfg), model_type="whisper"), f)
+
+
 def download(folder):
     """Fetch the MLX weights (config.json + weights.safetensors, about 1.6 GB)."""
     from huggingface_hub import snapshot_download

@@ -125,5 +125,31 @@ class MlxEngineTest(unittest.TestCase):
             m.detect_language(np.zeros(16000, np.float32), vad_filter=True)
 
 
+
+
+class HfConversionNamesTest(unittest.TestCase):
+    """Transformers Whisper weight names map onto mlx_whisper's (full check with MLX is in CI)."""
+
+    def test_names(self):
+        import mlx_engine
+        m = mlx_engine.hf_name_to_mlx
+        self.assertEqual(m("model.encoder.layers.3.self_attn.q_proj.weight"), "encoder.blocks.3.attn.query.weight")
+        self.assertEqual(m("model.decoder.layers.0.encoder_attn.k_proj.weight"), "decoder.blocks.0.cross_attn.key.weight")
+        self.assertEqual(m("model.decoder.layers.0.encoder_attn_layer_norm.bias"), "decoder.blocks.0.cross_attn_ln.bias")
+        self.assertEqual(m("model.decoder.layers.1.self_attn_layer_norm.weight"), "decoder.blocks.1.attn_ln.weight")
+        self.assertEqual(m("model.encoder.layers.0.final_layer_norm.weight"), "encoder.blocks.0.mlp_ln.weight")
+        self.assertEqual(m("model.encoder.layers.0.fc2.bias"), "encoder.blocks.0.mlp2.bias")
+        self.assertEqual(m("model.decoder.embed_tokens.weight"), "decoder.token_embedding.weight")
+        self.assertEqual(m("model.decoder.embed_positions.weight"), "decoder.positional_embedding")
+        self.assertEqual(m("model.encoder.layer_norm.weight"), "encoder.ln_post.weight")
+        self.assertEqual(m("model.decoder.layer_norm.bias"), "decoder.ln.bias")
+        self.assertIsNone(m("proj_out.weight"))
+        self.assertIsNone(m("model.encoder.embed_positions.weight"))
+        cfg = mlx_engine.hf_config_to_mlx({"num_mel_bins": 128, "max_source_positions": 1500, "d_model": 1280,
+                                           "encoder_attention_heads": 20, "encoder_layers": 32, "vocab_size": 51866,
+                                           "max_target_positions": 448, "decoder_attention_heads": 20,
+                                           "decoder_layers": 4})
+        self.assertEqual((cfg["n_mels"], cfg["n_text_layer"], cfg["n_vocab"]), (128, 4, 51866))
+
 if __name__ == "__main__":
     unittest.main()
