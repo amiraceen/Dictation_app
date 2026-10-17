@@ -1,7 +1,7 @@
 name: Arabic dialect test
 
-# Scores speech models on everyday Arabic dialects (Casablanca: UAE, Egypt, Jordan,
-# Palestine, Yemen, ...) and formal Arabic (FLEURS) on a GitHub Mac. Results appear
+# Scores speech models on everyday Arabic dialects (Saudi, Gulf, Emirati and more from open
+# Hugging Face sets) and formal Arabic (FLEURS) on a GitHub Mac. Results appear
 # in the run's summary page. Runs when the test changes, or by hand with other models.
 on:
   push:
@@ -37,6 +37,7 @@ jobs:
       - name: Score models
         env:
           HF_HUB_DISABLE_PROGRESS_BARS: "1"
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           python tools/eval_dialects.py \
             --models "${{ github.event.inputs.models || 'mlx,mlx-noprompt,mlx:mlx-community/whisper-large-v3-mlx,hf:openai/whisper-large-v3-turbo,hf:oddadmix/whisper-large-v3-turbo-arabic-dialectal,hf:VohoAI/whisper-saudi-small' }}" \

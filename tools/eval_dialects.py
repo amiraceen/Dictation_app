@@ -2,9 +2,10 @@
 
     python tools/eval_dialects.py --models mlx,hf:openai/whisper-large-v3-turbo --clips 25
 
-Test audio:
-  - Casablanca (Arabic-STT/Casablanca on Hugging Face): spontaneous speech in eight dialects,
-    including the UAE, Egypt, Jordan, Palestine and Yemen. Each dialect is scored separately.
+Test audio (each set and dialect scored separately; sets that need a login are skipped):
+  - Kejue Voice (Saudi, Bahraini, Emirati and other dialect configs), SADA 2022 (Saudi TV,
+    everyday speech), Kejue Common Voice, and Casablanca (eight dialects; gated, used only
+    if HF_TOKEN is set).
   - FLEURS ar_eg: read Modern Standard Arabic, the same set as tools/eval_arabic.py.
 
 Models:
@@ -50,33 +51,47 @@ def to_16k(array, sr):
 
 # ── Test sets ──
 
-def load_casablanca(n_clips, min_s=2.0, max_s=15.0):
-    """{dialect: [(id, audio, reference)]}. Streams only the clips it needs."""
+# Open dialect test sets, tried in order; any that is gated (needs a login) is skipped.
+DIALECT_SETS = ["Arabic-STT/kejue-voice", "Arabic-STT/sada2022", "Arabic-STT/kejue-common-voice",
+                "Arabic-STT/Casablanca"]
+
+
+def load_dialect_sets(n_clips, repos=DIALECT_SETS, min_s=2.0, max_s=15.0, max_configs=8):
+    """{"repo/config": [(id, audio, reference)]}. Streams only the clips it needs."""
     from datasets import get_dataset_config_names, get_dataset_split_names, load_dataset
-    repo = "Arabic-STT/Casablanca"
     sets = {}
-    for config in get_dataset_config_names(repo):
+    for repo in repos:
         try:
-            splits = get_dataset_split_names(repo, config)
-            split = next((s for s in ("test", "validation", "dev", "train") if s in splits), splits[0])
-            ds = load_dataset(repo, config, split=split, streaming=True)
-            clips = []
-            for i, row in enumerate(ds):
-                text_col = next((c for c in TEXT_COLUMNS if isinstance(row.get(c), str) and row[c].strip()), None)
-                audio_col = next((k for k, v in row.items() if isinstance(v, dict) and "array" in v), None)
-                if not text_col or not audio_col:
-                    print(f"  {config}: columns not recognised: {list(row)}", flush=True)
-                    break
-                audio = to_16k(row[audio_col]["array"], row[audio_col]["sampling_rate"])
-                if min_s <= len(audio) / SR <= max_s:
-                    clips.append((f"{config}-{i}", audio, row[text_col]))
-                if len(clips) >= n_clips or i > n_clips * 20:
-                    break
-            if clips:
-                sets[config] = clips
-                print(f"  Casablanca {config} ({split}): {len(clips)} clips", flush=True)
+            configs = get_dataset_config_names(repo)
         except Exception as e:
-            print(f"  Casablanca {config}: skipped ({type(e).__name__}: {e})", flush=True)
+            print(f"  {repo}: skipped ({type(e).__name__}: {str(e)[:120]})", flush=True)
+            continue
+        for config in configs[:max_configs]:
+            name = repo.split("/")[-1] + ("" if config == "default" else f"/{config}")
+            try:
+                splits = get_dataset_split_names(repo, config)
+                split = next((s for s in ("test", "validation", "dev", "train") if s in splits), splits[0])
+                ds = load_dataset(repo, config, split=split, streaming=True)
+                clips = []
+                for i, row in enumerate(ds):
+                    text_col = next((c for c in TEXT_COLUMNS if isinstance(row.get(c), str) and row[c].strip()), None)
+                    if text_col is None:          # some sets name it differently: take any Arabic text column
+                        text_col = next((k for k, v in row.items() if isinstance(v, str)
+                                         and any("\u0600" <= ch <= "\u06ff" for ch in v)), None)
+                    audio_col = next((k for k, v in row.items() if isinstance(v, dict) and "array" in v), None)
+                    if not text_col or not audio_col:
+                        print(f"  {name}: columns not recognised: {list(row)}", flush=True)
+                        break
+                    audio = to_16k(row[audio_col]["array"], row[audio_col]["sampling_rate"])
+                    if min_s <= len(audio) / SR <= max_s:
+                        clips.append((f"{name}-{i}", audio, row[text_col]))
+                    if len(clips) >= n_clips or i > n_clips * 20:
+                        break
+                if clips:
+                    sets[name] = clips
+                    print(f"  {name} ({split}, text '{text_col}'): {len(clips)} clips", flush=True)
+            except Exception as e:
+                print(f"  {name}: skipped ({type(e).__name__}: {str(e)[:120]})", flush=True)
     return sets
 
 
@@ -162,7 +177,7 @@ def main():
     args = ap.parse_args()
 
     print("Loading test audio…", flush=True)
-    sets = load_casablanca(args.clips)
+    sets = load_dialect_sets(args.clips)
     sets.update(load_fleurs(args.clips))
     names = list(sets)
 
@@ -199,7 +214,7 @@ def main():
         lines.append(f"| {spec} | " + " | ".join(cells) +
                      f" | {statistics.mean(avg):.0%} | {statistics.median(secs):.2f} |" if avg and secs
                      else f"| {spec} | " + " | ".join(cells) + " | – | – |")
-    lines += ["", f"{args.clips} clips per set. Casablanca is spontaneous dialect speech; FLEURS is read formal Arabic.", ""]
+    lines += ["", f"{args.clips} clips per set. Dialect sets are everyday speech; FLEURS is read formal Arabic.", ""]
     for (spec, name), ex in examples.items():
         lines.append(f"<details><summary>{spec} · {name}</summary>\n")
         lines += [f"- expected: {r}\n  - heard: {h}" for r, h in ex]
