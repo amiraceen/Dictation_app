@@ -12,9 +12,18 @@ MODELS = {
     # choice: (folder / faster-whisper name, label, download size in bytes or 0 if built in, engine)
     "small": ("small", "Whisper small", 0, "cpu"),
     "turbo": ("whisper-large-v3-turbo-mlx", "Whisper large-v3-turbo", 1_620_000_000, "mlx"),
+    "large": ("whisper-large-v3-mlx", "Whisper large-v3", 3_080_000_000, "mlx"),
+    "dialect": ("whisper-turbo-arabic-dialects-mlx", "Whisper turbo · Arabic dialects", 3_240_000_000, "mlx"),
 }
+# Where each downloaded model comes from. "dialect" is a Transformers-format fine-tune on
+# Gulf/Saudi, Egyptian, Levantine and other dialects; the app converts it to MLX after download.
+REPOS = {"turbo": "mlx-community/whisper-large-v3-turbo", "large": "mlx-community/whisper-large-v3-mlx",
+         "dialect": "oddadmix/whisper-large-v3-turbo-arabic-dialectal"}
+CONVERT = {"dialect"}
+NO_DIALECT_PROMPT = {"dialect"}          # it already knows dialects; the primer made it slightly worse
 LEGACY_FOLDERS = ("large-v3-turbo",)      # CPU turbo from an earlier build: too slow, removed
-MODEL_OPTIONS = [("small", "Fast · built in"), ("turbo", "Accurate · 1.6 GB download")]
+MODEL_OPTIONS = [("small", "Fast · built in"), ("turbo", "Accurate · 1.6 GB download"),
+                 ("large", "Large · 3.1 GB download"), ("dialect", "Arabic dialects · 3.2 GB download")]
 _DONE = ".complete"
 
 
@@ -31,7 +40,17 @@ def _folder_size(path):
 
 def _hf_download(choice, folder):
     import mlx_engine
-    mlx_engine.download(folder)
+    if choice in CONVERT:
+        import tempfile
+        from huggingface_hub import snapshot_download
+        src = tempfile.mkdtemp(dir=folder)
+        try:
+            snapshot_download(REPOS[choice], local_dir=src, allow_patterns=["config.json", "*.safetensors"])
+            mlx_engine.convert_hf(src, folder)
+        finally:
+            shutil.rmtree(src, ignore_errors=True)       # keep only the converted copy
+    else:
+        mlx_engine.download(folder, REPOS[choice])
 
 
 class ModelStore:
@@ -55,6 +74,9 @@ class ModelStore:
 
     def engine(self, choice):
         return MODELS[choice][3]
+
+    def dialect_prompt(self, choice):
+        return MODELS[choice][3] == "mlx" and choice not in NO_DIALECT_PROMPT
 
     def ready(self, choice):
         if MODELS[choice][2] == 0:

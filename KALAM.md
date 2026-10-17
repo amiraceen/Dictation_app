@@ -55,12 +55,14 @@ You decide what to keep:
 
 Every clear asks you to click twice, so nothing is deleted by accident.
 
-### Two speech models
+### Speech models
 
 | Model | Best for | Size | Speed (5-second clip) |
 |---|---|---|---|
 | **Fast** (built in) | English and quick notes; works right after install | Included | About 3 to 5 seconds on the processor |
 | **Accurate** (optional download) | Arabic dialects and mixed Arabic and English | 1.6 GB, downloaded once from Settings | About 0.3 seconds on the Mac's graphics chip |
+| **Large** (optional download) | The full Whisper large-v3; about as accurate as Accurate, worth trying on your own voice | 3.1 GB | About 2.5 times slower than Accurate |
+| **Arabic dialects** (optional download) | Accurate retrained by the community on Arabic dialects; may suit everyday speech better, weaker on formal Arabic | 3.2 GB download, stored as 1.6 GB | Same as Accurate |
 
 The Accurate model is also told which dialect words to expect (Gulf, Omani, Egyptian and Levantine), so casual speech comes out as you said it, not as formal Arabic.
 
@@ -71,7 +73,7 @@ The whole app (window, menus and messages) can be shown in **English or Arabic**
 ### Settings at a glance
 
 - **Speaking language:** Arabic or English (auto), Arabic only, or English only. Picking one language makes text appear faster.
-- **Speech model:** Fast or Accurate.
+- **Speech model:** Fast, Accurate, Large or Arabic dialects.
 - **App language:** English or العربية.
 - **Launch at login**, **show the Kalam bar at all times**, **show the app in the Dock**.
 - **Sounds** when recording starts and stops.

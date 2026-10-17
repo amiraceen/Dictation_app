@@ -628,6 +628,8 @@
     } else if (m.loading) note.textContent = t('model.loading');
     else if (m.error && !m.ready) note.innerHTML = `${esc(t('model.failed', { error: m.error }))} <a href="#" id="modelRetry">${t('model.retry')}</a>`;
     else if (m.choice === 'turbo') note.textContent = t('model.turbo');
+    else if (m.choice === 'large') note.textContent = t('model.large');
+    else if (m.choice === 'dialect') note.textContent = t('model.dialect');
     else note.textContent = t('model.small');
     const r = $('modelRetry'); if (r) r.onclick = e => { e.preventDefault(); post({ type: 'retryModel' }); };
   }

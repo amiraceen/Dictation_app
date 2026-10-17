@@ -184,7 +184,7 @@ def convert_hf(src, dst):
         json.dump(dict(hf_config_to_mlx(cfg), model_type="whisper"), f)
 
 
-def download(folder):
-    """Fetch the MLX weights (config.json + weights.safetensors, about 1.6 GB)."""
+def download(folder, repo=MLX_REPO):
+    """Fetch MLX weights (config.json + weights): turbo is about 1.6 GB, full large-v3 about 3.1 GB."""
     from huggingface_hub import snapshot_download
-    snapshot_download(MLX_REPO, local_dir=folder, allow_patterns=["config.json", "weights.*"])
+    snapshot_download(repo, local_dir=folder, allow_patterns=["config.json", "weights.*"])

@@ -310,7 +310,7 @@ class DictationCore:
         self.dictionary = _load_dictionary()
         self.on_status_change(ICON_IDLE, "Config reloaded ✓")
 
-    def load_model(self, path=None, label=None, engine="cpu"):
+    def load_model(self, path=None, label=None, engine="cpu", prompt=None):
         """Load (or swap to) a speech model: faster-whisper on the CPU, or MLX on the Mac's
         graphics chip. Dictation keeps using the old one until the new one is warmed up.
         Returns True on success."""
@@ -327,7 +327,7 @@ class DictationCore:
             list(model.transcribe(warm, language="en", vad_filter=False, **DECODE)[0])
             with self.model_lock:
                 self.model, self.model_label = model, label or models.MODELS["small"][1]
-                self.dialect_prompt = engine == "mlx"
+                self.dialect_prompt = engine == "mlx" if prompt is None else prompt
             self.on_status_change(ICON_IDLE, "Ready — hold ⌥ Right to dictate")
             return True
         except Exception as e:
@@ -798,7 +798,7 @@ if HAS_RUMPS:
         def _load_model_worker(self, choice):
             try:
                 ok = self.core.load_model(self.models.path(choice), self.models.label(choice),
-                                          self.models.engine(choice))
+                                          self.models.engine(choice), self.models.dialect_prompt(choice))
                 if not ok and choice != "small":
                     ui.on_main(self._show_toast, self._t("toast.mlxFailed"), self._t("toast.mlxFailedBody"),
                                [(self._t("toast.ok"), None)], 15)

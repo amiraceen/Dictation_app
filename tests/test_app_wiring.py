@@ -315,7 +315,7 @@ class AppWiringTest(unittest.TestCase):
 
         self.app.models._download = fake_download
         self.patch(dictation.DictationCore, "load_model",
-                   lambda core, path=None, label=None, engine="cpu": loaded.append((path, label, engine)) or True)
+                   lambda core, path=None, label=None, engine="cpu", prompt=None: loaded.append((path, label, engine)) or True)
         self.app.handle_message({"type": "saveSettings", "changes": {"speech_model": "turbo"}}, self.bridge())
         st = self.app.state_for(self.bridge())["model"]
         self.assertEqual((st["choice"], st["downloading"], st["ready"]), ("turbo", "turbo", False))
