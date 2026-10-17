@@ -20,6 +20,7 @@ import arabic
 from speed import DECODE, pick_language, whisper_language
 import models
 import i18n
+import system
 
 try:
     import rumps
@@ -80,7 +81,7 @@ STRINGS_JS    = os.path.join(RES_DIR, "web", "strings.js")
 # ─── Config ──────────────────────────────────────────────────────────────────
 
 SAMPLE_RATE  = 16000
-HOTKEY       = keyboard.Key.alt_r   # Hold RIGHT OPTION ⌥
+HOTKEY       = keyboard.Key.alt_r   # fallback outside macOS; on a Mac the key is set in Settings
 MODEL_SIZE   = "small"              # small = much better accuracy than base
 LANGUAGE     = None                 # None = auto-detect (supports 100+ languages)
 MIN_DURATION = 0.3
@@ -422,10 +423,16 @@ class DictationCore:
 # ─── Hotkey ──────────────────────────────────────────────────────────────────
 
 class HotkeyListener:
-    """Hold-to-talk on Right Option."""
+    """Hold-to-talk on the key chosen in Settings (Right Option by default).
 
-    def __init__(self, core):
+    On macOS every key event passes through _intercept, so any key works: a modifier
+    (Right ⌥, Right ⌘, Fn…) is watched through "flags changed" events and left alone,
+    while an ordinary key (F5, a letter…) is swallowed so it doesn't also type."""
+
+    def __init__(self, core, keycode=None):
         self.core, self._held = core, False
+        self.keycode = keycode or (lambda: system.DEFAULT_DICTATION_KEY)
+        self.paused = False             # True while Settings is recording a new key
 
     def restart(self):
         if getattr(self, "_listener", None) is not None:
@@ -434,11 +441,59 @@ class HotkeyListener:
         self.start()
 
     def start(self):
-        self._listener = keyboard.Listener(on_press=self._on_press, on_release=self._on_release)
+        if sys.platform == "darwin":
+            self._listener = keyboard.Listener(darwin_intercept=self._intercept)
+        else:
+            self._listener = keyboard.Listener(on_press=self._on_press, on_release=self._on_release)
         self._listener.daemon = True
         self._listener.start()
 
-    def _on_press(self, key):
+    def _intercept(self, event_type, event):
+        import Quartz
+        try:
+            kind = {Quartz.kCGEventKeyDown: "down", Quartz.kCGEventKeyUp: "up",
+                    Quartz.kCGEventFlagsChanged: "flags"}.get(event_type)
+            if kind is None:
+                return event
+            code = Quartz.CGEventGetIntegerValueField(event, Quartz.kCGKeyboardEventKeycode)
+            repeat = kind == "down" and bool(Quartz.CGEventGetIntegerValueField(
+                event, Quartz.kCGKeyboardEventAutorepeat))
+            swallow = self.on_key_event(kind, code, Quartz.CGEventGetFlags(event), repeat)
+            return None if swallow else event
+        except Exception as e:
+            print(f"Hotkey error: {e}", flush=True)
+            return event
+
+    def on_key_event(self, kind, code, flags=0, repeat=False):
+        """Start/stop dictation for one key event. Returns True if the event should be swallowed."""
+        if self.paused:
+            return False
+        target = self.keycode()
+        if system.is_modifier(target):
+            if kind == "flags" and code == target:
+                down = bool(flags & system.MODIFIER_DOWN_MASK[target])
+                if down and not self._held:
+                    self._held = True
+                    self.core.start_recording()
+                elif not down and self._held:
+                    self._held = False
+                    self.core.stop_recording()
+            elif kind == "down" and self._held:
+                # The key was held for a shortcut (like ⌘C), not to talk.
+                self._held = False
+                self.core.cancel_recording()
+            return False
+        if code != target or kind == "flags":
+            return False
+        if kind == "down" and not repeat and not self._held:
+            self._held = True
+            self.core.start_recording()
+        elif kind == "up" and self._held:
+            self._held = False
+            self.core.stop_recording()
+        return True
+
+    def _on_press(self, key):          # other platforms: Right Option only
         if key == HOTKEY and not self._held:
             self._held = True
             self.core.start_recording()
@@ -505,7 +560,7 @@ if HAS_RUMPS:
             self._shown_errors = set()
             self._ticks = 0
 
-            self.hotkey = HotkeyListener(self.core)
+            self.hotkey = HotkeyListener(self.core, lambda: self.settings["dictation_key"])
             self._load_chosen_model()
             self.hotkey.start()
             ui.on_main(self._startup)
@@ -586,9 +641,12 @@ if HAS_RUMPS:
             if getattr(self, "_last_status", None):
                 self._status.title = self._status_text(self._last_status)
 
+        def _key_label(self):
+            return system.key_label(self.settings["dictation_key"], self.settings["ui_language"])
+
         def _status_text(self, msg):
             key = self._STATUS_KEYS.get(msg)
-            return self._t(key) if key else msg
+            return self._t(key, key=self._key_label()) if key else msg
 
         def _set_status(self, icon, msg):
             # Called from worker threads; AppKit must be touched on the main thread.
@@ -714,7 +772,7 @@ if HAS_RUMPS:
                     macos.set_dock_icon(v)
                 elif k == "show_bar_always" and (v or not startup):
                     self._ensure_pill().set_always(v)
-                elif k == "ui_language":
+                elif k in ("ui_language", "dictation_key"):
                     self._apply_language()
                 elif k == "speech_model" and not startup:
                     self._load_chosen_model()
@@ -772,6 +830,10 @@ if HAS_RUMPS:
             st = self.store.state()
             st["settings"] = self.settings.all()
             st["options"] = setting_options()
+            lang, current = self.settings["ui_language"], self.settings["dictation_key"]
+            keys = system.DICTATION_KEY_PRESETS + ([] if current in system.DICTATION_KEY_PRESETS else [current])
+            st["options"]["dictation_key"] = [(k, system.key_label(k, lang)) for k in keys]
+            st["key_label"] = self._key_label()
             st["notes"] = self.notes.summaries()
             st["note"] = self.notes.get(bridge.note_id) if bridge.note_id else None
             st["model"] = self._model_state()
@@ -814,6 +876,16 @@ if HAS_RUMPS:
             elif kind == "retryModel":
                 self.models.error = None
                 self._load_chosen_model()
+            elif kind == "captureKey":
+                self.hotkey.paused = bool(msg.get("on"))   # the key being chosen mustn't start dictation
+                return False
+            elif kind == "setDictationKey":
+                self.hotkey.paused = False
+                code = system.keycode_from_js(msg.get("code", ""))
+                if code is not None and self.settings.update({"dictation_key": code}):
+                    self._apply_settings(["dictation_key"])
+                self._refresh_windows()
+                return False
             elif kind == "openNote":
                 bridge.note_id = msg.get("id")
             elif kind == "newNote":

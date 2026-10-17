@@ -11,10 +11,13 @@ import threading
 from speed import LANGUAGE_OPTIONS
 from models import MODEL_OPTIONS
 from i18n import UI_LANGUAGE_OPTIONS
+from system import DEFAULT_DICTATION_KEY, JS_CODE_TO_KEYCODE
 
 DEFAULTS = {
     # System → Dictation: a fixed language skips detection and roughly halves the wait
     "dictation_language": "auto",
+    # System → Transcribe: the key you hold to talk (a macOS key code; Right Option by default)
+    "dictation_key": DEFAULT_DICTATION_KEY,
     # System → App settings: the language of Kalam's own screens and menus
     "ui_language": "en",
     # System → Transcribe: built-in "small", or the downloaded, more accurate "turbo"
@@ -54,6 +57,8 @@ def _valid(key, value):
     default = DEFAULTS[key]
     if key in _CHOICES:
         return type(value) is type(default) and value in _CHOICES[key]
+    if key == "dictation_key":
+        return type(value) is int and value in JS_CODE_TO_KEYCODE.values()
     return type(value) is type(default)
 
 

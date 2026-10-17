@@ -86,6 +86,27 @@ class NotesTest(unittest.TestCase):
 
 class SystemTest(unittest.TestCase):
 
+    def test_dictation_key_labels(self):
+        self.assertEqual(system.key_label(61), "Right ⌥")
+        self.assertEqual(system.key_label(61, "ar"), "⌥ اليمين")
+        self.assertEqual(system.key_label(54), "Right ⌘")
+        self.assertEqual(system.key_label(63), "Fn 🌐")
+        self.assertEqual(system.key_label(96), "F5")
+        self.assertEqual(system.key_label(46), "M")
+        self.assertEqual(system.keycode_from_js("AltRight"), 61)
+        self.assertEqual(system.keycode_from_js("F5"), 96)
+        self.assertIsNone(system.keycode_from_js("Escape"))
+        self.assertTrue(system.is_modifier(61) and not system.is_modifier(96))
+
+    def test_dictation_key_setting(self):
+        path = os.path.join(tempfile.mkdtemp(), "s.json")
+        s = settings.Settings(path)
+        self.assertEqual(s["dictation_key"], 61)
+        self.assertEqual(s.update({"dictation_key": 96.0}), ["dictation_key"])     # JS numbers arrive as floats
+        self.assertEqual(settings.Settings(path)["dictation_key"], 96)
+        self.assertEqual(s.update({"dictation_key": 999}), [])                    # not a real key
+        self.assertEqual(s.update({"dictation_key": True}), [])
+
     def test_login_agent(self):
         exe = "/Applications/Dictation.app/Contents/MacOS/Dictation"
         self.assertEqual(system.login_program_args(True, exe, "x.py"),

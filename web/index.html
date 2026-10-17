@@ -374,6 +374,7 @@
     <div class="tab on" id="tSystem">
       <h2 data-i18n="h.transcribe">Transcribe</h2>
       <div class="card">
+        <div class="set"><div class="lbl"><b data-i18n="set.key">Dictation key</b><span id="keyNote" data-i18n="set.key.d">Hold this key while you talk. You can pick any key.</span></div><select id="keySel" aria-label="Dictation key" data-i18n-aria="set.key"></select></div>
         <div class="set"><div class="lbl"><b data-i18n="set.lang">Language</b><span data-i18n="set.lang.d">Pick the language you speak and text appears faster. "Arabic or English" works out which one each time, which takes a little longer.</span></div><select data-set="dictation_language"></select></div>
         <div class="set"><div class="lbl"><b data-i18n="set.model">Speech model</b><span id="modelNote"></span><div class="bar" id="modelBar" hidden><i></i></div></div><select data-set="speech_model"></select></div>
       </div>
@@ -421,6 +422,7 @@
     for (const k in vars) s = s.split(`{${k}}`).join(vars[k]);
     return s;
   };
+  const KEY = () => (S && S.key_label) || 'Right ⌥';          // the dictation key, as shown
   const LOCALE = () => LANG === 'ar' ? 'ar-u-nu-latn' : [];      // Arabic months, Western digits
   function applyLang(lang) {
     LANG = lang === 'ar' ? 'ar' : 'en';
@@ -428,7 +430,7 @@
     document.documentElement.dir = LANG === 'ar' ? 'rtl' : 'ltr';
     $('heroImg').src = `img/header-${HERO}${LANG === 'ar' ? '-ar' : ''}.webp`;
     document.querySelectorAll('[data-i18n]').forEach(e => e.textContent = t(e.dataset.i18n));
-    document.querySelectorAll('[data-i18n-html]').forEach(e => e.innerHTML = t(e.dataset.i18nHtml));
+    document.querySelectorAll('[data-i18n-html]').forEach(e => e.innerHTML = t(e.dataset.i18nHtml, { key: esc(KEY()) }));
     document.querySelectorAll('[data-i18n-ph]').forEach(e => e.placeholder = t(e.dataset.i18nPh));
     document.querySelectorAll('[data-i18n-alt]').forEach(e => e.alt = t(e.dataset.i18nAlt));
     document.querySelectorAll('[data-i18n-aria]').forEach(e => {
@@ -454,7 +456,7 @@
   const pe = text => `<div class="pe">${esc(text)}</div>`;
   const PEEK = {
     home: () => { const h = S.history.slice(-3).reverse();
-      return [t('home.peekCount', { n: fmt(S.stats.words || 0) }), h.map(e => pi(e.text, time(e.ts))).join('') || pe(t('home.peekEmpty'))]; },
+      return [t('home.peekCount', { n: fmt(S.stats.words || 0) }), h.map(e => pi(e.text, time(e.ts))).join('') || pe(t('home.peekEmpty', { key: KEY() }))]; },
     notes: () => [t('notes.count', { n: S.notes.length }),
       S.notes.slice(0, 3).map(n => pi(n.title || t('notes.untitled'), when(n.created))).join('') || pe(t('notes.empty'))],
     clip: () => { const h = S.history.slice(-3).reverse();
@@ -517,7 +519,7 @@
       root.innerHTML = `
         <input class="ttl" placeholder="${t('notes.untitled')}" maxlength="300">
         <div class="meta-line"></div>
-        <textarea class="body" placeholder="${t('notes.bodyPh')}"></textarea>
+        <textarea class="body" placeholder="${esc(t('notes.bodyPh', { key: KEY() }))}"></textarea>
         <div class="tools">
           <button class="ib" data-act="copy" title="${t('notes.copyMd')}">${I.copy}</button>
           <button class="ib" data-act="export" title="${t('notes.export')}">${I.export}</button>
@@ -586,8 +588,35 @@
         el.value = String(st[k]);
       } else el.checked = !!st[k];
     });
+    renderKey();
     renderModel();
   }
+  let capturingKey = false;
+  function renderKey() {
+    const sel = $('keySel'), opts = (S.options.dictation_key || []);
+    sel.innerHTML = opts.map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join('')
+      + `<option value="other">${esc(t('set.key.other'))}</option>`;
+    sel.value = String(S.settings.dictation_key);
+    sel.disabled = capturingKey;
+    $('keyNote').textContent = capturingKey ? t('set.key.press') : t('set.key.d');
+    document.querySelectorAll('[data-i18n-html]').forEach(e => e.innerHTML = t(e.dataset.i18nHtml, { key: esc(KEY()) }));
+  }
+  const endKeyCapture = code => {
+    capturingKey = false;
+    post(code ? { type: 'setDictationKey', code } : { type: 'captureKey', on: false });
+    renderKey();
+  };
+  $('keySel').onchange = () => {
+    const v = $('keySel').value;
+    if (v === 'other') { capturingKey = true; post({ type: 'captureKey', on: true }); renderKey(); return; }
+    S.settings.dictation_key = parseInt(v, 10);
+    post({ type: 'saveSettings', changes: { dictation_key: S.settings.dictation_key } });
+  };
+  window.addEventListener('keydown', e => {
+    if (!capturingKey) return;
+    e.preventDefault(); e.stopPropagation();
+    endKeyCapture(e.code === 'Escape' ? null : e.code);
+  }, true);
   function renderModel() {
     const m = S.model; if (!m) return;
     const note = $('modelNote'), bar = $('modelBar');
@@ -641,7 +670,7 @@
       html += `<div class="row"><div class="t">${time(e.ts)}</div><div class="x">${esc(e.text)}</div>
                <button class="ib c" data-copy="${i}" title="${t('common.copy')}">${I.copy}</button></div>`;
     });
-    $('history').outerHTML = `<div id="history">${html ? html + '</div></div>' : `<div class="list"><div class="empty">${t('home.empty')}</div></div>`}</div>`;
+    $('history').outerHTML = `<div id="history">${html ? html + '</div></div>' : `<div class="list"><div class="empty">${esc(t('home.empty', { key: KEY() }))}</div></div>`}</div>`;
     $('clear').hidden = !h.length;
     document.querySelectorAll('[data-clearday]').forEach(b => b.onclick = () => {
       const from = +b.dataset.clearday, end = new Date(from * 1000); end.setDate(end.getDate() + 1);

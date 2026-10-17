@@ -443,6 +443,61 @@ class AppWiringTest(unittest.TestCase):
         items["Quit Kalam"].callback(None)
         self.assertTrue(rumps_stub.quits)
 
+    def test_dictation_key_any_key(self):
+        events = []
+        core = types.SimpleNamespace(start_recording=lambda: events.append("start"),
+                                     stop_recording=lambda: events.append("stop"),
+                                     cancel_recording=lambda: events.append("cancel"))
+        key = [61]
+        h = dictation.HotkeyListener(core, lambda: key[0])
+        # Right Option (a modifier): watched through flags-changed events, never swallowed
+        self.assertFalse(h.on_key_event("flags", 61, 0x80040))
+        self.assertFalse(h.on_key_event("flags", 61, 0x100))
+        self.assertEqual(events, ["start", "stop"])
+        self.assertFalse(h.on_key_event("flags", 58, 0x80020))                   # Left Option: not ours
+        self.assertEqual(events, ["start", "stop"])
+        h.on_key_event("flags", 61, 0x80040)
+        h.on_key_event("down", 8, 0x80040)                                        # ⌥C: a shortcut, not talking
+        self.assertEqual(events[-1], "cancel")
+        h.on_key_event("flags", 61, 0x100)
+        self.assertEqual(events[-1], "cancel")                                    # no stop after a cancel
+        # F5 (an ordinary key): swallowed so it doesn't reach the app, key repeat ignored
+        key[0], events[:] = 96, []
+        self.assertTrue(h.on_key_event("down", 96))
+        self.assertTrue(h.on_key_event("down", 96, repeat=True))
+        self.assertTrue(h.on_key_event("up", 96))
+        self.assertFalse(h.on_key_event("down", 0))                               # other keys pass through
+        self.assertEqual(events, ["start", "stop"])
+        # Fn
+        key[0], events[:] = 63, []
+        h.on_key_event("flags", 63, 0x800000)
+        h.on_key_event("flags", 63, 0)
+        self.assertEqual(events, ["start", "stop"])
+        # While Settings records a new key, nothing starts
+        h.paused, events[:] = True, []
+        self.assertFalse(h.on_key_event("flags", 63, 0x800000))
+        self.assertEqual(events, [])
+
+    def test_choose_dictation_key_from_settings(self):
+        app, b = self.app, self.bridge()
+        st = app.state_for(b)
+        self.assertEqual(st["key_label"], "Right ⌥")
+        self.assertIn([96, "F5"], [list(o) for o in st["options"]["dictation_key"]])
+        app.handle_message({"type": "captureKey", "on": True}, b)
+        self.assertTrue(app.hotkey.paused)
+        app.handle_message({"type": "setDictationKey", "code": "KeyJ"}, b)
+        self.assertFalse(app.hotkey.paused)
+        self.assertEqual(app.settings["dictation_key"], 38)
+        st = app.state_for(b)
+        self.assertEqual(st["key_label"], "J")
+        self.assertIn([38, "J"], [list(o) for o in st["options"]["dictation_key"]])   # custom key listed
+        app._apply_status(dictation.ICON_IDLE, "Ready — hold ⌥ Right to dictate")
+        self.assertEqual(app._status.title, "Ready — hold J to dictate")
+        app.handle_message({"type": "setDictationKey", "code": "Escape"}, b)           # unusable: unchanged
+        self.assertEqual(app.settings["dictation_key"], 38)
+        app.handle_message({"type": "saveSettings", "changes": {"dictation_key": 54}}, b)
+        self.assertEqual(app.state_for(b)["key_label"], "Right ⌘")
+
     def test_language_setting(self):
         self.assertIsNone(self.app.core.language())                 # auto-detect by default
         self.app.handle_message({"type": "saveSettings", "changes": {"dictation_language": "en"}}, self.bridge())

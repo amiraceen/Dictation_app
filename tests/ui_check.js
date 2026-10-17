@@ -21,8 +21,9 @@ const base = () => ({
   stats: { words: 1234, wpm: 140, streak: 3 },
   settings: { dictation_language: 'auto', speech_model: 'small', launch_at_login: false, show_bar_always: false,
     show_in_dock: false, sounds: true, mute_while_dictating: false, pause_media_while_dictating: false,
-    ui_language: 'en' },
-  options: { ui_language: [['en', 'English'], ['ar', 'العربية']], dictation_language: [['auto', 'Arabic or English (auto)'], ['ar', 'Arabic'], ['en', 'English']],
+    ui_language: 'en', dictation_key: 61 },
+  key_label: 'Right ⌥',
+  options: { dictation_key: [[61, 'Right ⌥'], [54, 'Right ⌘'], [63, 'Fn 🌐'], [96, 'F5']], ui_language: [['en', 'English'], ['ar', 'العربية']], dictation_language: [['auto', 'Arabic or English (auto)'], ['ar', 'Arabic'], ['en', 'English']],
     speech_model: [['small', 'Fast · built in'], ['turbo', 'Accurate · 1.6 GB download']] },
   notes: [{ id: 'a1', title: 'Weekly sync', created: now - 900, meeting: true, duration: 754, recording: false, preview: 'Decisions' },
           { id: 'b2', title: 'Groceries', created: now - 86400 * 3, meeting: false, duration: 0, recording: false, preview: 'Milk' }],
@@ -204,6 +205,21 @@ const check = (name, ok, detail = '') => { if (!ok) fails++; console.log(`${ok ?
     m = await last(p);
     check(`menu ${key}`, m.type === 'saveSettings' && m.changes[key] === expect, JSON.stringify(m));
   }
+  // Dictation key: pick from the menu, or record any key
+  check('Dictation key menu shows the current key', (await p.$eval('#keySel', e => e.options[e.selectedIndex].text)) === 'Right ⌥');
+  await p.selectOption('#keySel', '96');
+  m = await last(p);
+  check('Dictation key: choose F5', m.type === 'saveSettings' && m.changes.dictation_key === 96, JSON.stringify(m));
+  await p.selectOption('#keySel', 'other');
+  m = await last(p);
+  check('Dictation key: Other key… starts listening', m.type === 'captureKey' && m.on === true
+    && (await p.textContent('#keyNote')).includes('Press the key'), JSON.stringify(m));
+  await p.keyboard.press('F8');
+  m = await last(p);
+  check('Dictation key: the pressed key is sent', m.type === 'setDictationKey' && m.code === 'F8', JSON.stringify(m));
+  await p.selectOption('#keySel', 'other'); await p.keyboard.press('Escape');
+  m = await last(p);
+  check('Dictation key: Esc cancels', m.type === 'captureKey' && m.on === false && !(await p.$eval('#keySel', e => e.disabled)), JSON.stringify(m));
   check('model download error is shown', (await p.textContent('#modelNote')).includes('No internet'));
   await p.click('#modelRetry');
   check('model Try again', (await last(p)).type === 'retryModel');
@@ -219,8 +235,9 @@ const check = (name, ok, detail = '') => { if (!ok) fails++; console.log(`${ok ?
   m = await last(p);
   check('App language menu sends ui_language', m.type === 'saveSettings' && m.changes.ui_language === 'ar', JSON.stringify(m));
   await p.close();
-  const ar = base(); ar.settings.ui_language = 'ar';
+  const ar = base(); ar.settings.ui_language = 'ar'; ar.key_label = '⌥ اليمين';   // the app sends the Arabic name
   p = await open('main', ar);
+  check('Arabic: key hint uses the Arabic key name', (await p.textContent('#home .pill')).includes('⌥ اليمين'));
   check('Arabic: page is right-to-left', await p.evaluate(() => document.documentElement.dir === 'rtl' && document.documentElement.lang === 'ar'));
   check('Arabic: banner is the Arabic copy', await p.evaluate(() => /header-\w+-ar\.webp$/.test(document.getElementById('heroImg').src)
     && document.getElementById('heroImg').complete && document.getElementById('heroImg').naturalWidth === 1990));
